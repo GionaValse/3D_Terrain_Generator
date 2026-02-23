@@ -1,0 +1,74 @@
+# --- Detect OS ---
+ifeq ($(OS),Windows_NT)
+    # Comandi Windows
+    MKDIR = if not exist $(subst /,\,$1) mkdir $(subst /,\,$1)
+    RM    = if exist $(subst /,\,$1) rd /s /q $(subst /,\,$1)
+    FIX_PATH = $(subst /,\,$1)
+    EXEC_EXT = .exe
+else
+    # Comandi Unix/Linux/macOS
+    MKDIR = mkdir -p $1
+    RM    = rm -rf $1
+    FIX_PATH = $1
+    EXEC_EXT =
+endif
+
+# --- Project Configuration ---
+TARGET      := bin/main_app$(EXEC_EXT)
+TEST_TARGET := bin/test_runner$(EXEC_EXT)
+
+CXX      := g++
+CXXFLAGS := -Wall -Wextra -std=c++17 -Iinclude
+LDFLAGS  := -Llib
+LDLIBS   := 
+
+SRC_DIR   := src
+INC_DIR   := include
+TEST_DIR  := tests
+BUILD_DIR := build
+BIN_DIR   := bin
+
+# --- File Discovery ---
+SRCS         := $(wildcard $(SRC_DIR)/*.cpp)
+SRCS_NO_MAIN := $(filter-out $(SRC_DIR)/main.cpp, $(SRCS))
+TEST_SRCS    := $(wildcard $(TEST_DIR)/*.cpp)
+
+OBJS              := $(SRCS:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/src/%.o)
+TEST_OBJS         := $(TEST_SRCS:$(TEST_DIR)/%.cpp=$(BUILD_DIR)/tests/%.o)
+SRCS_NO_MAIN_OBJS := $(SRCS_NO_MAIN:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/src/%.o)
+
+# --- Build Rules ---
+
+all: directories $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CXX) $(OBJS) -o $@ $(LDFLAGS) $(LDLIBS)
+
+test: directories $(TEST_TARGET)
+	@echo Running tests...
+	$(call FIX_PATH,./$(TEST_TARGET))
+
+$(TEST_TARGET): $(SRCS_NO_MAIN_OBJS) $(TEST_OBJS)
+	$(CXX) $^ -o $@ $(LDFLAGS) $(LDLIBS)
+
+$(BUILD_DIR)/src/%.o: $(SRC_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/tests/%.o: $(TEST_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# --- Utility Tasks ---
+
+# Creazione directory con macro compatibile
+.PHONY: directories
+directories:
+	@$(call MKDIR,$(BUILD_DIR)/src)
+	@$(call MKDIR,$(BUILD_DIR)/tests)
+	@$(call MKDIR,$(BIN_DIR))
+
+clean:
+	@echo Cleaning up...
+	@$(call RM,$(BUILD_DIR))
+	@$(call RM,$(BIN_DIR))
+
+.PHONY: all test clean
