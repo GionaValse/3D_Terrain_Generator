@@ -1,12 +1,10 @@
 # --- Detect OS ---
 ifeq ($(OS),Windows_NT)
-    # Comandi Windows
     MKDIR = if not exist $(subst /,\,$1) mkdir $(subst /,\,$1)
     RM    = if exist $(subst /,\,$1) rd /s /q $(subst /,\,$1)
     FIX_PATH = $(subst /,\,$1)
     EXEC_EXT = .exe
 else
-    # Comandi Unix/Linux/macOS
     MKDIR = mkdir -p $1
     RM    = rm -rf $1
     FIX_PATH = $1
@@ -41,6 +39,11 @@ SRCS_NO_MAIN_OBJS := $(SRCS_NO_MAIN:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/src/%.o)
 
 all: directories $(TARGET)
 
+# --- Novità: Regola per compilare ed eseguire ---
+run: all
+	@echo "Avvio di $(TARGET)..."
+	@$(call FIX_PATH,./$(TARGET))
+
 $(TARGET): $(OBJS)
 	$(CXX) $(OBJS) -o $@ $(LDFLAGS) $(LDLIBS)
 
@@ -59,7 +62,6 @@ $(BUILD_DIR)/tests/%.o: $(TEST_DIR)/%.cpp
 
 # --- Utility Tasks ---
 
-# Creazione directory con macro compatibile
 .PHONY: directories
 directories:
 	@$(call MKDIR,$(BUILD_DIR)/src)
@@ -71,4 +73,4 @@ clean:
 	@$(call RM,$(BUILD_DIR))
 	@$(call RM,$(BIN_DIR))
 
-.PHONY: all test clean
+.PHONY: all test clean run
