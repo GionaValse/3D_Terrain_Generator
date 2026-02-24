@@ -1,205 +1,88 @@
-#include <algorithm>
-#include <cassert>
-#include <fstream>
+#include <filesystem>
 #include <iostream>
-#include <random>
-#include <sstream>
 #include <string>
 #include <vector>
-#include <filesystem>
 
 #include "PerlinNoise.hpp"
 
-#pragma pack(push, 1)
-struct BMPHeader {
-    std::uint16_t bfType;
-    std::uint32_t bfSize;
-    std::uint16_t bfReserved1;
-    std::uint16_t bfReserved2;
-    std::uint32_t bfOffBits;
-    std::uint32_t biSize;
-    std::int32_t biWidth;
-    std::int32_t biHeight;
-    std::uint16_t biPlanes;
-    std::uint16_t biBitCount;
-    std::uint32_t biCompression;
-    std::uint32_t biSizeImage;
-    std::int32_t biXPelsPerMeter;
-    std::int32_t biYPelsPerMeter;
-    std::uint32_t biClrUsed;
-    std::uint32_t biClrImportant;
-};
-static_assert(sizeof(BMPHeader) == 54);
-#pragma pack(pop)
+#define TINYEXR_IMPLEMENTATION
+#include "tinyexr.h"
 
-struct RGB {
-    double r = 0.0;
-    double g = 0.0;
-    double b = 0.0;
-    constexpr RGB() = default;
-    explicit constexpr RGB(double _rgb) noexcept
-        : r{_rgb}, g{_rgb}, b{_rgb} {}
-    constexpr RGB(double _r, double _g, double _b) noexcept
-        : r{_r}, g{_g}, b{_b} {}
-};
-
-class Image {
-   public:
-    Image() = default;
-
-    Image(std::size_t width, std::size_t height)
-        : m_data(width * height), m_width{static_cast<std::int32_t>(width)}, m_height{static_cast<std::int32_t>(height)} {}
-
-    void set(std::int32_t x, std::int32_t y, const RGB& color) {
-        if (!inBounds(y, x)) {
-            return;
-        }
-
-        m_data[static_cast<std::size_t>(y) * m_width + x] = color;
-    }
-
-    std::int32_t width() const noexcept { return m_width; }
-
-    std::int32_t height() const noexcept { return m_height; }
-
-    bool saveBMP(const std::string& path) {
-        std::filesystem::path p(path);
-        if (p.has_parent_path()) {
-            std::filesystem::create_directories(p.parent_path());
-        }
-
-        const std::int32_t rowSize = m_width * 3 + m_width % 4;
-        const std::uint32_t bmpsize = rowSize * m_height;
-        const BMPHeader header =
-            {
-                0x4d42,
-                static_cast<std::uint32_t>(bmpsize + sizeof(BMPHeader)),
-                0, 0, sizeof(BMPHeader), 40,
-                m_width, m_height, 1, 24,
-                0, bmpsize, 0, 0, 0, 0};
-
-        if (std::ofstream ofs{path, std::ios_base::binary}) {
-            ofs.write(reinterpret_cast<const char*>(&header), sizeof(header));
-
-            std::vector<std::uint8_t> line(rowSize);
-
-            for (std::int32_t y = m_height - 1; -1 < y; --y) {
-                size_t pos = 0;
-
-                for (std::int32_t x = 0; x < m_width; ++x) {
-                    const RGB& col = m_data[static_cast<std::size_t>(y) * m_width + x];
-                    line[pos++] = ToUint8(col.b);
-                    line[pos++] = ToUint8(col.g);
-                    line[pos++] = ToUint8(col.r);
-                }
-
-                ofs.write(reinterpret_cast<const char*>(line.data()), line.size());
-            }
-
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-   private:
-    std::vector<RGB> m_data;
-
-    std::int32_t m_width = 0, m_height = 0;
-
-    bool inBounds(std::int32_t y, std::int32_t x) const noexcept {
-        return (0 <= y) && (y < m_height) && (0 <= x) && (x < m_width);
-    }
-
-    static constexpr std::uint8_t ToUint8(double x) noexcept {
-        return (x <= 0.0) ? 0 : (1.0 <= x) ? 255
-                                           : static_cast<std::uint8_t>(x * 255.0 + 0.5);
-    }
-};
-
-void Test() {
-    siv::PerlinNoise perlinA{std::random_device{}};
-    siv::PerlinNoise perlinB;
-
-    perlinB.deserialize(perlinA.serialize());
-
-    assert(perlinA.octave3D(0.1, 0.2, 0.3, 4) == perlinB.octave3D(0.1, 0.2, 0.3, 4));
-
-    perlinA.reseed(12345u);
-    perlinB.reseed(12345u);
-
-    assert(perlinA.octave3D(0.1, 0.2, 0.3, 4) == perlinB.octave3D(0.1, 0.2, 0.3, 4));
-
-    std::mt19937 rngA{67890u};
-    std::mt19937 rngB{67890u};
-
-    perlinA.reseed(rngA);
-    perlinB.reseed(rngB);
-
-    assert(std::abs(perlinA.octave3D(0.1, 0.2, 0.3, 4) - perlinB.octave3D(0.1, 0.2, 0.3, 4)) < 0.000001);
-
-    for (std::int32_t y = 0; y < 20; ++y) {
-        for (std::int32_t x = 0; x < 20; ++x) {
-            const double noise = perlinA.octave2D_01(x * 0.1, y * 0.1, 6);
-            std::cout << static_cast<int>(std::floor(noise * 10) - 0.5);
-        }
-        std::cout << '\n';
-    }
-}
+namespace fs = std::filesystem;
 
 int main() {
-    Test();
+    int size;
+    double frequency;
+    int octaves;
+    uint32_t seed;
 
-    Image image{512, 512};
+    std::cout << "--- Generatore di Perlin Noise EXR ---\n\n";
 
-    std::cout << "---------------------------------\n";
-    std::cout << "* frequency [0.1 .. 8.0 .. 64.0] \n";
-    std::cout << "* octaves   [1 .. 8 .. 16]       \n";
-    std::cout << "* seed      [0 .. 2^32-1]        \n";
-    std::cout << "---------------------------------\n";
+    std::cout << "Inserisci la dimensione dell'immagine (es. 512 o 1024): ";
+    std::cin >> size;
 
-    for (;;) {
-        double frequency;
-        std::cout << "double frequency = ";
-        std::cin >> frequency;
-        frequency = std::clamp(frequency, 0.1, 64.0);
+    std::cout << "Inserisci la frequenza (es. 4.0 o 8.5): ";
+    std::cin >> frequency;
 
-        std::int32_t octaves;
-        std::cout << "int32 octaves    = ";
-        std::cin >> octaves;
-        octaves = std::clamp(octaves, 1, 16);
+    std::cout << "Inserisci il numero di ottave (es. 4 o 6): ";
+    std::cin >> octaves;
 
-        std::uint32_t seed;
-        std::cout << "uint32 seed      = ";
-        std::cin >> seed;
+    std::cout << "Inserisci il seed (es. 123456): ";
+    std::cin >> seed;
 
-        const siv::PerlinNoise perlin{seed};
-        const double fx = (frequency / image.width());
-        const double fy = (frequency / image.height());
-
-        for (std::int32_t y = 0; y < image.height(); ++y) {
-            for (std::int32_t x = 0; x < image.width(); ++x) {
-                const RGB color(perlin.octave2D_01((x * fx), (y * fy), octaves));
-                image.set(x, y, color);
-            }
-        }
-
-        std::stringstream ss;
-        ss << "./bin/noises/" << 'f' << frequency << 'o' << octaves << '_' << seed << ".bmp";
-
-        if (image.saveBMP(ss.str())) {
-            std::cout << "...saved \"" << ss.str() << "\"\n";
-        } else {
-            std::cout << "...failed\n";
-        }
-
-        char c;
-        std::cout << "continue? [y/n] >";
-        std::cin >> c;
-        if (c != 'y')
-            break;
-        std::cout << '\n';
+    if (size <= 0 || octaves <= 0 || frequency <= 0) {
+        std::cerr << "\nErrore: dimensione, frequenza e ottave devono essere maggiori di zero.\n";
+        return 1;
     }
 
+    const int width = size;
+    const int height = size;
+
+    std::cout << "\nGenerazione in corso con: Dimensione=" << size << "x" << size
+              << ", Frequenza=" << frequency
+              << ", Ottave=" << octaves
+              << ", Seed=" << seed << "...\n";
+
+    const siv::PerlinNoise perlin{seed};
+    std::vector<float> image(width * height * 3);
+
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            double nx = static_cast<double>(x) / width;
+            double ny = static_cast<double>(y) / height;
+
+            double noiseValue = perlin.octave2D_01(nx * frequency, ny * frequency, octaves);
+
+            int pixelIndex = (y * width + x) * 3;
+            image[pixelIndex + 0] = static_cast<float>(noiseValue);
+            image[pixelIndex + 1] = static_cast<float>(noiseValue);
+            image[pixelIndex + 2] = static_cast<float>(noiseValue);
+        }
+    }
+
+    std::string outputDir = "bin/noises";
+
+    if (!fs::exists(outputDir)) {
+        fs::create_directories(outputDir);
+        std::cout << "Cartella '" << outputDir << "' creata con successo.\n";
+    }
+
+    std::string filename = outputDir + "/perlin_" + std::to_string(size) +
+                           "_f" + std::to_string(static_cast<int>(frequency)) +
+                           "_o" + std::to_string(octaves) +
+                           "_s" + std::to_string(seed) + ".exr";
+
+    const char* err = nullptr;
+    int ret = SaveEXR(image.data(), width, height, 3, 0, filename.c_str(), &err);
+
+    if (ret != TINYEXR_SUCCESS) {
+        if (err) {
+            std::cerr << "Errore EXR: " << err << '\n';
+            FreeEXRErrorMessage(err);
+        }
+        return 1;
+    }
+
+    std::cout << "Immagine salvata con successo in: " << filename << "\n\n";
     return 0;
 }
