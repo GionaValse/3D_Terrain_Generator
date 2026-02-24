@@ -1,11 +1,12 @@
-#include <algorithm>  // <--- Aggiunto
+#include <algorithm>
 #include <cassert>
 #include <fstream>
 #include <iostream>
-#include <random>  // <--- Aggiunto
+#include <random>
 #include <sstream>
 #include <string>
 #include <vector>
+#include <filesystem>
 
 #include "PerlinNoise.hpp"
 
@@ -62,6 +63,11 @@ class Image {
     std::int32_t height() const noexcept { return m_height; }
 
     bool saveBMP(const std::string& path) {
+        std::filesystem::path p(path);
+        if (p.has_parent_path()) {
+            std::filesystem::create_directories(p.parent_path());
+        }
+
         const std::int32_t rowSize = m_width * 3 + m_width % 4;
         const std::uint32_t bmpsize = rowSize * m_height;
         const BMPHeader header =
@@ -179,7 +185,7 @@ int main() {
         }
 
         std::stringstream ss;
-        ss << 'f' << frequency << 'o' << octaves << '_' << seed << ".bmp";
+        ss << "./bin/noises/" << 'f' << frequency << 'o' << octaves << '_' << seed << ".bmp";
 
         if (image.saveBMP(ss.str())) {
             std::cout << "...saved \"" << ss.str() << "\"\n";
