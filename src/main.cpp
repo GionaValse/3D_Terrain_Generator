@@ -51,7 +51,19 @@ int main() {
             double nx = static_cast<double>(x) / width;
             double ny = static_cast<double>(y) / height;
 
-            double noiseValue = perlin.octave2D_01(nx * frequency, ny * frequency, octaves);
+            // MACRO_STRUCRE: Mountains
+            double macroFrequency = frequency * 1.0; // Low frequency for large features
+            double macroAmplifier = 10.0; // Amplify the mountain features
+            double macroNoise = perlin.noise2D(nx * macroFrequency, ny * macroFrequency) * macroAmplifier;
+
+            // MICRO_STRUCRE: Rocks and details
+            double microFrequency = frequency * 4.0; // Higher frequency for finer details
+            double microAmplifier = 1.0;
+            double microNoise = perlin.normalizedOctave2D(nx * microFrequency, ny * microFrequency, octaves) * microAmplifier;
+
+            // Combine macro and micro structures
+            double normalizedNoise = (macroNoise + microNoise) / (macroAmplifier + microAmplifier); // Normalize to [-1, 1]
+            double noiseValue = (normalizedNoise * 0.5) + 0.5; // Normalize to [0, 1]
 
             int pixelIndex = (y * width + x) * 3;
             image[pixelIndex + 0] = static_cast<float>(noiseValue);
