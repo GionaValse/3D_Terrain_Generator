@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cmath>
 #include <filesystem>
 #include <iostream>
 #include <string>
@@ -62,8 +64,13 @@ int main() {
             double microNoise = perlin.normalizedOctave2D(nx * microFrequency, ny * microFrequency, octaves) * microAmplifier;
 
             // Combine macro and micro structures
-            double normalizedNoise = (macroNoise + microNoise) / (macroAmplifier + microAmplifier); // Normalize to [-1, 1]
-            double noiseValue = (normalizedNoise * 0.5) + 0.5; // Normalize to [0, 1]
+            double combinedNoise = macroNoise + microNoise;
+            double realisticMax = (macroAmplifier + microAmplifier) * 0.65;
+            double noise_11 = combinedNoise / realisticMax;
+            double noiseValue = (noise_11 * 0.5) + 0.5;  // Normalize to [0, 1]
+
+            noiseValue = std::clamp(noiseValue, 0.0, 1.0);
+            noiseValue = std::pow(noiseValue, 1.5); // Enhance contrast for more realistic terrain
 
             int pixelIndex = (y * width + x) * 3;
             image[pixelIndex + 0] = static_cast<float>(noiseValue);
