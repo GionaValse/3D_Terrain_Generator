@@ -192,6 +192,12 @@ namespace Eng
 		
 		// Engine loader:
 		/**
+		 * @biref Give the current scene graph root node or create a new, then you can attach any node child.
+		 * @return A pointer to the root Node of the loaded scene graph.
+		 */
+		Eng::Node* getSceneGraphInstance();
+
+		/**
 		 * @brief Loads a scene from a specified file path using an internal loader (e.g., OVOReader).
 		 * @param path The file path to the scene definition.
 		 * @return A pointer to the root Node of the loaded scene graph, or \c nullptr on failure.

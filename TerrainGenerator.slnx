@@ -3,8 +3,8 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="client/client.vcxproj">
+  <Project Path="client/client.vcxproj" Id="650e9c33-14b6-4dbd-9268-80012de9750a">
     <BuildDependency Project="engine/engine.vcxproj" />
   </Project>
-  <Project Path="engine/engine.vcxproj" />
+  <Project Path="engine/engine.vcxproj" Id="2e085aa3-fd6a-4d1f-8a97-1cce34be1a65" />
 </Solution>

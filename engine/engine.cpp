@@ -430,6 +430,16 @@ bool ENG_API Eng::Base::start(void (*callback)(Node* root)) {
     return true;
 }
 
+Eng::Node* Eng::Base::getSceneGraphInstance()
+{
+    if (!reserved->rootNode)
+    {
+        reserved->rootNode = new Eng::Node("root");
+    }
+
+    return reserved->rootNode;
+}
+
 ENG_API Eng::Node* Eng::Base::loadScene(std::string path) {
     // Not initialized?
     if (!reserved->initFlag) {

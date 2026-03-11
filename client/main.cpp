@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
     eng.init(&argc, argv, "CG Project");
     eng.setActiveCamera(mainCamera);
 
-    root = new Eng::Node();
+    root = eng.getSceneGraphInstance();
     root->setMatrix(glm::mat4(1.0f));
     root->addChild(perspectiveCamera);
     root->addChild(gridMesh);
