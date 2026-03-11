@@ -6,8 +6,41 @@
 #include "../include/GridGenerator.hpp"
 #include <../include/engine/engine.h>
 
-int main()
+static void renderingLoop(Eng::Node* root) {
+}
+
+
+int main(int argc, char* argv[])
 {
+
+    int testResolution = 512;
+    Eng::Mesh* gridMesh = terrain::GridGenerator::generate(testResolution);
+    Eng::Camera* mainCamera;
+    Eng::Node* root;
+
+    glm::mat4 cameraPosition = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 8.0f, 15.0f));
+    Eng::PerspectiveCamera* perspectiveCamera = new Eng::PerspectiveCamera("mainPerpectiveCamera", cameraPosition);
+
+    perspectiveCamera->setCameraParams(45.0f, RATIO_16_9, 1.0f, 5000.0f);
+
+    mainCamera = perspectiveCamera;
+
+    glm::mat4 ry = glm::rotate(glm::mat4(1.0f), glm::radians(-15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    mainCamera->setViewMatrix(ry * mainCamera->getMatrix());
+
+    Eng::Base& eng = Eng::Base::getInstance();
+    eng.init(&argc, argv, "CG Project");
+    eng.setActiveCamera(mainCamera);
+
+    root = new Eng::Node();
+    root->setMatrix(glm::mat4(1.0f));
+    root->addChild(perspectiveCamera);
+    root->addChild(gridMesh);
+
+    eng.start(renderingLoop);
+
+    eng.free();
+
     terrain::TerrainConfig config;
 
     std::cout << "--- Generatore di Perlin Noise EXR ---\n\n";
@@ -55,9 +88,6 @@ int main()
     std::vector<terrain::Vertex> vertices;
     std::vector<unsigned int> indices;
 
-    // Generiamo una griglia molto piccola (2x2 quadrati) per il test
-    int testResolution = 512;
-    terrain::GridGenerator::generate(testResolution, vertices, indices);
     /*
     std::cout << "Numero di vertici generati: " << vertices.size() << " (Attesi: 9)\n";
     std::cout << "Numero di indici generati: " << indices.size() << " (Attesi: 24, ovvero 8 triangoli)\n\n";
@@ -79,5 +109,6 @@ int main()
     */
 
     std::cout << "n of triangles" << vertices.size();
+
     return 0;
 }
