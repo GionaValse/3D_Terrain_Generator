@@ -1,10 +1,12 @@
 #include <iostream>
 #include <vector>
-#include "../include/TerrainConfig.hpp"
-#include "../include/TerrainGenerator.hpp"
-#include "../include/ImageExporter.hpp"
-#include "../include/GridGenerator.hpp"
-#include <../include/engine/engine.h>
+
+#include "engine.h"
+
+#include "TerrainConfig.hpp"
+#include "TerrainGenerator.hpp"
+#include "ImageExporter.hpp"
+#include "GridGenerator.hpp"
 
 static void renderingLoop(Eng::Node* root) {
 }

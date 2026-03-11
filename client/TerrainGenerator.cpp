@@ -1,6 +1,7 @@
-#include "../include/TerrainGenerator.hpp"
-#include <cmath>
 #include <algorithm>
+#include <cmath>
+
+#include "TerrainGenerator.hpp"
 
 namespace terrain {
 

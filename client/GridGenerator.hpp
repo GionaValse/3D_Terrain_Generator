@@ -1,7 +1,9 @@
 #pragma once
-#include "../include/glm/glm.hpp"
 #include <vector>
-#include "../include/engine/engine.h"
+
+#include <glm/glm.hpp>
+
+#include "engine.h"
 
 namespace terrain {
 

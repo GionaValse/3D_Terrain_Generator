@@ -1,9 +1,10 @@
-#include "../include/ImageExporter.hpp"
 #include <filesystem>
 #include <iostream>
 
+#include "ImageExporter.hpp"
+
 #define TINYEXR_IMPLEMENTATION
-#include "../include/tinyexr.h"
+#include "tinyexr.h"
 
 namespace fs = std::filesystem;
 
