@@ -8,40 +8,80 @@
 #include "ImageExporter.hpp"
 #include "GridGenerator.hpp"
 
+/////////////
+// Globals //
+/////////////
+
+Eng::Camera* mainCamera;
+
+
+#ifdef _DEBUG
+bool isWireFrameMode = false;
+#endif
+
+///////////////
+// Callbacks //
+///////////////
+
 static void renderingLoop(Eng::Node* root) {
 }
 
+static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY) {
+
+#ifdef _DEBUG
+    if (key == 'k') 
+    {
+        isWireFrameMode = !isWireFrameMode;
+        Eng::Base::getInstance().changeWireFrame(isWireFrameMode);
+    }
+#endif // _DEBUG
+
+    if (key == 'a') 
+    {
+        mainCamera->setMatrix(glm::rotate(glm::mat4(1.0f), glm::radians(-1.0f), glm::vec3(0.0f, 1.0f, 0.0f)) * mainCamera->getMatrix());
+    }
+    else if (key == 'd') 
+    {
+        mainCamera->setMatrix(glm::rotate(glm::mat4(1.0f), glm::radians(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)) * mainCamera->getMatrix());
+    }
+    else if (key == 'w') 
+    {
+        mainCamera->setMatrix(glm::translate(mainCamera->getMatrix(), glm::vec3(0.0f, 0.0f, -1.0f)));
+    }
+    else if (key == 's') 
+    {
+        mainCamera->setMatrix(glm::translate(mainCamera->getMatrix(), glm::vec3(0.0f, 0.0f, 1.0f)));
+    }
+}
+
+//////////
+// Main //
+//////////
 
 int main(int argc, char* argv[])
 {
+    unsigned int testSize = 512;
+    float testResolution = 1.0f;
+    
+    Eng::Base& eng = Eng::Base::getInstance();
+    eng.init(&argc, argv, "Terrain Test");
 
-    int testResolution = 512;
-    Eng::Mesh* gridMesh = terrain::GridGenerator::generate(testResolution);
-    Eng::Camera* mainCamera;
-    Eng::Node* root;
+    Eng::Mesh* gridMesh = terrain::GridGenerator::generate(testSize, testResolution);
+    gridMesh->setMatrix(glm::mat4(1.0f));
 
-    glm::mat4 cameraPosition = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 8.0f, 15.0f));
-    Eng::PerspectiveCamera* perspectiveCamera = new Eng::PerspectiveCamera("mainPerpectiveCamera", cameraPosition);
-
+    glm::mat4 camera = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 8.0f, 15.0f));
+    Eng::PerspectiveCamera* perspectiveCamera = new Eng::PerspectiveCamera("mainCamera", camera);
     perspectiveCamera->setCameraParams(45.0f, RATIO_16_9, 1.0f, 5000.0f);
+
+    Eng::Node* root = eng.getSceneGraphInstance();
+    root->addChild(gridMesh);
+    eng.setActiveCamera(perspectiveCamera);
 
     mainCamera = perspectiveCamera;
 
-    glm::mat4 ry = glm::rotate(glm::mat4(1.0f), glm::radians(-15.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    mainCamera->setViewMatrix(ry * mainCamera->getMatrix());
-
-    Eng::Base& eng = Eng::Base::getInstance();
-    eng.init(&argc, argv, "CG Project");
-    eng.setActiveCamera(mainCamera);
-
-    root = eng.getSceneGraphInstance();
-    root->setMatrix(glm::mat4(1.0f));
-    root->addChild(perspectiveCamera);
-    root->addChild(gridMesh);
+    eng.setOnKeyboardPressedCallback(onKeyboardPressedCallback);
 
     eng.start(renderingLoop);
-
-    eng.free();
 
     terrain::TerrainConfig config;
 
@@ -87,9 +127,6 @@ int main(int argc, char* argv[])
 
     std::cout << "\n--- TEST GENERAZIONE GRIGLIA ---\n";
 
-    std::vector<terrain::Vertex> vertices;
-    std::vector<unsigned int> indices;
-
     /*
     std::cout << "Numero di vertici generati: " << vertices.size() << " (Attesi: 9)\n";
     std::cout << "Numero di indici generati: " << indices.size() << " (Attesi: 24, ovvero 8 triangoli)\n\n";
@@ -109,8 +146,6 @@ int main(int argc, char* argv[])
                   << indices[i] << ", " << indices[i + 1] << ", " << indices[i + 2] << "\n";
     }
     */
-
-    std::cout << "n of triangles" << vertices.size();
 
     return 0;
 }

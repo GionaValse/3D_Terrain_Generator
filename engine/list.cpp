@@ -177,59 +177,33 @@ namespace Eng
 
     // Shader
 
-    void List::initShaders()
-    {
-        Eng::Shader* vs = nullptr;
-        Eng::Shader* fs = nullptr;
-
+    void List::initShaders() {
         const char* vertShader = R"(
-			#version 440 core
-
-			uniform mat4 projection;
-			uniform mat4 modelview;
-
-			layout(location = 0) in vec3 in_Position;
-			layout(location = 1) in vec4 in_Color;
-
-			out vec3 out_Color;
-			out float dist;
-
-			void main(void)
-			{
-				gl_Position = projection * modelview * vec4(in_Position, 1.0f);
-				dist = abs(gl_Position.z / 100.0f);
-				out_Color = in_Color.rgb;
-			}
-		)";
-
+            #version 440 core
+            layout(location = 0) in vec3 in_Position;
+            uniform mat4 projection;
+            uniform mat4 modelview;
+            void main() {
+                gl_Position = projection * modelview * vec4(in_Position, 1.0);
+            }
+        )";
 
         const char* fragShader = R"(
-			#version 440 core
+            #version 440 core
+            out vec4 frag_Output;
+            void main() {
+                frag_Output = vec4(1.0, 1.0, 0.0, 1.0); // GIALLO
+            }
+        )";
 
-			in  vec3 out_Color;
-			in  float dist;
-
-			out vec4 frag_Output;
-
-			void main(void)
-			{
-			   vec3 fog = vec3(1.0f, 1.0f, 1.0f);
-			   frag_Output = vec4(mix(out_Color, fog, dist), 1.0f);
-			}
-		)";
-
-
-        vs = new Shader();
+        Eng::Shader* vs = new Shader();
         vs->loadFromMemory(Shader::TYPE_VERTEX, vertShader);
 
-        fs = new Shader();
+        Eng::Shader* fs = new Shader();
         fs->loadFromMemory(Shader::TYPE_FRAGMENT, fragShader);
 
         mainShader = new Shader();
         mainShader->build(vs, fs);
-        mainShader->render();
-        mainShader->bind(0, "in_Position");
-        mainShader->bind(1, "in_Color");
 
         projLoc = mainShader->getParamLocation("projection");
         mvLoc = mainShader->getParamLocation("modelview");
