@@ -38,19 +38,27 @@ static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
 
     if (key == 'a') 
     {
-        mainCamera->setMatrix(glm::rotate(glm::mat4(1.0f), glm::radians(-1.0f), glm::vec3(0.0f, 1.0f, 0.0f)) * mainCamera->getMatrix());
+        mainCamera->setMatrix(glm::rotate(glm::mat4(10.0f), glm::radians(-1.0f), glm::vec3(0.0f, 10.0f, 0.0f)) * mainCamera->getMatrix());
     }
     else if (key == 'd') 
     {
-        mainCamera->setMatrix(glm::rotate(glm::mat4(1.0f), glm::radians(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)) * mainCamera->getMatrix());
+        mainCamera->setMatrix(glm::rotate(glm::mat4(10.0f), glm::radians(1.0f), glm::vec3(0.0f, 10.0f, 0.0f)) * mainCamera->getMatrix());
     }
     else if (key == 'w') 
     {
-        mainCamera->setMatrix(glm::translate(mainCamera->getMatrix(), glm::vec3(0.0f, 0.0f, -1.0f)));
+        mainCamera->setMatrix(glm::translate(mainCamera->getMatrix(), glm::vec3(0.0f, 0.0f, -10.0f)));
     }
     else if (key == 's') 
     {
-        mainCamera->setMatrix(glm::translate(mainCamera->getMatrix(), glm::vec3(0.0f, 0.0f, 1.0f)));
+        mainCamera->setMatrix(glm::translate(mainCamera->getMatrix(), glm::vec3(0.0f, 0.0f, 10.0f)));
+    }
+    else if (key == 'e')
+    {
+        mainCamera->setMatrix(mainCamera->getMatrix() * glm::rotate(glm::mat4(1.0f), glm::radians(1.0f), glm::vec3(10.0f, 0.0f, 0.0f)));
+    }
+    else if (key == 'q') 
+    {
+        mainCamera->setMatrix(mainCamera->getMatrix() * glm::rotate(glm::mat4(1.0f), glm::radians(-1.0f), glm::vec3(10.0f, 0.0f, 0.0f)));
     }
 }
 
