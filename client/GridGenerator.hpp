@@ -18,6 +18,9 @@ namespace terrain {
             int segments = static_cast<int>(size / resolution);
             int vertexCount = segments + 1;
 
+            vertexes.reserve(vertexCount * vertexCount);
+            faces.reserve(segments * segments * 2);
+
             for (int z = 0; z < vertexCount; ++z)
             {
                 for (int x = 0; x < vertexCount; ++x)
@@ -26,7 +29,7 @@ namespace terrain {
                     float zPos = z * resolution - (size / 2.0f);
 
                     vertexes.push_back(glm::vec3(xPos, 0.0f, zPos));
-                    normals.push_back(glm::vec4(0.0f, 1.0f, 0.0f, 0.0f));
+                    // normals.push_back(glm::vec4(0.0f, 1.0f, 0.0f, 0.0f)); // GPU edit normals by shaders
 
                     float xCoord = (float)x / segments;
                     float zCoord = (float)z / segments;
@@ -35,9 +38,9 @@ namespace terrain {
                 }
             }
 
-            for (int z = 0; z < vertexCount; ++z) 
+            for (int z = 0; z < segments; ++z)
             {
-                for (int x = 0; x < vertexCount; ++x) 
+                for (int x = 0; x < segments; ++x)
                 {
                     unsigned int topLeft = z * vertexCount + x;
                     unsigned int topRight = z * vertexCount + (x + 1);
