@@ -141,18 +141,6 @@ int main(int argc, char* argv[])
     std::cout << "\nOperazione completata.\n";
 
     std::cout << "\n--- TEST GENERAZIONE GRIGLIA ---\n";
-
-    // Shader
-    /*
-    Eng::Shader* vShader = new Eng::Shader();
-    Eng::Shader* fShader = new Eng::Shader();
-
-    vShader->loadFromFile(Eng::Shader::TYPE_VERTEX, "./shaders/terrain.vert");
-    fShader->loadFromFile(Eng::Shader::TYPE_FRAGMENT, "./shaders/terrain.frag");
-
-    Eng::Shader* shader = new Eng::Shader();
-    shader->build(vShader, fShader);
-    */
     
     Eng::Base& eng = Eng::Base::getInstance();
     eng.init(&argc, argv, "Terrain Test");
@@ -165,7 +153,7 @@ int main(int argc, char* argv[])
 
     Eng::Shader* terrainShader = new Eng::Shader();
     terrainShader->build(vShader, fShader);
-    terrainShader->render(); // attiva per settare gli uniform
+    terrainShader->render();
     terrainShader->setFloat(terrainShader->getParamLocation("heightScale"), 50.0f);
 
     // Preparing material and texture
