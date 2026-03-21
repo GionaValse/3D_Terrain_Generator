@@ -82,7 +82,7 @@ namespace Eng
         int width = FreeImage_GetWidth(bitmap);
         int height = FreeImage_GetHeight(bitmap);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, (void *)FreeImage_GetBits(bitmap));
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, (void *)FreeImage_GetBits(bitmap));
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 }; // end of namespace Eng::
