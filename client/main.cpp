@@ -37,29 +37,54 @@ static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
     }
 #endif // _DEBUG
 
-    if (key == 'a') 
+    const float rotSpeed   = 2.0f;  // gradi per tasto
+    const float moveSpeed  = 20.0f; // unità per tasto
+
+    if (key == 'a')
     {
-        mainCamera->setMatrix(glm::rotate(glm::mat4(10.0f), glm::radians(-1.0f), glm::vec3(0.0f, 10.0f, 0.0f)) * mainCamera->getMatrix());
+        // Yaw sinistra: ruota attorno all'asse Y del mondo
+        mainCamera->setMatrix(glm::rotate(glm::mat4(1.0f), glm::radians(rotSpeed), glm::vec3(0.0f, 1.0f, 0.0f)) * mainCamera->getMatrix());
     }
-    else if (key == 'd') 
+    else if (key == 'd')
     {
-        mainCamera->setMatrix(glm::rotate(glm::mat4(10.0f), glm::radians(1.0f), glm::vec3(0.0f, 10.0f, 0.0f)) * mainCamera->getMatrix());
+        // Yaw destra
+        mainCamera->setMatrix(glm::rotate(glm::mat4(1.0f), glm::radians(-rotSpeed), glm::vec3(0.0f, 1.0f, 0.0f)) * mainCamera->getMatrix());
     }
-    else if (key == 'w') 
+    else if (key == 'w')
     {
-        mainCamera->setMatrix(glm::translate(mainCamera->getMatrix(), glm::vec3(0.0f, 0.0f, -10.0f)));
+        // Avanti sul piano orizzontale (proietta il forward sul piano XZ)
+        glm::vec3 forward = -glm::vec3(mainCamera->getMatrix()[2]);
+        forward.y = 0.0f;
+        forward = glm::normalize(forward) * moveSpeed;
+        mainCamera->setMatrix(glm::translate(glm::mat4(1.0f), forward) * mainCamera->getMatrix());
     }
-    else if (key == 's') 
+    else if (key == 's')
     {
-        mainCamera->setMatrix(glm::translate(mainCamera->getMatrix(), glm::vec3(0.0f, 0.0f, 10.0f)));
+        // Indietro sul piano orizzontale
+        glm::vec3 forward = -glm::vec3(mainCamera->getMatrix()[2]);
+        forward.y = 0.0f;
+        forward = glm::normalize(forward) * moveSpeed;
+        mainCamera->setMatrix(glm::translate(glm::mat4(1.0f), -forward) * mainCamera->getMatrix());
     }
     else if (key == 'e')
     {
-        mainCamera->setMatrix(mainCamera->getMatrix() * glm::rotate(glm::mat4(1.0f), glm::radians(1.0f), glm::vec3(10.0f, 0.0f, 0.0f)));
+        // Pitch su: ruota attorno all'asse X locale della camera
+        mainCamera->setMatrix(mainCamera->getMatrix() * glm::rotate(glm::mat4(1.0f), glm::radians(rotSpeed), glm::vec3(1.0f, 0.0f, 0.0f)));
     }
-    else if (key == 'q') 
+    else if (key == 'q')
     {
-        mainCamera->setMatrix(mainCamera->getMatrix() * glm::rotate(glm::mat4(1.0f), glm::radians(-1.0f), glm::vec3(10.0f, 0.0f, 0.0f)));
+        // Pitch giù
+        mainCamera->setMatrix(mainCamera->getMatrix() * glm::rotate(glm::mat4(1.0f), glm::radians(-rotSpeed), glm::vec3(1.0f, 0.0f, 0.0f)));
+    }
+    else if (key == 'r')
+    {
+        // Su lungo l'asse Y del mondo
+        mainCamera->setMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, moveSpeed, 0.0f)) * mainCamera->getMatrix());
+    }
+    else if (key == 'f')
+    {
+        // Giù lungo l'asse Y del mondo
+        mainCamera->setMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -moveSpeed, 0.0f)) * mainCamera->getMatrix());
     }
 }
 
@@ -132,10 +157,22 @@ int main(int argc, char* argv[])
     Eng::Base& eng = Eng::Base::getInstance();
     eng.init(&argc, argv, "Terrain Test");
 
+    // Terrain shader
+    Eng::Shader* vShader = new Eng::Shader();
+    Eng::Shader* fShader = new Eng::Shader();
+    vShader->loadFromFile(Eng::Shader::TYPE_VERTEX,   "./shaders/terrain.vert");
+    fShader->loadFromFile(Eng::Shader::TYPE_FRAGMENT, "./shaders/terrain.frag");
+
+    Eng::Shader* terrainShader = new Eng::Shader();
+    terrainShader->build(vShader, fShader);
+    terrainShader->render(); // attiva per settare gli uniform
+    terrainShader->setFloat(terrainShader->getParamLocation("heightScale"), 50.0f);
+
     // Preparing material and texture
-    Eng::Texture* heightMap = new Eng::Texture("TerrainHeightMap", textureName);
+    Eng::Texture* heightMap = new Eng::Texture("TerrainHeightMap", config.size, config.size, image);
     Eng::Material* material = new Eng::Material("TerrainMaterial");
 
+    material->setShader(terrainShader);
     material->setTexture(heightMap);
 
     Eng::Mesh* gridMesh = terrain::GridGenerator::generate(testSize, testResolution);
@@ -147,7 +184,14 @@ int main(int argc, char* argv[])
     Eng::PerspectiveCamera* perspectiveCamera = new Eng::PerspectiveCamera("mainCamera", camera);
     perspectiveCamera->setCameraParams(45.0f, RATIO_16_9, 1.0f, 5000.0f);
 
+    Eng::InfiniteLight* sun = new Eng::InfiniteLight("sun");
+    sun->setDirection(glm::vec3(-0.5f, -1.0f, -0.3f));
+    sun->setAmbient(glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
+    sun->setDiffuse(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    sun->setSpecular(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+
     Eng::Node* root = eng.getSceneGraphInstance();
+    root->addChild(sun);
     root->addChild(gridMesh);
     eng.setActiveCamera(perspectiveCamera);
 

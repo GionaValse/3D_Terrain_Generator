@@ -1,40 +1,73 @@
 #version 440 core
-out vec4 FragColor;
+out vec4 fragOutput;
 
-in vec3 FragPos;  // Dalla vertex shader
-in vec3 Normal;   // Dalla vertex shader (calcolata dalla heightmap)
-in vec2 TexCoord; // Dalla vertex shader
+in vec4 fragPosition;
+in vec3 normal;
+in vec2 texCoord;
 
-// --- Uniform del MATERIALE ---
+// Materiale (stessi nomi dell'engine)
+uniform vec3 matEmission;
 uniform vec3 matAmbient;
 uniform vec3 matDiffuse;
 uniform vec3 matSpecular;
 uniform float matShininess;
 
-// --- Uniform della LUCE (le tue) ---
-uniform vec3 lightPosition;
-uniform vec3 lightAmbient;
-uniform vec3 lightDiffuse;
-uniform vec3 lightSpecular;
+// Luci (formato array dell'engine)
+uniform vec3 lightPosition[8];
+uniform vec3 lightDirection[8];
+uniform vec3 lightAmbient[8];
+uniform vec3 lightDiffuse[8];
+uniform vec3 lightSpecular[8];
+uniform int  lightType[8];
+uniform float spotCutoffCos[8];
+uniform float spotExponent[8];
+uniform int activeLightCount;
 
-uniform vec3 viewPos; // Posizione della camera per i riflessi speculari
+// Texture
+layout(binding = 0) uniform sampler2D texSampler;
+uniform bool hasTexture;
 
 void main() {
-    vec3 norm = normalize(Normal);
-    vec3 lightDir = normalize(lightPosition - FragPos);
+    vec4 texel = hasTexture ? texture(texSampler, texCoord) : vec4(1.0);
 
-    // 1. Ambient: Luce costante di base
-    vec3 ambient = lightAmbient * matAmbient;
+    vec3 norm    = normalize(normal);
+    vec3 viewDir = normalize(-fragPosition.xyz); // view space: camera all'origine
 
-    // 2. Diffuse: Basata sull'inclinazione della normale rispetto alla luce
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = lightDiffuse * (diff * matDiffuse);
+    vec3 totalLightColor = matEmission;
 
-    // 3. Specular: Riflesso "lucido" (Blinn-Phong)
-    vec3 viewDir = normalize(viewPos - FragPos);
-    vec3 halfwayDir = normalize(lightDir + viewDir);  
-    float spec = pow(max(dot(norm, halfwayDir), 0.0), matShininess);
-    vec3 specular = lightSpecular * (spec * matSpecular);
+    for (int i = 0; i < activeLightCount; i++) {
+        vec3 lightDir;
+        float attenuation = 1.0;
 
-    FragColor = vec4(ambient + diffuse + specular, 1.0);
+        if (lightType[i] == 1) {
+            lightDir = normalize(-lightDirection[i]);
+        } else {
+            lightDir = normalize(lightPosition[i] - fragPosition.xyz);
+        }
+
+        if (lightType[i] == 2) {
+            float spotCos = dot(normalize(lightDirection[i]), -lightDir);
+            attenuation = (spotCos < spotCutoffCos[i]) ? 0.0 : pow(spotCos, spotExponent[i]);
+        }
+
+        if (lightType[i] == 0)
+            attenuation = 3.0;
+
+        if (attenuation > 0.0) {
+            vec3 ambient  = matAmbient * lightAmbient[i];
+            float nDotL   = max(dot(norm, lightDir), 0.0);
+            vec3 diffuse  = matDiffuse * nDotL * lightDiffuse[i];
+
+            vec3 specular = vec3(0.0);
+            if (nDotL > 0.0) {
+                vec3 halfVec = normalize(lightDir + viewDir);
+                float nDotHV = max(dot(norm, halfVec), 0.0);
+                specular = matSpecular * pow(nDotHV, matShininess) * lightSpecular[i];
+            }
+
+            totalLightColor += (ambient + diffuse + specular) * attenuation;
+        }
+    }
+
+    fragOutput = texel * vec4(totalLightColor, 1.0);
 }

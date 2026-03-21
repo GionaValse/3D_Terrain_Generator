@@ -27,6 +27,15 @@ public:
     Texture(std::string name = "", const std::string& filePath = "");
 
     /**
+     * @brief Constructor that uploads raw float RGB data directly to the GPU.
+     * @param name The name of the texture object.
+     * @param width Image width in pixels.
+     * @param height Image height in pixels.
+     * @param data Float RGB data, 3 floats per pixel, values in [0,1].
+     */
+    Texture(std::string name, int width, int height, const std::vector<float>& data);
+
+    /**
      * @brief Virtual destructor for the Texture class.
      *
      * Responsible for releasing the GPU resource associated with the texture ID.
