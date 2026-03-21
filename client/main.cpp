@@ -30,15 +30,15 @@ static void renderingLoop(Eng::Node* root) {
 static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY) {
 
 #ifdef _DEBUG
-    if (key == 'k') 
+    if (key == 'k')
     {
         isWireFrameMode = !isWireFrameMode;
         Eng::Base::getInstance().changeWireFrame(isWireFrameMode);
     }
 #endif // _DEBUG
 
-    const float rotSpeed   = 2.0f;  // gradi per tasto
-    const float moveSpeed  = 20.0f; // unità per tasto
+    const float rotSpeed = 2.0f;  // gradi per tasto
+    const float moveSpeed = 20.0f; // unità per tasto
 
     if (key == 'a')
     {
@@ -113,16 +113,21 @@ int main(int argc, char* argv[])
     std::cout << "Inserisci il seed (es. 123456): ";
     std::cin >> config.seed;
 
-    if (!config.isValid())
+    float heightScale;
+    std::cout << "Inserisci l'altezza del terreno (es. 50.0 o 1000.0): ";
+    std::cin >> heightScale;
+
+    if (!config.isValid() || heightScale <= 0.0f)
     {
-        std::cerr << "\nErrore: dimensione, frequenza e ottave devono essere maggiori di zero.\n";
+        std::cerr << "\nErrore: dimensione, frequenza, ottave e altezza devono essere maggiori di zero.\n";
         return 1;
     }
 
     std::cout << "\nGenerazione in corso con: Dimensione=" << config.size << "x" << config.size
         << ", Frequenza=" << config.frequency
         << ", Ottave=" << config.octaves
-        << ", Seed=" << config.seed << "...\n";
+        << ", Seed=" << config.seed
+        << ", Altezza=" << heightScale << "...\n";
 
     // inizializza generator
     terrain::TerrainGenerator generator(config);
@@ -141,20 +146,20 @@ int main(int argc, char* argv[])
     std::cout << "\nOperazione completata.\n";
 
     std::cout << "\n--- TEST GENERAZIONE GRIGLIA ---\n";
-    
+
     Eng::Base& eng = Eng::Base::getInstance();
     eng.init(&argc, argv, "Terrain Test");
 
     // Terrain shader
     Eng::Shader* vShader = new Eng::Shader();
     Eng::Shader* fShader = new Eng::Shader();
-    vShader->loadFromFile(Eng::Shader::TYPE_VERTEX,   "./shaders/terrain.vert");
+    vShader->loadFromFile(Eng::Shader::TYPE_VERTEX, "./shaders/terrain.vert");
     fShader->loadFromFile(Eng::Shader::TYPE_FRAGMENT, "./shaders/terrain.frag");
 
     Eng::Shader* terrainShader = new Eng::Shader();
     terrainShader->build(vShader, fShader);
     terrainShader->render();
-    terrainShader->setFloat(terrainShader->getParamLocation("heightScale"), 50.0f);
+    terrainShader->setFloat(terrainShader->getParamLocation("heightScale"), heightScale);
 
     // Preparing material and texture
     Eng::Texture* heightMap = new Eng::Texture("TerrainHeightMap", config.size, config.size, image);
@@ -188,26 +193,6 @@ int main(int argc, char* argv[])
     eng.setOnKeyboardPressedCallback(onKeyboardPressedCallback);
 
     eng.start(renderingLoop);
-
-    /*
-    std::cout << "Numero di vertici generati: " << vertices.size() << " (Attesi: 9)\n";
-    std::cout << "Numero di indici generati: " << indices.size() << " (Attesi: 24, ovvero 8 triangoli)\n\n";
-
-    std::cout << "--- Elenco dei Vertici ---\n";
-    for (size_t i = 0; i < vertices.size(); ++i)
-    {
-        std::cout << "Vertice " << i << ": "
-                  << "Pos(" << vertices[i].position.x << ", " << vertices[i].position.y << ", " << vertices[i].position.z << ") | "
-                  << "UV(" << vertices[i].texCoords.x << ", " << vertices[i].texCoords.y << ")\n";
-    }
-
-    std::cout << "\n--- Elenco degli Indici (Triangoli) ---\n";
-    for (size_t i = 0; i < indices.size(); i += 3)
-    {
-        std::cout << "Triangolo " << (i / 3) << ": "
-                  << indices[i] << ", " << indices[i + 1] << ", " << indices[i + 2] << "\n";
-    }
-    */
 
     return 0;
 }
