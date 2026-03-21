@@ -11,198 +11,203 @@
 
 namespace Eng {
 
-////////////////
-// NODE CLASS //
-////////////////
+	////////////////
+	// NODE CLASS //
+	////////////////
 
-Node::Node(const std::string& name, const glm::mat4& matrix)
-    : Object(name),
-      m_parent{nullptr},
-      m_matrix{matrix},
-      m_isMoving(false),
-      anchor{nullptr}
+	Node::Node(const std::string& name, const glm::mat4& matrix)
+		: Object(name),
+		m_parent{ nullptr },
+		m_matrix{ matrix },
+		m_isMoving(false),
+		anchor{ nullptr },
+		speed{ 60.0f },
+		speed_counter{ 0 }
 
-{
-    m_destinationMatrix = matrix;
-}
+	{
+		m_destinationMatrix = matrix;
+	}
 
-Node::~Node() {
-    for (int i = 0; i < m_children.size(); i++) {
-        delete m_children[i];
-    }
+	Node::~Node() {
+		for (int i = 0; i < m_children.size(); i++) {
+			delete m_children[i];
+		}
 
-    m_parent = nullptr;  // useless but useful for mind
-}
+		m_parent = nullptr;  // useless but useful for mind
+	}
 
-void Node::render(glm::mat4 modelview) {
+	void Node::render(glm::mat4 modelview) {
 
-}
+	}
 
-glm::mat4 Node::getWorldCoordinateMatrix() const {
-    if (m_parent == nullptr) {
-        return getMatrix();
-    }
-    glm::vec3 parentTranslation = glm::vec3(m_parent->getWorldCoordinateMatrix()[3]);
+	glm::mat4 Node::getWorldCoordinateMatrix() const {
+		if (m_parent == nullptr) {
+			return getMatrix();
+		}
 
-    glm::mat4 parentTranslationMatrix = glm::translate(glm::mat4(1.0f), parentTranslation);
+		glm::vec3 parentTranslation = glm::vec3(m_parent->getWorldCoordinateMatrix()[3]);
 
-    return parentTranslationMatrix * m_matrix;
-}
+		glm::mat4 parentTranslationMatrix = glm::translate(glm::mat4(1.0f), parentTranslation);
 
-void Node::setParent(Node* newParent) {
-    m_parent = newParent;
-}
+		return parentTranslationMatrix * m_matrix;
+	}
 
-bool Node::addChild(Node* child) {
-    if (child == nullptr) {
-        return false;
-    }
+	void Node::setParent(Node* newParent) {
+		m_parent = newParent;
+	}
 
-    for (int i = 0; i < m_children.size(); i++) {
-        if (m_children[i] == child)
-            return false;
-    }
+	bool Node::addChild(Node* child) {
+		if (child == nullptr) {
+			return false;
+		}
 
-    if (child->getParent() != nullptr) {
-        child->getParent()->removeChild(child);
-    }
+		for (int i = 0; i < m_children.size(); i++) {
+			if (m_children[i] == child)
+				return false;
+		}
 
-    m_children.push_back(child);
-    child->setParent(this);
+		if (child->getParent() != nullptr) {
+			child->getParent()->removeChild(child);
+		}
 
-    return true;
-}
+		m_children.push_back(child);
+		child->setParent(this);
 
-bool Node::removeChild(unsigned int n) {
-    if (n >= m_children.size()) {
-        return false;
-    }
+		return true;
+	}
 
-    if (m_children[n]->getParent() == this) {
-        m_children[n]->setParent(nullptr);
-    }
+	bool Node::removeChild(unsigned int n) {
+		if (n >= m_children.size()) {
+			return false;
+		}
 
-    m_children.erase(m_children.begin() + n);
-    return true;
-}
+		if (m_children[n]->getParent() == this) {
+			m_children[n]->setParent(nullptr);
+		}
 
-bool Node::removeChild(Node* child) {
-    for (int i = 0; i < m_children.size(); i++) {
-        if (m_children[i] == child) {
-            m_children.erase(m_children.begin() + i);
-            return true;
-        }
-    }
-    return false;
-}
+		m_children.erase(m_children.begin() + n);
+		return true;
+	}
 
-float Node::getSpeed() const { return speed; }
-void Node::setSpeed(float speed_) { speed = speed_; }
+	bool Node::removeChild(Node* child) {
+		for (int i = 0; i < m_children.size(); i++) {
+			if (m_children[i] == child) {
+				m_children.erase(m_children.begin() + i);
+				return true;
+			}
+		}
+		return false;
+	}
 
-const glm::mat4 Node::getMatrix() const {
-    return m_matrix;
-}
+	float Node::getSpeed() const { return speed; }
+	void Node::setSpeed(float speed_) { speed = speed_; }
 
-void Node::setMatrix(const glm::mat4& matrix) {
-    m_matrix = matrix;
-}
+	const glm::mat4 Node::getMatrix() const {
+		return m_matrix;
+	}
 
-void Node::resetMove() {
-    m_stepMatrix.clear();
-    m_steps.clear();
-    m_isMoving = false;
-}
+	void Node::setMatrix(const glm::mat4& matrix) {
+		m_matrix = matrix;
+	}
 
-void Node::stopMove() {
-    m_isMoving = false;
-}
+	void Node::resetMove() {
+		m_stepMatrix.clear();
+		m_steps.clear();
+		m_isMoving = false;
+	}
 
-void Node::resumeMove() {
-    m_isMoving = true;
-}
+	void Node::stopMove() {
+		m_isMoving = false;
+	}
 
-void Node::move(glm::mat4 stepMatrix, int steps) {
-    if (steps >= 0) {
-        for (size_t i = 0; i < steps; i++) {
-            m_destinationMatrix = stepMatrix * m_destinationMatrix;
-        }
-    }
+	void Node::resumeMove() {
+		m_isMoving = true;
+	}
 
-    for (size_t i = 0; i < m_stepMatrix.size(); i++) {
-        if (m_stepMatrix[i] == stepMatrix && m_steps[i] == -1) {
-            m_isMoving = true;
-            return;
-        }
-    }
+	void Node::move(glm::mat4 stepMatrix, int steps) {
+		if (steps >= 0) {
+			for (size_t i = 0; i < steps; i++) {
+				m_destinationMatrix = stepMatrix * m_destinationMatrix;
+			}
+		}
 
-    m_stepMatrix.push_back(stepMatrix);
-    m_isMoving = true;
-    m_steps.push_back(steps);
-}
+		for (size_t i = 0; i < m_stepMatrix.size(); i++) {
+			if (m_stepMatrix[i] == stepMatrix && m_steps[i] == -1) {
+				m_isMoving = true;
+				return;
+			}
+		}
 
-bool Node::isMoving() const {
-    return m_isMoving;
-}
+		m_stepMatrix.push_back(stepMatrix);
+		m_isMoving = true;
+		m_steps.push_back(steps);
+	}
 
-void Node::calculateMove() {
-    speed_counter++;
-    if (speed_counter >= Eng::Base::getInstance().getCurrentFPS() * 1 / speed) {
-        if (m_stepMatrix.size() > 0) {
-            int count = 0;
-            for (size_t i = 0; i < m_stepMatrix.size(); i++) {
-                if (m_steps[i] > 0) {
-                    setMatrix(m_stepMatrix[i] * getMatrix());
-                    m_steps[i]--;
-                }
-                if (m_steps[i] == 0) {
-                    m_steps.erase(m_steps.begin() + i);
-                    m_stepMatrix.erase(m_stepMatrix.begin() + i);
-                } else if (m_steps[i] == -1) {
-                    count++;
-                    setMatrix(m_stepMatrix[i] * getMatrix());
-                }
-            }
-            if (m_stepMatrix.size() == count) {
-                m_isMoving = false;
-            }
-        } else {
-            m_isMoving = false;
-        }
-        speed_counter = 0;
-    }
-}
+	bool Node::isMoving() const {
+		return m_isMoving;
+	}
 
-Node* Node::getChild(unsigned int n) const {
-    if (m_children.size() <= n) {
-        return nullptr;
-    }
+	void Node::calculateMove() {
+		speed_counter++;
+		if (speed_counter >= Eng::Base::getInstance().getCurrentFPS() * 1 / speed) {
+			if (m_stepMatrix.size() > 0) {
+				int count = 0;
+				for (size_t i = 0; i < m_stepMatrix.size(); i++) {
+					if (m_steps[i] > 0) {
+						setMatrix(m_stepMatrix[i] * getMatrix());
+						m_steps[i]--;
+					}
+					if (m_steps[i] == 0) {
+						m_steps.erase(m_steps.begin() + i);
+						m_stepMatrix.erase(m_stepMatrix.begin() + i);
+					}
+					else if (m_steps[i] == -1) {
+						count++;
+						setMatrix(m_stepMatrix[i] * getMatrix());
+					}
+				}
+				if (m_stepMatrix.size() == count) {
+					m_isMoving = false;
+				}
+			}
+			else {
+				m_isMoving = false;
+			}
+			speed_counter = 0;
+		}
+	}
 
-    return m_children[n];
-}
+	Node* Node::getChild(unsigned int n) const {
+		if (m_children.size() <= n) {
+			return nullptr;
+		}
 
-Node* Node::getChild(std::string name) const {
-    for (int i = 0; i < m_children.size(); i++) {
-        if (m_children[i]->getName() == name) {
-            return m_children[i];
-        }
-    }
+		return m_children[n];
+	}
 
-    for (int i = 0; i < m_children.size(); i++) {
-        Node* rec = m_children[i]->getChild(name);
-        if (rec != nullptr) {
-            return rec;
-        }
-    }
+	Node* Node::getChild(std::string name) const {
+		for (int i = 0; i < m_children.size(); i++) {
+			if (m_children[i]->getName() == name) {
+				return m_children[i];
+			}
+		}
 
-    return nullptr;
-}
+		for (int i = 0; i < m_children.size(); i++) {
+			Node* rec = m_children[i]->getChild(name);
+			if (rec != nullptr) {
+				return rec;
+			}
+		}
 
-std::vector<Node*> Node::getChildren() const {
-    return m_children;
-}
+		return nullptr;
+	}
 
-unsigned int Node::getNumberOfChildren() const {
-    return m_children.size();
-}
+	std::vector<Node*> Node::getChildren() const {
+		return m_children;
+	}
+
+	unsigned int Node::getNumberOfChildren() const {
+		return m_children.size();
+	}
 
 };  // namespace Eng

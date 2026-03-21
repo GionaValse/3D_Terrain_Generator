@@ -13,7 +13,7 @@
 /**
  * @brief OGL Shader. Management and rendering of shaders.
  */
-class ENG_API Shader
+class ENG_API Shader : public Eng::Object
 {
 	//////////
 public: //
@@ -33,14 +33,22 @@ public: //
 	};
 
 	// Const/dest:	 
-	Shader();
+	Shader(const std::string& name = "");
 	~Shader();
+
+	static Shader* getCurrentInstance();
+
+	static bool getIsShaderChanged();
+
+	static bool shaderChangeReaded();
 
 	// Get/set:
 	int getParamLocation(const char* name);
 	void setMatrix(int param, const glm::mat4& mat);
+	void setMatrix3(int param, const glm::mat3& mat);
 	void setFloat(int param, float value);
 	void setInt(int param, int value);
+	void setBool(int param, bool value);
 	void setVec3(int param, const glm::vec3& vect);
 	void setVec4(int param, const glm::vec4& vect);
 
@@ -51,13 +59,13 @@ public: //
 
 	void bind(int location, const char* attribName);
 
-	// Rendering:				
-	bool render(void* data = nullptr);
+	// Rendering:		
+	void render(glm::mat4 modelview = glm::mat4(1.0f)) override;
 
 
 	///////////	 
 private:	//
-	///////////					
+	///////////
 
 	   // Object kind:
 	int type;

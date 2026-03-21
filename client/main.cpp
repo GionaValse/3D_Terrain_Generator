@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <string>
 
 #include "engine.h"
 
@@ -70,26 +71,6 @@ int main(int argc, char* argv[])
 {
     unsigned int testSize = 512;
     float testResolution = 1.0f;
-    
-    Eng::Base& eng = Eng::Base::getInstance();
-    eng.init(&argc, argv, "Terrain Test");
-
-    Eng::Mesh* gridMesh = terrain::GridGenerator::generate(testSize, testResolution);
-    gridMesh->setMatrix(glm::mat4(1.0f));
-
-    glm::mat4 camera = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 8.0f, 15.0f));
-    Eng::PerspectiveCamera* perspectiveCamera = new Eng::PerspectiveCamera("mainCamera", camera);
-    perspectiveCamera->setCameraParams(45.0f, RATIO_16_9, 1.0f, 5000.0f);
-
-    Eng::Node* root = eng.getSceneGraphInstance();
-    root->addChild(gridMesh);
-    eng.setActiveCamera(perspectiveCamera);
-
-    mainCamera = perspectiveCamera;
-
-    eng.setOnKeyboardPressedCallback(onKeyboardPressedCallback);
-
-    eng.start(renderingLoop);
 
     terrain::TerrainConfig config;
 
@@ -114,9 +95,9 @@ int main(int argc, char* argv[])
     }
 
     std::cout << "\nGenerazione in corso con: Dimensione=" << config.size << "x" << config.size
-              << ", Frequenza=" << config.frequency
-              << ", Ottave=" << config.octaves
-              << ", Seed=" << config.seed << "...\n";
+        << ", Frequenza=" << config.frequency
+        << ", Ottave=" << config.octaves
+        << ", Seed=" << config.seed << "...\n";
 
     // inizializza generator
     terrain::TerrainGenerator generator(config);
@@ -125,7 +106,8 @@ int main(int argc, char* argv[])
     std::vector<float> image = generator.generate();
 
     // esportazione img in exr
-    if (!terrain::ImageExporter::saveEXR(image, config))
+    std::string textureName;
+    if (!terrain::ImageExporter::saveEXR(image, config, textureName))
     {
         std::cerr << "Operazione fallita.\n";
         return 1;
@@ -134,6 +116,46 @@ int main(int argc, char* argv[])
     std::cout << "\nOperazione completata.\n";
 
     std::cout << "\n--- TEST GENERAZIONE GRIGLIA ---\n";
+
+    // Shader
+    /*
+    Eng::Shader* vShader = new Eng::Shader();
+    Eng::Shader* fShader = new Eng::Shader();
+
+    vShader->loadFromFile(Eng::Shader::TYPE_VERTEX, "./shaders/terrain.vert");
+    fShader->loadFromFile(Eng::Shader::TYPE_FRAGMENT, "./shaders/terrain.frag");
+
+    Eng::Shader* shader = new Eng::Shader();
+    shader->build(vShader, fShader);
+    */
+    
+    Eng::Base& eng = Eng::Base::getInstance();
+    eng.init(&argc, argv, "Terrain Test");
+
+    // Preparing material and texture
+    Eng::Texture* heightMap = new Eng::Texture("TerrainHeightMap", textureName);
+    Eng::Material* material = new Eng::Material("TerrainMaterial");
+
+    material->setTexture(heightMap);
+
+    Eng::Mesh* gridMesh = terrain::GridGenerator::generate(testSize, testResolution);
+    gridMesh->setMatrix(glm::mat4(1.0f));
+
+    gridMesh->setMaterial(material);
+
+    glm::mat4 camera = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 8.0f, 15.0f));
+    Eng::PerspectiveCamera* perspectiveCamera = new Eng::PerspectiveCamera("mainCamera", camera);
+    perspectiveCamera->setCameraParams(45.0f, RATIO_16_9, 1.0f, 5000.0f);
+
+    Eng::Node* root = eng.getSceneGraphInstance();
+    root->addChild(gridMesh);
+    eng.setActiveCamera(perspectiveCamera);
+
+    mainCamera = perspectiveCamera;
+
+    eng.setOnKeyboardPressedCallback(onKeyboardPressedCallback);
+
+    eng.start(renderingLoop);
 
     /*
     std::cout << "Numero di vertici generati: " << vertices.size() << " (Attesi: 9)\n";

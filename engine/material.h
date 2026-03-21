@@ -19,6 +19,9 @@ class ENG_API Material : public Eng::Object
     /** @brief Pointer to the texture object applied to the surface. */
     Eng::Texture* texture;
 
+    /** @brief Pointer to the shader object applied on material */
+    Eng::Shader* shader;
+
     /** @brief The color component the material emits, regardless of scene lighting. */
     glm::vec4 emission;
 
@@ -33,6 +36,13 @@ class ENG_API Material : public Eng::Object
 
     /** @brief The exponent controlling the sharpness of specular highlights (controls reflection falloff). */
     float shininess;
+
+    int matEmissionLoc;
+    int matAmbientLoc;
+    int matDiffuseLoc;
+    int matSpecularLoc;
+    int matShininessLoc;
+    int hasTextureLoc;
 
 public:
     /**
@@ -58,6 +68,18 @@ public:
      * @param modelview This parameter is typically ignored, as material properties are independent of the modelview matrix.
      */
     virtual void render(glm::mat4 modelview = glm::mat4(1.0f)) override;
+
+    /**
+     * @brief Load parameter from shader
+     * @param shader Pointer to the current shader instance.
+    */
+    virtual void loadShaderParams(Eng::Shader* shader);
+
+    /**
+     * @brief Passes the mesh parameters to the active shader.
+     * @param shader Pointer to the current shader instance.
+     */
+    virtual void renderShader(Eng::Shader* shader);
 
     /////////////
     // Getters //
@@ -99,6 +121,12 @@ public:
      */
     Eng::Texture* getTexture() const;
 
+    /**
+     * @brief Gets the shader associated with the material.
+     * @return A pointer to the \c Eng::Shader object.
+     */
+    Eng::Shader* getShader() const;
+
     /////////////
     // Setters //
     /////////////
@@ -138,4 +166,10 @@ public:
      * @param texture_ A pointer to the \c Eng::Texture object.
      */
     void setTexture(Eng::Texture* texture_);
+
+    /**
+     * @brief Sets the shader associated with the material.
+     * @param shader_ A pointer to the \c Eng::Shader object.
+     */
+    void setShader(Eng::Shader* shader_);
 };

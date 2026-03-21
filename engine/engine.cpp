@@ -116,19 +116,13 @@ static void EngineReshapeCallback(int width, int height) {
     glViewport(0, 0, width, height);
     guiOrtho = glm::ortho(0.0f, (float)width, 0.0f, (float)height, -1.0f, 1.0f);
 
-    glMatrixMode(GL_PROJECTION);
-
     if (onEngineReshapeCallback) {
         onEngineReshapeCallback(width, height);
     }
 
     if (currentActiveCamera) {
         Eng::Base::getInstance().fixCameraViewport(currentActiveCamera, width, height);
-        //glLoadMatrixf(glm::value_ptr(currentActiveCamera->getProjectionMatrix()));
     }
-
-
-    glMatrixMode(GL_MODELVIEW);
 }
 
 static void EngineCloseCallback() {
@@ -256,21 +250,6 @@ void Eng::Base::printInitInfo() {
     std::cout << "   version  . . : " << glGetString(GL_VERSION) << std::endl;
     std::cout << "   vendor . . . : " << glGetString(GL_VENDOR) << std::endl;
     std::cout << "   renderer . . : " << glGetString(GL_RENDERER) << std::endl;
-
-    char* glExtentions = (char*)glGetString(GL_EXTENSIONS);
-
-    /*
-    if (strstr(glExtentions, "GL_EXT_bgra")) {
-        std::cout << "   GL_EXT_bgra supported!" << std::endl;
-    } else if (strstr(glExtentions, "GL_EXT_texture_filter_anisotropic")) {
-        std::cout << "   Anisotropic filtering supported" << std::endl;
-        // bool isAnisotropicSupported = true;
-        int anisotropicLevel = 0;
-        glGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &anisotropicLevel);
-        std::cout << "   Anisotropic filtering max. level: " << anisotropicLevel << std::endl;
-    } else {
-        std::cout << "   GL_EXT_bgra NOT supported!" << std::endl;
-    }*/
 }
 
 void Eng::Base::initEngine(int* argc, char* argv[], const char* winName, int width, int height) {
@@ -317,17 +296,9 @@ void Eng::Base::initEngine(int* argc, char* argv[], const char* winName, int wid
 #endif
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_NORMALIZE);
     glEnable(GL_CULL_FACE);
 
-    // light
-    glEnable(GL_LIGHTING);
-    glLightf(GL_LIGHT_MODEL_LOCAL_VIEWER, 1.0, 1.0);
-
-    glEnable(GL_LIGHT0);
-    //  (Qui potresti anche impostare glClearColor, ecc.)
-
-    // 6. IMPOSTAZIONE DEI CALLBACK
+    // 6. Callbacks setting
     glutDisplayFunc(EngineDisplayCallback);
     glutReshapeFunc(EngineReshapeCallback);
     glutKeyboardFunc(EngineKeyboardCallback);
@@ -350,7 +321,143 @@ void Eng::Base::initEngine(int* argc, char* argv[], const char* winName, int wid
     printInitInfo();
 
     // Initialize shaders (must be after GL context is ready)
-    reserved->sceneList->initShaders();
+    initShaders();
+}
+
+void Eng::Base::initShaders()
+{
+    Eng::Shader* vs = nullptr;
+    Eng::Shader* fs = nullptr;
+
+    const char* vertShader = R"(
+		    #version 440 core
+
+            // Uniforms:
+            uniform mat4 projection;
+            uniform mat4 modelview;
+            uniform mat3 normalMatrix;
+
+            // Attributes:
+            layout(location = 0) in vec3 in_Position;
+            layout(location = 1) in vec3 in_Normal;
+            layout(location = 2) in vec2 in_TexCoord;
+
+            // Varying:
+            out vec4 fragPosition;
+            out vec3 normal;
+            out vec2 texCoord;
+
+            void main(void)
+            {
+                fragPosition = modelview * vec4(in_Position, 1.0f);
+                gl_Position = projection * fragPosition;      
+                normal = normalMatrix * in_Normal;
+                texCoord = in_TexCoord;
+            }
+		)";
+
+    const char* fragShader = R"(
+			#version 440 core
+
+            in vec4 fragPosition;
+            in vec3 normal;
+            in vec2 texCoord;
+            out vec4 fragOutput;
+
+            // Material
+            uniform vec3 matEmission;
+            uniform vec3 matAmbient;
+            uniform vec3 matDiffuse;
+            uniform vec3 matSpecular;
+            uniform float matShininess;
+
+            // Lights (Corretti array e nomi)
+            uniform vec3 lightPosition[8];
+            uniform vec3 lightDirection[8];
+            uniform vec3 lightAmbient[8];
+            uniform vec3 lightDiffuse[8];
+            uniform vec3 lightSpecular[8];
+            // uniform vec3 lightAttenuation[8];
+            uniform int lightType[8]; // 0: Omni, 1: Directional, 2: Spot
+            uniform float spotCutoffCos[8];
+            uniform float spotExponent[8];
+            uniform int activeLightCount;
+
+            // Texture
+            layout(binding = 0) uniform sampler2D texSampler;
+            uniform bool hasTexture;
+
+            void main(void)
+            {
+                vec4 texel = hasTexture ? texture(texSampler, texCoord) : vec4(1.0);
+    
+                vec3 _normal = normalize(normal);
+                vec3 viewDir = normalize(-fragPosition.xyz);
+                vec3 totalLightColor = matEmission;
+
+                for (int i = 0; i < activeLightCount; i++)
+                {
+                    vec3 lightDir;
+                    float attenuation = 1.0f;
+
+                    if (lightType[i] == 1)
+                    {
+                        lightDir = normalize(-lightDirection[i]);
+                    }
+                    else
+                    {
+                        lightDir = normalize(lightPosition[i] - fragPosition.xyz);
+                        // attenuation = 1.0f / (lightAttenuation[i].x + lightAttenuation[i].y * lightDir + lightAttenuation[i].z * (lightDir * lightDir))
+                    }
+
+                    if (lightType[i] == 2)
+                    {
+                        float spotCos = dot(normalize(lightDirection[i]), -lightDir);
+                        if (spotCos < spotCutoffCos[i])
+                            attenuation = 0.0;
+                        else
+                            attenuation = pow(spotCos, spotExponent[i]);
+                    }
+
+                    if (lightType[i] == 0)
+                        attenuation = 3.0f;
+
+                    if (attenuation > 0.0)
+                    {
+                        vec3 ambient = matAmbient * lightAmbient[i];
+
+                        float nDotL = max(dot(_normal, lightDir), 0.0);
+                        vec3 diffuse = matDiffuse * nDotL * lightDiffuse[i];
+
+                        vec3 specular = vec3(0.0);
+                        if (nDotL > 0.0)
+                        {
+                            vec3 halfVector = normalize(lightDir + viewDir);
+                            float nDotHV = max(dot(_normal, halfVector), 0.0);
+                            specular = matSpecular * pow(nDotHV, matShininess) * lightSpecular[i];
+                        }
+
+                        totalLightColor += (ambient + diffuse + specular) * attenuation;
+                    }
+                }
+
+                fragOutput = texel * vec4(totalLightColor, 1.0);
+            }
+		)";
+
+    vs = new Shader();
+    vs->loadFromMemory(Shader::TYPE_VERTEX, vertShader);
+
+    fs = new Shader();
+    fs->loadFromMemory(Shader::TYPE_FRAGMENT, fragShader);
+
+    Shader* mainShader = new Shader();
+    mainShader->build(vs, fs);
+    mainShader->render();
+
+    mainShader->bind(0, "in_Position");
+    mainShader->bind(1, "in_Normal");
+    mainShader->bind(2, "in_TexCoord");
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -394,26 +501,18 @@ bool ENG_API Eng::Base::start(void (*callback)(Node* root)) {
         glClearColor(0.75f, 0.75f, 0.75f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glMatrixMode(GL_PROJECTION);
-        if (currentActiveCamera)
-            glLoadMatrixf(glm::value_ptr(currentActiveCamera->getProjectionMatrix()));
-        glMatrixMode(GL_MODELVIEW);
-
-        // Here you can render the scene...
+        // Rendering scene
         callback(reserved->rootNode);
 
         reserved->sceneList->pass(reserved->rootNode, glm::mat4(1.0f));
-
-        // Render
         reserved->sceneList->render();
-
         reserved->sceneList->clear();
 
         if (!runningFlag) {
             break;
         }
 
-        // GUI 2D objects:
+        // GUI 2D objects: Deprecated
         GUIObjects guiObjects;
 
         guiObjects.start(guiOrtho);
@@ -517,16 +616,6 @@ void Eng::Base::changeVsync(bool isVsync) {
     if (glutSwapInterval)
         glutSwapInterval(isVsync ? 1 : 0);
 #endif
-}
-
-
-
-bool Eng::Base::getShadowRender() const {
-    return shadowRender;
-}
-
-void Eng::Base::setShadowRender(bool shadowRender_) {
-    shadowRender = shadowRender_;
 }
 
 /////////////////////

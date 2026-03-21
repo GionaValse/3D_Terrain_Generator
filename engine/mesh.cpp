@@ -10,6 +10,9 @@
 // GLEW:
 #include <GL/glew.h>
 
+// GLM:
+#include <glm/gtc/matrix_inverse.hpp>
+
 namespace Eng
 {
 
@@ -20,7 +23,7 @@ namespace Eng
     Mesh::Mesh(const std::string& name, const glm::mat4& matrix,
         std::vector<glm::vec3> vertexes,
         std::vector<glm::uvec3> faces,
-        std::vector<glm::vec4> normals,
+        std::vector<glm::vec3> normals,
         std::vector<glm::vec2> textureCoordinates)
         : Node(name, matrix),
         vertexes{ vertexes },
@@ -28,7 +31,14 @@ namespace Eng
         normals{ normals },
         textureCoordinates{ textureCoordinates },
         buffersInitialized{ false },
-        material{ nullptr }
+        material{ nullptr },
+        vao(-1),
+        vboVertexes(-1),
+        vboFaces(-1),
+        vboNormals(-1),
+        vboTextureCoordinates(-1),
+        mvLoc(-1),
+        normalMatLoc(-1)
     {
     }
 
@@ -39,8 +49,6 @@ namespace Eng
 
     void Mesh::render(glm::mat4 modelview)
     {
-        //glLoadMatrixf(glm::value_ptr(modelview));
-      
         if (vertexes.empty())
             return;
 
@@ -50,10 +58,41 @@ namespace Eng
         if (material)
             material->render();
 
+        Eng::Shader* shader = Shader::getCurrentInstance();
+
+        if (shader)
+            this->renderShader(shader, modelview);
+
         // Rendering the mesh
 		glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, size(faces) * 3, GL_UNSIGNED_INT, nullptr);
 		glBindVertexArray(0);
+    }
+
+    void Mesh::loadShaderParams(Eng::Shader* shader)
+    {
+        if (!shader) 
+            return;
+
+        if (material)
+            material->loadShaderParams(shader);
+
+        mvLoc = shader->getParamLocation("modelview");
+        normalMatLoc = shader->getParamLocation("normalMatrix");
+    }
+
+    void Mesh::renderShader(Eng::Shader* shader, glm::mat4 modelview)
+    {
+        if (!shader)
+            return;
+
+        if (material)
+            material->renderShader(shader);
+
+        glm::mat3 normalMatrix = glm::inverseTranspose(glm::mat3(modelview));
+
+        shader->setMatrix(mvLoc, modelview);
+        shader->setMatrix3(normalMatLoc, normalMatrix);
     }
 
     void Mesh::setMaterial(Material* materialPtr)
@@ -84,8 +123,8 @@ namespace Eng
         {
 			glGenBuffers(1, &vboNormals);
 			glBindBuffer(GL_ARRAY_BUFFER, vboNormals);
-			glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec4), normals.data(), GL_STATIC_DRAW);
-			glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+			glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), normals.data(), GL_STATIC_DRAW);
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 			glEnableVertexAttribArray(1);
         }
 

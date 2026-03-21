@@ -93,10 +93,11 @@ namespace Eng
 
 #include "definitions.h"
 
-#include "shader.h"
 
 #include "object.h"
 #include "guiobjects.h"
+
+#include "shader.h"
 
 #include "node.h"
 #include "texture.h"
@@ -191,7 +192,7 @@ namespace Eng
 		bool shadowRender;
 		
 		// Engine loader:
-		/**
+        /**
 		 * @biref Give the current scene graph root node or create a new, then you can attach any node child.
 		 * @return A pointer to the root Node of the loaded scene graph.
 		 */
@@ -276,17 +277,9 @@ namespace Eng
 		void changeWireFrame(bool isWireFrame);
 
 		/**
-		 * @brief Accessor to get the current state of shadow rendering.
-		 * @return \c true if shadows are being rendered, \c false otherwise.
+		 * @brief Toggles the v-sync mode.
+		 * @param isVsync If \c true, v-sync is enabled; otherwise, is disabled (fps fixed).
 		 */
-		bool getShadowRender() const;
-
-		/**
-		 * @brief Setter to enable or disable shadow rendering.
-		 * @param shadowRender_ The new state for shadow rendering.
-		 */
-		void setShadowRender(bool shadowRender_);
-
 		void changeVsync(bool isVsync);
 
 	private:
@@ -326,6 +319,11 @@ namespace Eng
 		 * @private
 		 */
 		void initEngine(int *argc, char *argv[], const char *winName, int width = 1600, int height = 600);
+
+		/**
+		* @bried Initialize the engine shaders
+		*/
+		void initShaders();
 
 }; // end of class Base
 } // end of namespace Eng

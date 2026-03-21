@@ -14,7 +14,7 @@ void Eng::GUIObjects::start(glm::mat4 matrix)
 	drawingView = matrix;
 
 	// Set projection:
-	glMatrixMode(GL_PROJECTION);
+	/*glMatrixMode(GL_PROJECTION);
 	glLoadMatrixf(glm::value_ptr(matrix));
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(glm::value_ptr(glm::mat4(1.0f)));
@@ -26,28 +26,28 @@ void Eng::GUIObjects::start(glm::mat4 matrix)
 	glDisable(GL_LIGHTING);
 
 	// Disable z buffer:
-	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_DEPTH_TEST);*/
 }
 
 void Eng::GUIObjects::stop()
 {
 	// Enable z buffer:
-	glEnable(GL_DEPTH_TEST);
+	/*glEnable(GL_DEPTH_TEST);
 
 	// Enable light:
-	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHTING);*/
 }
 
 void Eng::GUIObjects::drawText(glm::vec2 pos, const unsigned char *text, glm::vec4 color)
 {
-	glColor4f(color.r, color.g, color.b, color.a);
+	/*glColor4f(color.r, color.g, color.b, color.a);
 	glRasterPos2f(pos.x, pos.y);
-	glutBitmapString(GLUT_BITMAP_8_BY_13, text);
+	glutBitmapString(GLUT_BITMAP_8_BY_13, text);*/
 }
 
 void Eng::GUIObjects::drawRect(glm::vec2 pos, float width, float height, const glm::vec4 color)
 {
-	glColor4f(color.r, color.g, color.b, color.a);
+	/*glColor4f(color.r, color.g, color.b, color.a);
 
 	glBegin(GL_TRIANGLE_STRIP);
 
@@ -56,7 +56,7 @@ void Eng::GUIObjects::drawRect(glm::vec2 pos, float width, float height, const g
 	glVertex2f(pos.x + width, pos.y);		   // TOP    - RIGHT
 	glVertex2f(pos.x + width, pos.y - height); // BOTTOM - RIGHT
 
-	glEnd();
+	glEnd();*/
 }
 
 int Eng::GUIObjects::getWidth()

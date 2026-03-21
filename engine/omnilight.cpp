@@ -7,37 +7,43 @@
 
 #include "engine.h"
 
-// Freeglut:
+ // Freeglut:
 #include <GL/freeglut.h>
 
 namespace Eng
 {
 
-    /////////////////////
-    // OmniLight CLASS //
-    /////////////////////
+	/////////////////////
+	// OmniLight CLASS //
+	/////////////////////
 
-    OmniLight::OmniLight(std::string name, glm::mat4 matrix)
-        : Light(name, matrix), cutoff(180.0f)
-    {
-    }
+	OmniLight::OmniLight(std::string name, glm::mat4 matrix)
+		: Light(name, matrix),
+		lightTypeLoc(-1)
+	{}
 
-    OmniLight::~OmniLight()
-    {
-    }
+	OmniLight::~OmniLight()
+	{}
 
-    void OmniLight::render(glm::mat4 modelview)
-    {
+	void OmniLight::loadShaderParams(Eng::Shader* shader)
+	{
+		if (!shader)
+			return;
 
-        glm::vec4 position(0, 0, 0, 1.0f);
-        Light::render(modelview);
+		Light::loadShaderParams(shader);
 
-        glm::vec4 emission(1.0f, 1.0f, 1.0f, 1.0f);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, glm::value_ptr(emission));
-        glutSolidSphere(12, 32, 32);
+		std::string prefix = "[" + std::to_string(getLightID()) + "]";
+		lightTypeLoc = shader->getParamLocation(("lightType" + prefix).c_str());
+	}
 
-        glLightfv(GL_LIGHT0 + getLightID(), GL_POSITION, glm::value_ptr(position));
-        glLightfv(GL_LIGHT0 + getLightID(), GL_SPOT_CUTOFF, &cutoff);
-    }
+	void OmniLight::renderShader(Eng::Shader* shader, glm::mat4 modelview)
+	{
+		if (!shader)
+			return;
+
+		Light::renderShader(shader, modelview);
+
+		shader->setInt(lightTypeLoc, 0);
+	}
 
 }; // end of namespace Eng::

@@ -32,39 +32,14 @@ private:
 
     /** @brief The general list of all scene objects considered for processing. */
     std::list<Instance> list;
-    /** @brief A sub-list containing only light sources for easy access during shading. */
-    std::list<Instance> lightList;
-    /** @brief A sub-list containing only renderable meshes. */
-    std::list<Instance> meshList;
 
     /** @brief A pointer to the currently active camera, needed for culling and view-dependent rendering. */
     Eng::Camera* camera;
 
-    /**
-     * @brief Creates a shadow projection matrix based on a light position and a planar surface.
-     *
-     * This is typically used for stencil buffer projection shadows (shadow volumes). 
-     * @param lightPos The position of the light source in world space (homogeneous coordinates).
-     * @param planeEquation The coefficients ($A, B, C, D$) of the plane onto which the shadow is cast.
-     * @return The \c glm::mat4 shadow projection matrix.
-     */
-    glm::mat4 createShadowMatrix(const glm::vec4& lightPos, const glm::vec4& planeEquation);
-    
-    /**
-     * @brief Renders shadows onto a specified plane using the calculated shadow matrices.
-     *
-     * This method iterates through the \c meshList and applies the shadow projection.
-     * @param planeEquation The coefficients of the plane where shadows should be drawn.
-     */
-    void renderShadows(const glm::vec4& planeEquation);
-
     // Shaders
-    Eng::Shader* mainShader = nullptr;
-    int projLoc = -1;
-    int mvLoc = -1;
+    int projLoc;
 
 public:
-    void initShaders();
     /**
      * @brief Constructor for the List class.
      * @param name The name of the object list.

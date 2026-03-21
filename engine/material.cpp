@@ -7,113 +7,145 @@
 
 #include "engine.h"
 
-// FreeGlut:
+ // FreeGlut:
 #include <GL/freeglut.h>
 
 namespace Eng
 {
 
-    ////////////////
-    // Material CLASS //
-    ////////////////
+	////////////////////
+	// Material CLASS //
+	////////////////////
 
-    Material::Material(std::string name, glm::vec4 emission, glm::vec4 ambient, glm::vec4 diffuse, glm ::vec4 specular, float shiness)
-        : Object(name),
-          emission(emission),
-          ambient(ambient),
-          diffuse(diffuse),
-          specular(specular),
-          shininess(shiness),
-          texture(nullptr)
-    {
-    }
+	Material::Material(std::string name, glm::vec4 emission, glm::vec4 ambient, glm::vec4 diffuse, glm::vec4 specular, float shiness)
+		: Object(name),
+		emission(emission),
+		ambient(ambient),
+		diffuse(diffuse),
+		specular(specular),
+		shininess(shiness),
+		texture(nullptr),
+		shader(nullptr),
+		matEmissionLoc(-1),
+		matAmbientLoc(-1),
+		matDiffuseLoc(-1),
+		matSpecularLoc(-1),
+		matShininessLoc(-1),
+		hasTextureLoc(-1)
+	{}
 
-    Material::~Material()
-    {
-        delete texture;
-    }
+	Material::~Material()
+	{
+		delete texture;
+	}
 
-    void Material::render(glm::mat4 modelview)
-    {
-        if (texture)
-        {
-            if (!Eng::Base::getInstance().getShadowRender())
-            {
-                glEnable(GL_TEXTURE_2D);
-            }
-            texture->render(modelview);
-        }
-        else
-        {
-            glDisable(GL_TEXTURE_2D);
-        }
+	void Material::render(glm::mat4 modelview)
+	{
+		if (shader)
+			shader->render();
 
-        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, glm::value_ptr(emission));
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, glm::value_ptr(ambient));
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, glm::value_ptr(diffuse));
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, glm::value_ptr(specular));
+		Shader* shader = Shader::getCurrentInstance();
 
-        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
-    }
+		if (texture)
+			texture->render(modelview);
+	}
 
-    glm::vec4 Material::getEmission() const
-    {
-        return emission;
-    }
+	void Material::loadShaderParams(Eng::Shader* shader)
+	{
+		if (!shader)
+			return;
 
-    glm::vec4 Material::getAmbient() const
-    {
-        return ambient;
-    }
+		matEmissionLoc = shader->getParamLocation("matEmission");
+		matAmbientLoc = shader->getParamLocation("matAmbient");
+		matDiffuseLoc = shader->getParamLocation("matDiffuse");
+		matSpecularLoc = shader->getParamLocation("matSpecular");
+		matShininessLoc = shader->getParamLocation("matShininess");
+		hasTextureLoc = shader->getParamLocation("hasTexture");
 
-    glm::vec4 Material::getDiffuse() const
-    {
-        return diffuse;
-    }
+	}
 
-    glm::vec4 Material::getSpecular() const
-    {
-        return specular;
-    }
+	void Material::renderShader(Eng::Shader* shader)
+	{
+		if (!shader)
+			return;
 
-    float Material::getShininess() const
-    {
-        return shininess;
-    }
+		shader->setVec3(matEmissionLoc, emission);
+		shader->setVec3(matAmbientLoc, ambient);
+		shader->setVec3(matDiffuseLoc, diffuse);
+		shader->setVec3(matSpecularLoc, specular);
+		shader->setFloat(matShininessLoc, shininess);
+		shader->setBool(hasTextureLoc, texture);
 
-    Eng::Texture* Material::getTexture() const
-    {
-        return texture;
-    }
+	}
 
-    void Material::setEmission(const glm::vec4& emission_)
-    {
-        emission = emission_;
-    }
+	glm::vec4 Material::getEmission() const
+	{
+		return emission;
+	}
 
-    void Material::setAmbient(const glm::vec4& ambient_)
-    {
-        ambient = ambient_;
-    }
+	glm::vec4 Material::getAmbient() const
+	{
+		return ambient;
+	}
 
-    void Material::setDiffuse(const glm::vec4& diffuse_)
-    {
-        diffuse = diffuse_;
-    }
+	glm::vec4 Material::getDiffuse() const
+	{
+		return diffuse;
+	}
 
-    void Material::setSpecular(const glm::vec4& specular_)
-    {
-        specular = specular_;
-    }
+	glm::vec4 Material::getSpecular() const
+	{
+		return specular;
+	}
 
-    void Material::setShininess(float shininess_)
-    {
-        shininess = shininess_;
-    }
+	float Material::getShininess() const
+	{
+		return shininess;
+	}
 
-    void Material::setTexture(Eng::Texture* texture_)
-    {
-        texture = texture_;
-    }
+	Eng::Texture* Material::getTexture() const
+	{
+		return texture;
+	}
+
+	Eng::Shader* Material::getShader() const
+	{
+		return shader;
+	}
+
+	void Material::setEmission(const glm::vec4& emission_)
+	{
+		emission = emission_;
+	}
+
+	void Material::setAmbient(const glm::vec4& ambient_)
+	{
+		ambient = ambient_;
+	}
+
+	void Material::setDiffuse(const glm::vec4& diffuse_)
+	{
+		diffuse = diffuse_;
+	}
+
+	void Material::setSpecular(const glm::vec4& specular_)
+	{
+		specular = specular_;
+	}
+
+	void Material::setShininess(float shininess_)
+	{
+		shininess = shininess_;
+	}
+
+	void Material::setTexture(Eng::Texture* texture_)
+	{
+		texture = texture_;
+	}
+
+	void Material::setShader(Eng::Shader* shader_)
+	{
+		shader = shader_;
+	}
 
 }; // end of namespace Eng::

@@ -26,11 +26,16 @@
 namespace Eng 
 {
 
+	static Shader* currentInstance;
+	static bool isShaderChanged;
+
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * Constructor.
 	 */
-	Shader::Shader() : type(TYPE_UNDEFINED),
+	Shader::Shader(const std::string& name)
+		: Object(name),
+		type(TYPE_UNDEFINED),
 		glId(0)
 	{
 	}
@@ -56,6 +61,22 @@ namespace Eng
 			}
 	}
 
+	Shader* Shader::getCurrentInstance()
+	{
+		return currentInstance;
+	}
+
+	bool Shader::getIsShaderChanged()
+	{
+		return isShaderChanged;
+	}
+
+	bool Shader::shaderChangeReaded()
+	{
+		bool current = isShaderChanged;
+		isShaderChanged = false;
+		return current;
+	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/**
@@ -84,6 +105,11 @@ namespace Eng
 		glUniformMatrix4fv(param, 1, GL_FALSE, glm::value_ptr(mat));
 	}
 
+	void Shader::setMatrix3(int param, const glm::mat3& mat)
+	{
+		glUniformMatrix3fv(param, 1, GL_FALSE, glm::value_ptr(mat));
+	}
+
 	void Shader::setFloat(int param, float value)
 	{
 		glUniform1f(param, value);
@@ -92,6 +118,11 @@ namespace Eng
 	void Shader::setInt(int param, int value)
 	{
 		glUniform1i(param, value);
+	}
+
+	void Shader::setBool(int param, bool value)
+	{
+		setInt(param, (int)value);
 	}
 
 	void Shader::setVec3(int param, const glm::vec3& vect)
@@ -326,19 +357,24 @@ namespace Eng
 	 * @param data generic pointer to optional custom data
 	 * @return true on success, false on failure
 	 */
-	bool Shader::render(void* data)
+	void Shader::render(glm::mat4 modelview)
 	{
+		// Check if is the current active instance
+		if (currentInstance == this) 
+			return;
+
 		// Activate shader:
 		if (glId)
 			glUseProgram(glId);
 		else
 		{
 			std::cout << "[ERROR] Invalid shader rendered" << std::endl;
-			return false;
+			return;
 		}
 
 		// Done:
-		return true;
+		currentInstance = this;
+		isShaderChanged = true;
 	}
 
 }

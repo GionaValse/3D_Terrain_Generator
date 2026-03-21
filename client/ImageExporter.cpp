@@ -10,7 +10,12 @@ namespace fs = std::filesystem;
 
 namespace terrain {
 
-bool ImageExporter::saveEXR(const std::vector<float>& image, const TerrainConfig& config, const std::string& outputDir) {
+bool ImageExporter::saveEXR(
+    const std::vector<float>& image,
+    const TerrainConfig& config,
+    std::string& fileName,
+    const std::string& outputDir
+) {
     if (!fs::exists(outputDir)) {
         fs::create_directories(outputDir);
         std::cout << "Cartella '" << outputDir << "' creata con successo.\n";
@@ -32,6 +37,7 @@ bool ImageExporter::saveEXR(const std::vector<float>& image, const TerrainConfig
         return false;
     }
 
+    fileName = filename;
     std::cout << "Immagine salvata con successo in: " << filename << "\n";
     return true;
 }

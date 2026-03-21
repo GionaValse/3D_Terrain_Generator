@@ -22,7 +22,7 @@ private:
     /** @brief Vector containing the indices that define the faces (triangles) of the mesh (e.g., triplets of vertex indices). */
     std::vector<glm::uvec3> faces;
     /** @brief Vector containing the 4D normal vectors (often w=0 or w=1 for homogeneous coordinates) for each vertex, used for lighting calculations. */
-    std::vector<glm::vec4> normals;
+    std::vector<glm::vec3> normals;
     /** @brief Vector containing the 2D texture coordinates (UVs) for each vertex, used to map textures onto the mesh. */
     std::vector<glm::vec2> textureCoordinates;
 
@@ -50,6 +50,9 @@ private:
 	/** @brief Deletes OpenGL buffers to free GPU resources when the mesh is destroyed. */
 	void deleteBuffers();
 
+    int mvLoc;
+    int normalMatLoc;
+
 public:
     /**
      * @brief Constructor for the Mesh class.
@@ -65,7 +68,7 @@ public:
     Mesh(const std::string& name = "", const glm::mat4& matrix = glm::mat4(1.0f),
         std::vector<glm::vec3> vertexes = std::vector<glm::vec3>(),
         std::vector<glm::uvec3> faces = std::vector<glm::uvec3>(),
-        std::vector<glm::vec4> normals = std::vector<glm::vec4>(),
+        std::vector<glm::vec3> normals = std::vector<glm::vec3>(),
         std::vector<glm::vec2> textureCoordinates = std::vector<glm::vec2>()
     );
 
@@ -79,6 +82,19 @@ public:
      * @param modelview The combined Model-View matrix accumulated from the scene graph.
      */
     void render(glm::mat4 modelview = glm::mat4(1.0f)) override;
+
+    /**
+     * @brief Load parameter from shader
+     * @param shader Pointer to the current shader instance.
+    */
+    virtual void loadShaderParams(Eng::Shader* shader);
+
+    /**
+     * @brief Passes the mesh parameters to the active shader.
+     * @param shader Pointer to the current shader instance.
+     * @param modelview The current Model-View matrix to transform mesh coordinates into Eye Space
+     */
+    virtual void renderShader(Eng::Shader* shader, glm::mat4 modelview);
 
     /**
      * @brief Sets the material that controls the appearance of the mesh.

@@ -7,54 +7,98 @@
 
 #include "engine.h"
 
-// Freeglut:
+ // Freeglut:
 #include <GL/freeglut.h>
 
 namespace Eng
 {
 
-    //////////////////
-    // SpotLight CLASS //
-    //////////////////
+	//////////////////
+	// SpotLight CLASS //
+	//////////////////
 
-    SpotLight::SpotLight(std::string name, glm::mat4 matrix, float cutoff)
-        : Eng::Light(name, matrix)
-    {
-        setCutoff(cutoff);
-    }
+	SpotLight::SpotLight(
+		std::string name,
+		glm::mat4 matrix,
+		glm::vec3 direction,
+		float cutoff,
+		float influenceRadius
+	)
+		: Eng::Light(name, matrix),
+		direction(direction),
+		influenceRadius(influenceRadius),
+		lightTypeLoc(-1),
+		spotCutoffCosLoc(-1),
+		spotExponentLoc(-1),
+		lightDirectionLoc(-1)
+	{
+		setCutoff(cutoff);
+	}
 
-    SpotLight::~SpotLight()
-    {
-    }
+	SpotLight::~SpotLight()
+	{}
 
-    void SpotLight::render(glm::mat4 modelview)
-    {
-        Light::render(modelview);
+	void SpotLight::loadShaderParams(Eng::Shader* shader)
+	{
+		if (!shader)
+			return;
 
-        glm::mat4 r = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		Light::loadShaderParams(shader);
 
-        glm::vec4 position(0, 0, 0, 1.0f);
-        glm::vec3 direction(0, -1, 0);
+		std::string prefix = "[" + std::to_string(getLightID()) + "]";
 
-        glLightfv(GL_LIGHT0 + getLightID(), GL_POSITION, glm::value_ptr(position));
-        glLightfv(GL_LIGHT0 + getLightID(), GL_SPOT_CUTOFF, &cutoff);
-        glLightfv(GL_LIGHT0 + getLightID(), GL_SPOT_DIRECTION, glm::value_ptr(direction));
+		lightTypeLoc = shader->getParamLocation(("lightType" + prefix).c_str());
+		spotCutoffCosLoc = shader->getParamLocation(("spotCutoffCos" + prefix).c_str());
+		spotExponentLoc = shader->getParamLocation(("spotExponent" + prefix).c_str());
+		lightDirectionLoc = shader->getParamLocation(("lightDirection" + prefix).c_str());
+	}
 
-        glLoadMatrixf(glm::value_ptr(modelview * r));
-        glm::vec4 emission(0.3f, 0.0f, 0.0f, 1.0f);
+	void SpotLight::renderShader(Eng::Shader* shader, glm::mat4 modelview)
+	{
+		if (!shader)
+			return;
 
-        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, glm::value_ptr(emission));
-        // glutSolidCone(50, 70, 200, 200);
-    }
+		Light::renderShader(shader, modelview);
 
-    float SpotLight::getCutoff() const
-    {
-        return cutoff;
-    }
+		glm::vec3 eyeSpaceDirection = glm::vec3(modelview * glm::vec4(direction, 0.0f));
+		glm::vec3 normalizedDirection = glm::normalize(eyeSpaceDirection);
 
-    void SpotLight::setCutoff(float cutoff_)
-    {
-        cutoff = (cutoff_ < 0 || cutoff_ > 90) ? 0 : cutoff_;
-    }
+		float cutoffCos = glm::cos(glm::radians(cutoff));
+
+		shader->setInt(lightTypeLoc, 2);
+		shader->setFloat(spotCutoffCosLoc, cutoffCos);
+		shader->setFloat(spotExponentLoc, influenceRadius);
+		shader->setVec3(lightDirectionLoc, normalizedDirection);
+	}
+
+	float SpotLight::getCutoff() const
+	{
+		return cutoff;
+	}
+
+	float SpotLight::getInfluenceRadius() const
+	{
+		return influenceRadius;
+	}
+
+	glm::vec3 SpotLight::getDirection() const
+	{
+		return direction;
+	}
+
+	void SpotLight::setCutoff(float cutoff_)
+	{
+		cutoff = (cutoff_ < 0 || cutoff_ > 90) ? 0 : cutoff_;
+	}
+
+	void SpotLight::setInfluenceRadius(float radius)
+	{
+		influenceRadius = radius;
+	}
+
+	void SpotLight::setDirection(glm::vec3 dir)
+	{
+		direction = dir;
+	}
 
 }; // end of namespace Eng::

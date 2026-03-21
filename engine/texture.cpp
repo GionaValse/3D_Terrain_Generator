@@ -9,6 +9,8 @@
 
 #include <iostream>
 
+#include <GL/glew.h>
+
 // FreeGlut
 #include <GL/freeglut.h>
 
@@ -65,5 +67,6 @@ namespace Eng
         int height = FreeImage_GetHeight(bitmap);
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, (void *)FreeImage_GetBits(bitmap));
+        glGenerateMipmap(GL_TEXTURE_2D);
     }
 }; // end of namespace Eng::

@@ -41,8 +41,8 @@ class ENG_API Node : public Eng::Object {
     /** @brief List of steps remaining for each matrix in m_stepMatrix. */
     std::vector<int> m_steps;
 
-    float speed = 60.0f;
-    int speed_counter = 0;
+    float speed;
+    int speed_counter;
 
     /**
      * @brief An optional anchor point reference, likely used for complex movement or relative positioning.

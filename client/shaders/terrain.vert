@@ -11,12 +11,12 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-uniform sampler2D heightMap;
+layout (binding = 0) uniform sampler2D heightMap;
 uniform float heightScale;
-uniform float texelSize; // 1.0 / risoluzione_texture (es. 1.0/1024.0)
 
 void main() {
     // 1. Lettura altezza attuale
+    float texelSize = 1.0 / float(textureSize(heightMap, 0).x);
     float h = texture(heightMap, aTexCoord).r * heightScale;
     
     // 2. Calcolo Normali via Central Differencing

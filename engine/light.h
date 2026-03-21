@@ -38,6 +38,16 @@ class ENG_API Light : public Eng::Node
     /** @brief The light source's position in homogeneous coordinates (\c x, \c y, \c z, \c w). W=1 for point lights, W=0 for directional lights. */
     glm::vec4 position;
 
+    /** @brief Pointer to the shader object applied on light */
+    Eng::Shader* shader;
+
+    int lightPositionLoc;
+    int lightAmbientLoc;
+    int lightDiffuseLoc;
+    int lightSpecularLoc;
+    // int lightAttenuationLoc;
+    int lightActiveLoc;
+
 public:
     /**
      * @brief Constructor for the Light base class.
@@ -57,6 +67,19 @@ public:
      * @param modelview The accumulated Model-View matrix, used to transform the light's position into view space.
      */
     void render(glm::mat4 modelview = glm::mat4(1.0f)) override;
+
+    /**
+     * @brief Load parameter from shader
+     * @param shader Pointer to the current shader instance.
+    */
+    virtual void loadShaderParams(Eng::Shader* shader);
+
+    /**
+     * @brief Passes the light parameters (position, ambient, diffuse, spcular, attenuation and active lights count) to the active shader.
+     * @param shader Pointer to the current shader instance.
+     * @param modelview The current Model-View matrix to transform light coordinates into Eye Space.
+     */
+    virtual void renderShader(Eng::Shader* shader, glm::mat4 modelview);
 
     /////////////
     // Getters //
@@ -85,6 +108,18 @@ public:
      * @return The \c glm::vec4 specular color.
      */
     glm::vec4 getSpecular();
+
+    /**
+     * @brief Retrieves the current light position component.
+     * @return The \c glm::vec4 position.
+     */
+    glm::vec4 getPosition();
+
+    /**
+     * @brief Gets the shader associated with the light.
+     * @return A pointer to the \c Eng::Shader object.
+     */
+    Eng::Shader* getShader() const;
 
     /////////////
     // Setters //
@@ -115,4 +150,16 @@ public:
      * @param quadratic The quadratic attenuation factor (default 0).
      */
     void setAttenuaton(float constant = 1, float linear = 0, float quadratic = 0);
+
+    /**
+     * @brief Sets the position component of the light.
+     * @param p The new \c glm::vec4 position (default is (0.0f, 0.0f, 0.0f, 0.0f)).
+     */
+    void setPosition(glm::vec4 p = glm::vec4(0.0f));
+
+    /**
+     * @brief Sets the shader associated with the light.
+     * @param shader_ A pointer to the \c Eng::Shader object.
+     */
+    void setShader(Eng::Shader* shader_);
 };

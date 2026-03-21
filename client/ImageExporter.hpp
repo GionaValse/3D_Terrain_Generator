@@ -9,7 +9,12 @@ namespace terrain
     class ImageExporter
     {
     public:
-        static bool saveEXR(const std::vector<float> &image, const TerrainConfig &config, const std::string &outputDir = "bin/noises");
+        static bool saveEXR(
+            const std::vector<float> &image, 
+            const TerrainConfig &config, 
+            std::string &fileName,
+            const std::string &outputDir = "bin/noises"
+        );
     };
 
 }

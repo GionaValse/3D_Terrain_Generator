@@ -12,7 +12,7 @@ namespace terrain {
         static Eng::Mesh* generate(unsigned int size, float resolution = 1.0f) {
             std::vector<glm::vec3> vertexes;
             std::vector<glm::uvec3> faces;
-            std::vector<glm::vec4> normals;
+            std::vector<glm::vec3> normals;
             std::vector<glm::vec2> textureCoordinates;
 
             int segments = static_cast<int>(size / resolution);

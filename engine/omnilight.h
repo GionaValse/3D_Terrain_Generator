@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "shader.h"
 
  /**
   * @brief Implements an omnidirectional (point) light source.
@@ -17,12 +18,7 @@
 class ENG_API OmniLight : public Eng::Light
 {
 private:
-    /**
-     * @brief Cutoff value. Typically unused or set to 180 degrees for a true omnidirectional light source.
-     * @note This member might be extraneous for an OmniLight, but is kept for consistency with the light base model.
-     */
-    float cutoff;
-
+    int lightTypeLoc;
 public:
     /**
      * @brief Constructor for the OmniLight.
@@ -35,8 +31,15 @@ public:
     virtual ~OmniLight();
 
     /**
-     * @brief Enables the light and sets its position and properties in the rendering pipeline.
-     * @param modelview The accumulated Model-View matrix, used to transform the light's position into view space.
+     * @brief Load parameter from shader
+     * @param shader Pointer to the current shader instance.
+    */
+    void loadShaderParams(Eng::Shader* shader) override;
+
+    /**
+     * @brief Passes the omnilight parameters (position) to the active shader.
+     * @param shader Pointer to the current shader instance.
+     * @param modelview The current Model-View matrix to transform light coordinates into Eye Space.
      */
-    void render(glm::mat4 modelview = glm::mat4(1.0f)) override;
+    void renderShader(Eng::Shader* shader, glm::mat4 modelview) override;
 };

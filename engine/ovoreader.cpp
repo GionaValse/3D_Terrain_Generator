@@ -367,14 +367,14 @@ Eng::Node* Eng::OvoReader::processLightChunk(char* data, unsigned int& size, cha
 	}
 	else if ((LightSubtype)lightSubtype == LightSubtype::DIRECTIONAL)
 	{
-		light = new Eng::InfiniteLight(std::string(name), matrix);
+		light = new Eng::InfiniteLight(std::string(name), matrix, direction);
 #if defined(DEBUG) || defined(_DEBUG)
 		std::cout << "Created InfiniteLight: " << name << std::endl;
 #endif
 	}
 	else if ((LightSubtype)lightSubtype == LightSubtype::SPOT)
 	{
-		light = new Eng::SpotLight(std::string(name), matrix, cutoffAngle);
+		light = new Eng::SpotLight(std::string(name), matrix, direction, cutoffAngle, influenceRadius);
 #if defined(DEBUG) || defined(_DEBUG)
 		std::cout << "Created SpotLight: " << name << "; cutoff: " << cutoffAngle << std::endl;
 #endif
@@ -422,7 +422,7 @@ Eng::Node* Eng::OvoReader::processMeshChunk(char* data, unsigned int& size, char
 	// Read LODs data: vertex
 	std::vector<glm::vec3> meshVertexList;
 	std::vector<glm::uvec3> meshFaceList;
-	std::vector<glm::vec4> meshNormalList;
+	std::vector<glm::vec3> meshNormalList;
 	std::vector<glm::vec2> meshTextureCoordList;
 
 	unsigned int numberOfVertexes;
@@ -451,6 +451,7 @@ Eng::Node* Eng::OvoReader::processMeshChunk(char* data, unsigned int& size, char
 		unsigned int normalData;
 		memcpy(&normalData, data + size, sizeof(unsigned int));
 		size += sizeof(unsigned int);
+		// Return only (x, y, z)
 		meshNormalList.push_back(glm::unpackSnorm3x10_1x2(normalData));
 
 		// Texture coordinates
