@@ -64,6 +64,8 @@ void (*onEngineReshapeCallback)(int width, int height);
 void (*onEngineSpecialCallback)(int key, int mouseX, int mouseY);
 void (*onEngineKeyboardCallback)(unsigned char key, int mouseX, int mouseY);
 void (*onEngineMouseCallback)(int buttonId, int buttonState, int mouseX, int mouseY);
+void (*onEngineMouseMotionCallback)(int x, int y);
+void (*onEnginePassiveMouseMotionCallback)(int x, int y);
 void (*onEngineIdleCallback)();
 void (*onEngineCloseCallback)();
 void (*onEngineDrawTextCallback)(Eng::GUIObjects gui);
@@ -97,6 +99,24 @@ static void EngineKeyboardCallback(unsigned char key, int mouseX, int mouseY) {
 static void EngineMouseCallback(int buttonId, int buttonState, int mouseX, int mouseY) {
     if (onEngineMouseCallback) {
         onEngineMouseCallback(buttonId, buttonState, mouseX, mouseY);
+
+        // Force rendering refresh:
+        glutPostWindowRedisplay(id);
+    }
+}
+
+static void EngineMouseMotionCallback(int x, int y) {
+    if (onEngineMouseMotionCallback) {
+        onEngineMouseMotionCallback(x, y);
+
+        // Force rendering refresh:
+        glutPostWindowRedisplay(id);
+    }
+}
+
+static void EnginePassiveMouseMotionCallback(int x, int y) {
+    if (onEnginePassiveMouseMotionCallback) {
+        onEnginePassiveMouseMotionCallback(x, y);
 
         // Force rendering refresh:
         glutPostWindowRedisplay(id);
@@ -303,6 +323,8 @@ void Eng::Base::initEngine(int* argc, char* argv[], const char* winName, int wid
     glutReshapeFunc(EngineReshapeCallback);
     glutKeyboardFunc(EngineKeyboardCallback);
     glutMouseFunc(EngineMouseCallback);
+    glutMotionFunc(EngineMouseMotionCallback);
+    glutPassiveMotionFunc(EnginePassiveMouseMotionCallback);
     glutSpecialFunc(EngineSpecialCallback);
     glutCloseFunc(EngineCloseCallback);
     glutIdleFunc(EngineIdleCallback);
@@ -636,6 +658,14 @@ void Eng::Base::setOnKeyboardPressedCallback(void (*callback)(unsigned char key,
 
 void Eng::Base::setOnMouseCallback(void (*callback)(int buttonId, int buttonState, int mouseX, int mouseY)) {
     onEngineMouseCallback = callback;
+}
+
+void Eng::Base::setOnMouseMotionCallback(void(*callback)(int x, int y)) {
+    onEngineMouseMotionCallback = callback;
+}
+
+void Eng::Base::setOnPassiveMouseMotionCallback(void(*callback)(int x, int y)) {
+    onEnginePassiveMouseMotionCallback = callback;
 }
 
 void Eng::Base::setOnIdleCallback(void (*callback)()) {

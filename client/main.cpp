@@ -72,6 +72,28 @@ static void renderingLoop(Eng::Node* root)
 
 static void renderingImGui(Eng::GUIObjects obj)
 {
+    /* ----- MAIN MENU (Top bar) ----- */
+
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("Nuovo", "Ctrl+N")) { /* Logica */ }
+            if (ImGui::MenuItem("Salva EXR", "Ctrl+S")) { /* Logica */ }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Esci", "Alt+F4")) { /* Logica */ }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Modifica"))
+        {
+            if (ImGui::MenuItem("Reset Camera")) { /* Logica */ }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+
+    /* ----- WINDOWS ----- */
+
     if (g_SetupWin) g_SetupWin->render();
     if (g_EditViewWin) g_EditViewWin->render();
 
@@ -174,6 +196,14 @@ static void onMouseCallback(int buttonId, int buttonState, int mouseX, int mouse
     }
 }
 
+static void onMouseMotionCallback(int x, int y) {
+    ImGui_ImplGLUT_MotionFunc(x, y);
+}
+
+static void onPassiveMouseMotionCallback(int x, int y) {
+    ImGui_ImplGLUT_MotionFunc(x, y);
+}
+
 //////////
 // Main //
 //////////
@@ -249,6 +279,8 @@ int main(int argc, char* argv[])
     eng.setOnSpecialPressedCallback(onSpecialKeyCallback);
     eng.setOnKeyboardPressedCallback(onKeyboardPressedCallback);
     eng.setOnMouseCallback(onMouseCallback);
+    eng.setOnMouseMotionCallback(onMouseMotionCallback);
+    eng.setOnPassiveMouseMotionCallback(onPassiveMouseMotionCallback);
     eng.setOnTextDrawCallback(renderingImGui);
 
     eng.start(renderingLoop);

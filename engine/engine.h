@@ -253,6 +253,18 @@ namespace Eng
 		void setOnMouseCallback(void (*callback)(int buttonId, int buttonState, int mouseX, int mouseY));
 
 		/**
+		 * @brief Sets the callback function executed when a mouse motion event occurs (button press and mouse move).
+		 * @param callback The function pointer: \c void \c (*)(int \c int \c x, \c int \c y).
+		 */
+		void setOnMouseMotionCallback(void (*callback)(int x, int y));
+
+		/**
+		 * @brief Sets the callback function executed when a mouse passive motion event occurs (mouse hover).
+		 * @param callback The function pointer: \c void \c (*)(int \c int \c x, \c int \c y).
+		 */
+		void setOnPassiveMouseMotionCallback(void (*callback)(int x, int y));
+
+		/**
 		 * @brief Sets the callback function executed when the engine is idle (between frames).
 		 * @param callback The function pointer: \c void \c (*)().
 		 */
