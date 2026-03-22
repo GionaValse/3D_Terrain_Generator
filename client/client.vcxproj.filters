@@ -45,6 +45,9 @@
     <ClInclude Include="EditViewWindow.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="ObjExporter.hpp">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ImageExporter.cpp">

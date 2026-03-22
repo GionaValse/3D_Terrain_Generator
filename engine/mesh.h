@@ -27,28 +27,28 @@ private:
     std::vector<glm::vec2> textureCoordinates;
 
     /* Indexes for VBO/VAO */
-	/** @brief OpenGL Vertex Array Object ID for this mesh. */
-    unsigned int vao; 
-	/** @brief OpenGL Vertex Buffer Object ID for vertex positions. */
-    unsigned int vboVertexes; 
+    /** @brief OpenGL Vertex Array Object ID for this mesh. */
+    unsigned int vao;
+    /** @brief OpenGL Vertex Buffer Object ID for vertex positions. */
+    unsigned int vboVertexes;
     /** @brief OpenGL Vertex Buffer Object ID for face indices. */
-	unsigned int vboFaces; 
+    unsigned int vboFaces;
     /** @brief OpenGL Vertex Buffer Object ID for vertex normals. */
-	unsigned int vboNormals; 
+    unsigned int vboNormals;
     /** @brief OpenGL Vertex Buffer Object ID for texture coordinates. */
-    unsigned int vboTextureCoordinates; 
+    unsigned int vboTextureCoordinates;
 
     /** @brief Flag indicating whether OpenGL buffers have been initialized for this mesh. */
-	bool buffersInitialized; 
+    bool buffersInitialized;
 
     /** @brief Pointer to the material object that defines the mesh's appearance (color, textures, shaders). */
     Eng::Material* material;
 
     /** @brief Initializes OpenGL buffers (VAO/VBO) for the mesh geometry. */
-	void initBuffers();
+    void initBuffers();
 
-	/** @brief Deletes OpenGL buffers to free GPU resources when the mesh is destroyed. */
-	void deleteBuffers();
+    /** @brief Deletes OpenGL buffers to free GPU resources when the mesh is destroyed. */
+    void deleteBuffers();
 
     int mvLoc;
     int normalMatLoc;
@@ -107,4 +107,9 @@ public:
      * @return A pointer to the Eng::Material object.
      */
     Eng::Material* getMaterial();
+
+    std::vector<glm::vec3> getVertexes() const;
+    std::vector<glm::uvec3> getFaces() const;
+    std::vector<glm::vec3> getNormals() const;
+    std::vector<glm::vec2> getTextureCoordinates() const;
 };

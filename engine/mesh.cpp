@@ -105,6 +105,26 @@ namespace Eng
         return this->material;
     }
 
+    std::vector<glm::vec3> Mesh::getVertexes() const
+    {
+        return vertexes;
+    }
+
+    std::vector<glm::uvec3> Mesh::getFaces() const
+    {
+        return faces;
+    }
+
+    std::vector<glm::vec3> Mesh::getNormals() const
+    {
+        return normals;
+    }
+
+    std::vector<glm::vec2> Mesh::getTextureCoordinates() const
+    {
+        return textureCoordinates;
+    }
+
     void Mesh::initBuffers()
     {
 		glGenVertexArrays(1, &vao);
