@@ -6,10 +6,12 @@
 namespace terrain {
 
     TerrainGenerator::TerrainGenerator(const TerrainConfig& config)
-        : m_config(config), m_perlin(config.seed) {
+        : m_config(config), m_perlin(config.seed) 
+    {
     }
 
-    std::vector<float> TerrainGenerator::generate() const {
+    std::vector<float> TerrainGenerator::generate() const
+    {
         const int width = m_config.size;
         const int height = m_config.size;
         std::vector<float> image(width * height * 3);

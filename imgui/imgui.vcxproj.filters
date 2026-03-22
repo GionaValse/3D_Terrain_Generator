@@ -15,55 +15,52 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GridGenerator.hpp">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="ImageExporter.hpp">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="miniz.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="PerlinNoise.hpp">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="TerrainConfig.hpp">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="TerrainGenerator.hpp">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="tinyexr.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="BaseWindow.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="SetupWindow.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="EditViewWindow.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
+    <ClCompile Include="backends\imgui_impl_glut.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="backends\imgui_impl_opengl3.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_draw.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_tables.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_widgets.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ImageExporter.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="miniz.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="TerrainGenerator.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="SetupWindow.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="EditViewWindow.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
+    <ClInclude Include="backends\imgui_impl_glut.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="backends\imgui_impl_opengl3.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="imconfig.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_internal.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="imstb_rectpack.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="imstb_textedit.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="imstb_truetype.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="backends\imgui_impl_opengl3_loader.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

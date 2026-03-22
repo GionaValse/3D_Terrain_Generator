@@ -7,4 +7,5 @@
     <BuildDependency Project="engine/engine.vcxproj" />
   </Project>
   <Project Path="engine/engine.vcxproj" Id="2e085aa3-fd6a-4d1f-8a97-1cce34be1a65" />
+  <Project Path="imgui/imgui.vcxproj" Id="5566999b-cc55-4cc0-80ad-d69e73af00a6" />
 </Solution>

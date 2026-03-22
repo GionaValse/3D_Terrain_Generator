@@ -7,13 +7,13 @@ namespace terrain
     struct TerrainConfig
     {
         int size = 512;
-        double frequency = 4.0;
-        int octaves = 4;
+        float frequency = 4.0f;
+        int octaves = 6.0f;
         uint32_t seed = 123456;
 
         bool isValid() const
         {
-            return size > 0 && octaves > 0 && frequency > 0;
+            return size > 0 && octaves > 0 && frequency > 0.0f;
         }
     };
 
