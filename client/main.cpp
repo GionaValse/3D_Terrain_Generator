@@ -2,6 +2,9 @@
 #include <vector>
 #include <string>
 
+#include <atomic>
+#include <future>
+
 #include <imgui.h>
 #include <backends/imgui_impl_glut.h>
 #include <backends/imgui_impl_opengl3.h>
@@ -14,6 +17,7 @@
 #include "GridGenerator.hpp"
 #include "SetupWindow.h"
 #include "EditViewWindow.h"
+#include "LoadingWindow.h"
 
 /////////////
 // Globals //
@@ -30,9 +34,10 @@ bool isWireFrameMode = false;
 #endif
 
 SetupWindow* g_SetupWin = nullptr;
-EditViewWindow* g_EditViewWin = nullptr;
+LoadingWindow* g_LoadingWin = nullptr;
 
 std::vector<float> image;
+bool isGenerated = false;
 
 // Sun parameters
 float sunAzimuth = glm::radians(210.0f);
@@ -50,6 +55,12 @@ void updateSunDirection()
 
     sunPosition = -glm::normalize(dir) * 300.0f;
 }
+
+/////////////
+// ATOMICS //
+/////////////
+
+std::atomic<bool> isExporting = false;
 
 ///////////////////////
 // Terrain Generator //
@@ -73,22 +84,95 @@ static void generateTerrain(terrain::TerrainConfig config, float heightScale)
 
     terrainShader->setFloat(terrainShader->getParamLocation("heightScale"), heightScale);
 
-    if (heightMap) delete heightMap;
-    heightMap = new Eng::Texture("TerrainHeightMap", config.size, config.size, image);
+    if (heightMap)
+    {
+        delete heightMap;
+        heightMap = nullptr;
+    }
+
+    Eng::Texture* heightMap = new Eng::Texture("TerrainHeightMap", config.size, config.size, image);
+    isGenerated = true;
 }
 
 static void exportTerrain()
 {
+    isExporting = true;
+
     terrain::TerrainConfig config = g_SetupWin->getTerrainConfiguartion();
     float heightScale = g_SetupWin->getHeightScale();
 
-    ObjExporter::exportToObj(
-        "./bin/export/terrain.obj",
-        *gridMesh,
-        image,
-        config.size,
-        heightScale
-    );
+    std::thread([
+        imgData = image,
+        size = config.size,
+        hScale = heightScale,
+        &mesh = *gridMesh
+    ]() mutable {
+            ObjExporter::exportToObj("./bin/export/terrain.obj", mesh, imgData, size, hScale);
+            isExporting = false;
+        }).detach();
+}
+
+//////////////////
+// WINDOW VIEWS //
+//////////////////
+
+static void renderMainMenuBar()
+{
+    if (!ImGui::BeginMainMenuBar())
+        return;
+
+    if (ImGui::BeginMenu("File"))
+    {
+        if (ImGui::MenuItem("Nuovo", "Ctrl+N"))
+        {
+            isGenerated = false;
+        }
+        if (ImGui::MenuItem("Salva EXR", "Ctrl+S")) { /* Logica */ }
+        if (ImGui::MenuItem("Esporta terreno", "Ctrl+E"))
+        {
+            exportTerrain();
+        }
+        ImGui::Separator();
+        if (ImGui::MenuItem("Esci", "Alt+F4")) { /* Logica */ }
+        ImGui::EndMenu();
+    }
+
+    if (ImGui::BeginMenu("Modifica"))
+    {
+        if (ImGui::MenuItem("Reset Camera")) { /* Logica */ }
+        ImGui::EndMenu();
+    }
+
+    ImGui::EndMainMenuBar();
+}
+
+static void renderStatusBar()
+{
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+    float barHeight = 25.0f;
+    ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + viewport->Size.y - barHeight));
+    ImGui::SetNextWindowSize(ImVec2(viewport->Size.x, barHeight));
+
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration |
+        ImGuiWindowFlags_NoInputs |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoScrollWithMouse |
+        ImGuiWindowFlags_NoSavedSettings;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(5, 2));
+    if (ImGui::Begin("StatusBar", nullptr, flags))
+    {
+        int currentFps = Eng::Base::getInstance().getCurrentFPS();
+        ImGui::Text("FPS: %d | Status: Ready | Camera Pos: %.1f, %.1f, %.1f",
+            currentFps,
+            mainCamera->getMatrix()[3].x,
+            mainCamera->getMatrix()[3].y,
+            mainCamera->getMatrix()[3].z);
+
+        ImGui::End();
+    }
+    ImGui::PopStyleVar();
 }
 
 ///////////////
@@ -115,29 +199,11 @@ static void renderingLoop(Eng::Node* root)
 
 static void renderingImGui(Eng::GUIObjects obj)
 {
-    if (ImGui::BeginMainMenuBar())
-    {
-        if (ImGui::BeginMenu("File"))
-        {
-            if (ImGui::MenuItem("Nuovo", "Ctrl+N")) { /* Logica */ }
-            if (ImGui::MenuItem("Salva EXR", "Ctrl+S")) { /* Logica */ }
-            if (ImGui::MenuItem("Esporta terreno", "Ctrl+E")) {
-                exportTerrain();
-            }
-            ImGui::Separator();
-            if (ImGui::MenuItem("Esci", "Alt+F4")) { /* Logica */ }
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Modifica"))
-        {
-            if (ImGui::MenuItem("Reset Camera")) { /* Logica */ }
-            ImGui::EndMenu();
-        }
-        ImGui::EndMainMenuBar();
-    }
+    renderMainMenuBar();
+    renderStatusBar();
 
-    if (g_SetupWin) g_SetupWin->render();
-    if (g_EditViewWin) g_EditViewWin->render();
+    if (!isGenerated && g_SetupWin) g_SetupWin->render();
+    if (isExporting && g_LoadingWin) g_LoadingWin->render();
 
     if (g_SetupWin && g_SetupWin->checkAndResetTrigger()) {
         generateTerrain(g_SetupWin->getTerrainConfiguartion(), g_SetupWin->getHeightScale());
@@ -165,12 +231,16 @@ static void renderingImGui(Eng::GUIObjects obj)
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-static void onSpecialKeyCallback(int key, int x, int y) {
+static void onSpecialKeyCallback(int key, int x, int y)
+{
+    if (isExporting) return;
+
     ImGui_ImplGLUT_SpecialFunc(key, x, y);
 }
 
 static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
 {
+    if (isExporting) return;
     ImGuiIO& io = ImGui::GetIO();
 
     if (key >= 32)
@@ -246,6 +316,8 @@ static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
 
 static void onMouseCallback(int buttonId, int buttonState, int mouseX, int mouseY)
 {
+    if (isExporting) return;
+
     ImGui_ImplGLUT_MouseFunc(buttonId, buttonState, mouseX, mouseY);
 
     if (ImGui::GetIO().WantCaptureMouse)
@@ -254,11 +326,17 @@ static void onMouseCallback(int buttonId, int buttonState, int mouseX, int mouse
     }
 }
 
-static void onMouseMotionCallback(int x, int y) {
+static void onMouseMotionCallback(int x, int y) 
+{
+    if (isExporting) return;
+
     ImGui_ImplGLUT_MotionFunc(x, y);
 }
 
-static void onPassiveMouseMotionCallback(int x, int y) {
+static void onPassiveMouseMotionCallback(int x, int y) 
+{
+    if (isExporting) return;
+
     ImGui_ImplGLUT_MotionFunc(x, y);
 }
 
@@ -282,7 +360,7 @@ int main(int argc, char* argv[])
     ImGui_ImplOpenGL3_Init("#version 440");
 
     g_SetupWin = new SetupWindow();
-    g_EditViewWin = new EditViewWindow();
+    g_LoadingWin = new LoadingWindow();
 
     // Terrain shader
     Eng::Shader* vShader = new Eng::Shader();
@@ -303,7 +381,7 @@ int main(int argc, char* argv[])
     gridMesh->setMaterial(material);
 
     // Camera
-    glm::mat4 camera = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 8.0f, 15.0f));
+    glm::mat4 camera = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 96.0f, 512.0f));
     Eng::PerspectiveCamera* perspectiveCamera = new Eng::PerspectiveCamera("mainCamera", camera);
     perspectiveCamera->setCameraParams(45.0f, RATIO_16_9, 1.0f, 5000.0f);
 
@@ -338,7 +416,7 @@ int main(int argc, char* argv[])
     eng.free();
 
     delete g_SetupWin;
-    delete g_EditViewWin;
+    delete g_LoadingWin;
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGLUT_Shutdown();

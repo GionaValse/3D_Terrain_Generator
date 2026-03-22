@@ -8,6 +8,8 @@ class SetupWindow : public BaseWindow
 public:
 	SetupWindow();
 	
+	void basePosition() override;
+
 	void drawContent() override;
 
 	terrain::TerrainConfig getTerrainConfiguartion() const;

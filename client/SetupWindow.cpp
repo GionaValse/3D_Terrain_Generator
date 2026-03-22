@@ -1,6 +1,12 @@
 #include "SetupWindow.h"
 
-SetupWindow::SetupWindow() : BaseWindow("Terrain Setup"),
+SetupWindow::SetupWindow()
+	: BaseWindow(
+		"Terrain Setup",
+		true,
+		false,
+		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse
+	),
 	heightScale(100.0f),
 	triggerGeneration(false)
 {
@@ -10,36 +16,47 @@ SetupWindow::SetupWindow() : BaseWindow("Terrain Setup"),
 	config.seed = 12345;
 }
 
+void SetupWindow::basePosition()
+{
+	ImGui::SetNextWindowPos(defaultPos, posCond, ImVec2(0.5f, 0.5f));
+
+	setNextWindowPos(
+		ImGui::GetMainViewport()->GetCenter().x,
+		ImGui::GetMainViewport()->GetCenter().y,
+		ImGuiCond_Always
+	);
+}
+
 void SetupWindow::drawContent()
 {
-    ImGui::Text("Noise Parameters");
-    ImGui::InputInt("Size (px)", (int*)&config.size);
-    ImGui::SliderFloat("Frequency", &config.frequency, 0.1f, 20.0f);
-    ImGui::SliderInt("Octaves", &config.octaves, 1, 10);
-    ImGui::InputScalar("Seed", ImGuiDataType_U32, &config.seed);
+	ImGui::Text("Noise Parameters");
+	ImGui::InputInt("Size (px)", (int*)&config.size);
+	ImGui::SliderFloat("Frequency", &config.frequency, 0.1f, 20.0f);
+	ImGui::SliderInt("Octaves", &config.octaves, 1, 10);
+	ImGui::InputScalar("Seed", ImGuiDataType_U32, &config.seed);
 
-    ImGui::Separator();
-    ImGui::Text("Mesh Parameters");
-    ImGui::DragFloat("Height Scale", &heightScale, 1.0f, 0.1f, 5000.0f);
+	ImGui::Separator();
+	ImGui::Text("Mesh Parameters");
+	ImGui::DragFloat("Height Scale", &heightScale, 1.0f, 0.1f, 5000.0f);
 
-    if (ImGui::Button("Generate New Terrain", ImVec2(-1, 0))) {
-        triggerGeneration = true;
-    }
+	if (ImGui::Button("Generate New Terrain", ImVec2(-1, 0))) {
+		triggerGeneration = true;
+	}
 }
 
 terrain::TerrainConfig SetupWindow::getTerrainConfiguartion() const
 {
-    return config;
+	return config;
 }
 
 float SetupWindow::getHeightScale() const
 {
-    return heightScale;
+	return heightScale;
 }
 
 bool SetupWindow::checkAndResetTrigger()
 {
-    bool val = triggerGeneration;
-    triggerGeneration = false;
-    return val;
+	bool val = triggerGeneration;
+	triggerGeneration = false;
+	return val;
 }

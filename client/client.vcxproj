@@ -137,6 +137,7 @@
     <ClInclude Include="EditViewWindow.h" />
     <ClInclude Include="GridGenerator.hpp" />
     <ClInclude Include="ImageExporter.hpp" />
+    <ClInclude Include="LoadingWindow.h" />
     <ClInclude Include="miniz.h" />
     <ClInclude Include="ObjExporter.hpp" />
     <ClInclude Include="PerlinNoise.hpp" />
@@ -148,6 +149,7 @@
   <ItemGroup>
     <ClCompile Include="EditViewWindow.cpp" />
     <ClCompile Include="ImageExporter.cpp" />
+    <ClCompile Include="LoadingWindow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="miniz.c" />
     <ClCompile Include="SetupWindow.cpp" />
