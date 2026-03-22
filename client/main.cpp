@@ -21,6 +21,7 @@
 Eng::Camera* mainCamera = nullptr;
 Eng::Shader* terrainShader = nullptr;
 Eng::Texture* heightMap = nullptr;
+Eng::InfiniteLight* sunLight = nullptr;
 
 #ifdef _DEBUG
 bool isWireFrameMode = false;
@@ -28,6 +29,23 @@ bool isWireFrameMode = false;
 
 SetupWindow* g_SetupWin = nullptr;
 EditViewWindow* g_EditViewWin = nullptr;
+
+// Sun parameters
+float sunAzimuth = glm::radians(210.0f);
+float sunElevation = glm::radians(45.0f);
+glm::vec3 sunPosition(0.0f);
+bool sunRotating = false;
+
+void updateSunDirection()
+{
+    glm::vec3 dir;
+    dir.x = cos(sunElevation) * sin(sunAzimuth);
+    dir.y = -sin(sunElevation);
+    dir.z = cos(sunElevation) * cos(sunAzimuth);
+    sunLight->setDirection(glm::normalize(dir));
+
+    sunPosition = -glm::normalize(dir) * 300.0f;
+}
 
 ///////////////////////
 // Terrain Generator //
@@ -46,7 +64,6 @@ static void generateTerrain(terrain::TerrainConfig config, float heightScale)
     }
 
     std::cout << "\nOperazione completata.\n";
-
     std::cout << "\n--- TEST GENERAZIONE GRIGLIA ---\n";
 
     terrainShader->setFloat(terrainShader->getParamLocation("heightScale"), heightScale);
@@ -65,6 +82,13 @@ void onResize(int w, int h) {
 
 static void renderingLoop(Eng::Node* root)
 {
+    // Auto-rotate sun
+    if (sunRotating)
+    {
+        sunAzimuth += glm::radians(0.5f);
+        updateSunDirection();
+    }
+
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGLUT_NewFrame();
     ImGui::NewFrame();
@@ -72,8 +96,6 @@ static void renderingLoop(Eng::Node* root)
 
 static void renderingImGui(Eng::GUIObjects obj)
 {
-    /* ----- MAIN MENU (Top bar) ----- */
-
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))
@@ -92,13 +114,29 @@ static void renderingImGui(Eng::GUIObjects obj)
         ImGui::EndMainMenuBar();
     }
 
-    /* ----- WINDOWS ----- */
-
     if (g_SetupWin) g_SetupWin->render();
     if (g_EditViewWin) g_EditViewWin->render();
 
     if (g_SetupWin && g_SetupWin->checkAndResetTrigger()) {
         generateTerrain(g_SetupWin->getTerrainConfiguartion(), g_SetupWin->getHeightScale());
+    }
+
+    // Draw sun indicator on screen
+    {
+        glm::mat4 view = glm::inverse(mainCamera->getMatrix());
+        glm::mat4 proj = mainCamera->getProjectionMatrix();
+
+        glm::vec4 clip = proj * view * glm::vec4(sunPosition, 1.0f);
+
+        if (clip.w > 0.0f)
+        {
+            glm::vec3 ndc = glm::vec3(clip) / clip.w;
+            ImVec2 screen;
+            screen.x = (ndc.x * 0.5f + 0.5f) * ImGui::GetIO().DisplaySize.x;
+            screen.y = (1.0f - (ndc.y * 0.5f + 0.5f)) * ImGui::GetIO().DisplaySize.y;
+
+            ImGui::GetBackgroundDrawList()->AddCircleFilled(screen, 8.0f, IM_COL32(255, 230, 50, 255));
+        }
     }
 
     ImGui::Render();
@@ -109,7 +147,7 @@ static void onSpecialKeyCallback(int key, int x, int y) {
     ImGui_ImplGLUT_SpecialFunc(key, x, y);
 }
 
-static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY) 
+static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
 {
     ImGuiIO& io = ImGui::GetIO();
 
@@ -122,35 +160,33 @@ static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
     io.AddKeyEvent(ImGuiKey_Enter, (key == 13));
     io.AddKeyEvent(ImGuiKey_Escape, (key == 27));
 
-    if (ImGui::GetIO().WantCaptureKeyboard) 
+    if (ImGui::GetIO().WantCaptureKeyboard)
     {
-        return; // Write on interface inputs
+        return;
     }
 
 #ifdef _DEBUG
-    if (key == 'k')
+    if (key == 'v')
     {
         isWireFrameMode = !isWireFrameMode;
         Eng::Base::getInstance().changeWireFrame(isWireFrameMode);
     }
-#endif // _DEBUG
+#endif
 
-    const float rotSpeed = 2.0f;  // gradi per tasto
-    const float moveSpeed = 20.0f; // unità per tasto
+    const float rotSpeed = 2.0f;
+    const float moveSpeed = 20.0f;
 
+    // Camera controls
     if (key == 'a')
     {
-        // Yaw sinistra: ruota attorno all'asse Y del mondo
         mainCamera->setMatrix(glm::rotate(glm::mat4(1.0f), glm::radians(-rotSpeed), glm::vec3(0.0f, 1.0f, 0.0f)) * mainCamera->getMatrix());
     }
     else if (key == 'd')
     {
-        // Yaw destra
         mainCamera->setMatrix(glm::rotate(glm::mat4(1.0f), glm::radians(rotSpeed), glm::vec3(0.0f, 1.0f, 0.0f)) * mainCamera->getMatrix());
     }
     else if (key == 'w')
     {
-        // Avanti sul piano orizzontale (proietta il forward sul piano XZ)
         glm::vec3 forward = -glm::vec3(mainCamera->getMatrix()[2]);
         forward.y = 0.0f;
         forward = glm::normalize(forward) * moveSpeed;
@@ -158,7 +194,6 @@ static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
     }
     else if (key == 's')
     {
-        // Indietro sul piano orizzontale
         glm::vec3 forward = -glm::vec3(mainCamera->getMatrix()[2]);
         forward.y = 0.0f;
         forward = glm::normalize(forward) * moveSpeed;
@@ -166,23 +201,24 @@ static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
     }
     else if (key == 'e')
     {
-        // Pitch su: ruota attorno all'asse X locale della camera
         mainCamera->setMatrix(mainCamera->getMatrix() * glm::rotate(glm::mat4(1.0f), glm::radians(rotSpeed), glm::vec3(1.0f, 0.0f, 0.0f)));
     }
     else if (key == 'q')
     {
-        // Pitch giù
         mainCamera->setMatrix(mainCamera->getMatrix() * glm::rotate(glm::mat4(1.0f), glm::radians(-rotSpeed), glm::vec3(1.0f, 0.0f, 0.0f)));
     }
     else if (key == 'r')
     {
-        // Su lungo l'asse Y del mondo
         mainCamera->setMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, moveSpeed, 0.0f)) * mainCamera->getMatrix());
     }
     else if (key == 'f')
     {
-        // Giù lungo l'asse Y del mondo
         mainCamera->setMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -moveSpeed, 0.0f)) * mainCamera->getMatrix());
+    }
+    // Toggle sun rotation
+    else if (key == 'g')
+    {
+        sunRotating = !sunRotating;
     }
 }
 
@@ -192,7 +228,7 @@ static void onMouseCallback(int buttonId, int buttonState, int mouseX, int mouse
 
     if (ImGui::GetIO().WantCaptureMouse)
     {
-        return; // Use mouse on interface
+        return;
     }
 }
 
@@ -210,13 +246,10 @@ static void onPassiveMouseMotionCallback(int x, int y) {
 
 int main(int argc, char* argv[])
 {
-    // ----- SETTING UP ENGINE ----- //
-
     Eng::Base& eng = Eng::Base::getInstance();
     eng.init(&argc, argv, "3D Terrain Editor");
 
-    // ----- SETTING UP IMGUI ----- //
-
+    // ImGui setup
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -224,15 +257,12 @@ int main(int argc, char* argv[])
     ImGui::StyleColorsDark();
 
     ImGui_ImplGLUT_Init();
-
     ImGui_ImplOpenGL3_Init("#version 440");
 
     g_SetupWin = new SetupWindow();
     g_EditViewWin = new EditViewWindow();
 
-    // ----- SETTING UP SCENE ----- //
-
-    // Initilize Terrain
+    // Terrain shader
     Eng::Shader* vShader = new Eng::Shader();
     Eng::Shader* fShader = new Eng::Shader();
     vShader->loadFromFile(Eng::Shader::TYPE_VERTEX, "./shaders/terrain.vert");
@@ -243,38 +273,35 @@ int main(int argc, char* argv[])
     terrainShader->render();
 
     Eng::Material* material = new Eng::Material("TerrainMaterial");
-
     material->setShader(terrainShader);
     material->setTexture(heightMap);
 
     Eng::Mesh* gridMesh = terrain::GridGenerator::generate(512, 1.0f);
     gridMesh->setMatrix(glm::mat4(1.0f));
-
     gridMesh->setMaterial(material);
 
-    // Initilize Camera
+    // Camera
     glm::mat4 camera = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 8.0f, 15.0f));
     Eng::PerspectiveCamera* perspectiveCamera = new Eng::PerspectiveCamera("mainCamera", camera);
     perspectiveCamera->setCameraParams(45.0f, RATIO_16_9, 1.0f, 5000.0f);
 
-    // Initilize Sun light
-    Eng::InfiniteLight* sun = new Eng::InfiniteLight("sun");
-    sun->setDirection(glm::vec3(-0.5f, -1.0f, -0.3f));
-    sun->setAmbient(glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
-    sun->setDiffuse(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-    sun->setSpecular(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+    // Sun light
+    sunLight = new Eng::InfiniteLight("sun");
+    updateSunDirection();
+    sunLight->setAmbient(glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
+    sunLight->setDiffuse(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    sunLight->setSpecular(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
-    // Setup scene
+    // Scene graph
     Eng::Node* root = eng.getSceneGraphInstance();
     root->addChild(perspectiveCamera);
-    root->addChild(sun);
+    root->addChild(sunLight);
     root->addChild(gridMesh);
 
     mainCamera = perspectiveCamera;
     eng.setActiveCamera(mainCamera);
 
-    // ----- ENGINE START ----- //
-
+    // Callbacks
     eng.setOnResizeCallback(onResize);
     eng.setOnSpecialPressedCallback(onSpecialKeyCallback);
     eng.setOnKeyboardPressedCallback(onKeyboardPressedCallback);
@@ -285,9 +312,7 @@ int main(int argc, char* argv[])
 
     eng.start(renderingLoop);
 
-
-    // ----- FREE APPLICATION ----- //
-
+    // Cleanup
     eng.free();
 
     delete g_SetupWin;
