@@ -138,6 +138,7 @@
     <ClInclude Include="GridGenerator.hpp" />
     <ClInclude Include="ImageExporter.hpp" />
     <ClInclude Include="miniz.h" />
+    <ClInclude Include="ObjExporter.hpp" />
     <ClInclude Include="PerlinNoise.hpp" />
     <ClInclude Include="SetupWindow.h" />
     <ClInclude Include="TerrainConfig.hpp" />

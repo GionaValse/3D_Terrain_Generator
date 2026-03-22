@@ -10,6 +10,7 @@
 
 #include "TerrainGenerator.hpp"
 #include "ImageExporter.hpp"
+#include "ObjExporter.hpp"
 #include "GridGenerator.hpp"
 #include "SetupWindow.h"
 #include "EditViewWindow.h"
@@ -19,6 +20,7 @@
 /////////////
 
 Eng::Camera* mainCamera = nullptr;
+Eng::Mesh* gridMesh = nullptr;
 Eng::Shader* terrainShader = nullptr;
 Eng::Texture* heightMap = nullptr;
 Eng::InfiniteLight* sunLight = nullptr;
@@ -29,6 +31,8 @@ bool isWireFrameMode = false;
 
 SetupWindow* g_SetupWin = nullptr;
 EditViewWindow* g_EditViewWin = nullptr;
+
+std::vector<float> image;
 
 // Sun parameters
 float sunAzimuth = glm::radians(210.0f);
@@ -54,7 +58,8 @@ void updateSunDirection()
 static void generateTerrain(terrain::TerrainConfig config, float heightScale)
 {
     terrain::TerrainGenerator generator(config);
-    std::vector<float> image = generator.generate();
+    image.clear();
+    image = generator.generate();
     std::string textureName;
 
     if (!terrain::ImageExporter::saveEXR(image, config, textureName))
@@ -70,6 +75,20 @@ static void generateTerrain(terrain::TerrainConfig config, float heightScale)
 
     if (heightMap) delete heightMap;
     heightMap = new Eng::Texture("TerrainHeightMap", config.size, config.size, image);
+}
+
+static void exportTerrain()
+{
+    terrain::TerrainConfig config = g_SetupWin->getTerrainConfiguartion();
+    float heightScale = g_SetupWin->getHeightScale();
+
+    ObjExporter::exportToObj(
+        "./bin/export/terrain.obj",
+        *gridMesh,
+        image,
+        config.size,
+        heightScale
+    );
 }
 
 ///////////////
@@ -102,6 +121,9 @@ static void renderingImGui(Eng::GUIObjects obj)
         {
             if (ImGui::MenuItem("Nuovo", "Ctrl+N")) { /* Logica */ }
             if (ImGui::MenuItem("Salva EXR", "Ctrl+S")) { /* Logica */ }
+            if (ImGui::MenuItem("Esporta terreno", "Ctrl+E")) {
+                exportTerrain();
+            }
             ImGui::Separator();
             if (ImGui::MenuItem("Esci", "Alt+F4")) { /* Logica */ }
             ImGui::EndMenu();
@@ -276,7 +298,7 @@ int main(int argc, char* argv[])
     material->setShader(terrainShader);
     material->setTexture(heightMap);
 
-    Eng::Mesh* gridMesh = terrain::GridGenerator::generate(512, 1.0f);
+    gridMesh = terrain::GridGenerator::generate(512, 1.0f);
     gridMesh->setMatrix(glm::mat4(1.0f));
     gridMesh->setMaterial(material);
 
