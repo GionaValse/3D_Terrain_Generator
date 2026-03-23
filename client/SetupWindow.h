@@ -1,14 +1,12 @@
 #pragma once
 
-#include "BaseWindow.h"
+#include "CentredWindow.h"
 #include "TerrainConfig.hpp"
 
-class SetupWindow : public BaseWindow
+class SetupWindow : public CentredWindow
 {
 public:
 	SetupWindow();
-	
-	void basePosition() override;
 
 	void drawContent() override;
 

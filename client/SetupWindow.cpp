@@ -1,12 +1,7 @@
 #include "SetupWindow.h"
 
 SetupWindow::SetupWindow()
-	: BaseWindow(
-		"Terrain Setup",
-		true,
-		false,
-		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse
-	),
+	: CentredWindow("Terrain Setup"),
 	heightScale(100.0f),
 	triggerGeneration(false)
 {
@@ -14,17 +9,6 @@ SetupWindow::SetupWindow()
 	config.frequency = 4.0f;
 	config.octaves = 6;
 	config.seed = 12345;
-}
-
-void SetupWindow::basePosition()
-{
-	ImGui::SetNextWindowPos(defaultPos, posCond, ImVec2(0.5f, 0.5f));
-
-	setNextWindowPos(
-		ImGui::GetMainViewport()->GetCenter().x,
-		ImGui::GetMainViewport()->GetCenter().y,
-		ImGuiCond_Always
-	);
 }
 
 void SetupWindow::drawContent()

@@ -573,6 +573,11 @@ bool ENG_API Eng::Base::start(void (*callback)(Node* root)) {
     return true;
 }
 
+void Eng::Base::stop()
+{
+    runningFlag = false;
+}
+
 Eng::Node* Eng::Base::getSceneGraphInstance()
 {
     if (!reserved->rootNode)

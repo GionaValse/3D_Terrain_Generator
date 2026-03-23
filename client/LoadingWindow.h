@@ -2,14 +2,12 @@
 
 #include <string>
 
-#include "BaseWindow.h"
+#include "CentredWindow.h"
 
-class LoadingWindow : public BaseWindow
+class LoadingWindow : public CentredWindow
 {
 public:
 	LoadingWindow();
-
-	void basePosition() override;
 
 	void drawContent() override;
 

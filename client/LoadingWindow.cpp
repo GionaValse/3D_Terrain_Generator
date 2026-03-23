@@ -1,25 +1,9 @@
 #include "LoadingWindow.h"
 
 LoadingWindow::LoadingWindow() 
-	: BaseWindow(
-		"Loading", 
-		true, 
-		false,
-		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse
-	),
+	: CentredWindow("Loading"),
 	text("Loading...")
 {
-}
-
-void LoadingWindow::basePosition()
-{
-	ImGui::SetNextWindowPos(defaultPos, posCond, ImVec2(0.5f, 0.5f));
-
-	setNextWindowPos(
-		ImGui::GetMainViewport()->GetCenter().x,
-		ImGui::GetMainViewport()->GetCenter().y,
-		ImGuiCond_Always
-	);
 }
 
 void LoadingWindow::drawContent()

@@ -138,13 +138,25 @@ static void renderMainMenuBar()
             exportTerrain();
         }
         ImGui::Separator();
-        if (ImGui::MenuItem("Esci", "Alt+F4")) { /* Logica */ }
+        if (ImGui::MenuItem("Esci", "Alt+F4"))
+        {
+            Eng::Base::getInstance().stop();
+        }
         ImGui::EndMenu();
     }
 
     if (ImGui::BeginMenu("Modifica"))
     {
         if (ImGui::MenuItem("Reset Camera")) { /* Logica */ }
+
+#ifdef _DEBUG
+        if (ImGui::MenuItem(isWireFrameMode ? "Realistico" : "Wireframe"))
+        { 
+            isWireFrameMode = !isWireFrameMode;
+            Eng::Base::getInstance().changeWireFrame(isWireFrameMode);
+        }
+#endif // _DEBUG
+
         ImGui::EndMenu();
     }
 

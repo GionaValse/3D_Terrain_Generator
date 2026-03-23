@@ -188,8 +188,11 @@ namespace Eng
 		 */
 		bool start(void (*callback)(Node *root));
 
-		/** @brief Boolean flag to indicate whether shadow rendering (shadow maps) is currently active. */
-		bool shadowRender;
+
+		/**
+		* @brief Stop the main rendering loop of the engine.
+		*/
+		void stop();
 		
 		// Engine loader:
         /**

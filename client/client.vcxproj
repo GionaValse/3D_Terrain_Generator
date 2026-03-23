@@ -147,6 +147,9 @@
     <ClInclude Include="tinyexr.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BaseWindow.cpp" />
+    <ClCompile Include="CentredWindow.cpp" />
+    <ClCompile Include="CentredWindow.h" />
     <ClCompile Include="EditViewWindow.cpp" />
     <ClCompile Include="ImageExporter.cpp" />
     <ClCompile Include="LoadingWindow.cpp" />
