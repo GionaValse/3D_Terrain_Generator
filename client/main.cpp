@@ -268,7 +268,7 @@ static void onSpecialKeyDownCallback(int key, int x, int y)
 
     ImGuiIO& io = ImGui::GetIO();
     addSpecialKeyEvents(io, key, true);
-    if (io.WantCaptureKeyboard) return;
+    // if (io.WantCaptureKeyboard) return; // If callback needed uncomment this line
 }
 
 static void onSpecialKeyUpCallback(int key, int x, int y)
@@ -277,7 +277,7 @@ static void onSpecialKeyUpCallback(int key, int x, int y)
 
     ImGuiIO& io = ImGui::GetIO();
     addSpecialKeyEvents(io, key, false);
-    if (io.WantCaptureKeyboard) return;
+    // if (io.WantCaptureKeyboard) return; // If callback needed uncomment this line
 }
 
 static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
@@ -364,7 +364,6 @@ static void onMouseCallback(int buttonId, int buttonState, int x, int y)
     ImGui_ImplGLUT_MouseFunc(buttonId, buttonState, x, y);
     if (ImGui::GetIO().WantCaptureMouse) return;
 
-    // Track button states for dragging
     if (buttonId == ENGINE_MOUSE_BUTTON_LEFT) {
         isLeftDragging = (buttonState == ENGINE_MOUSE_BUTTON_DOWN);
     }
@@ -372,7 +371,6 @@ static void onMouseCallback(int buttonId, int buttonState, int x, int y)
         isRightDragging = (buttonState == ENGINE_MOUSE_BUTTON_DOWN);
     }
 
-    // Initialize last position to avoid "jumps" when first clicking
     lastMouseX = x;
     lastMouseY = y;
 }
@@ -385,33 +383,25 @@ static void onMouseMotionCallback(int x, int y)
     ImGui_ImplGLUT_MotionFunc(x, y);
     if (ImGui::GetIO().WantCaptureMouse) return;
 
-    // Calculate how much the mouse moved
     float deltaX = (float)(x - lastMouseX);
     float deltaY = (float)(y - lastMouseY);
 
-    float mouseSensitivity = 0.2f; // Adjust this to your liking
+    float mouseSensitivity = 0.2f;
 
-    // --- LEFT CLICK: ROTATION (Orbit/Look around) ---
     if (isLeftDragging) {
-        // Rotation around World Y (Yaw) - same logic as your 'a'/'d' keys
         glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(-deltaX * mouseSensitivity), glm::vec3(0.0f, 1.0f, 0.0f));
-
-        // Rotation around Camera Local X (Pitch) - same logic as your 'q'/'e' keys
         glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(-deltaY * mouseSensitivity), glm::vec3(1.0f, 0.0f, 0.0f));
 
-        // Apply both to the camera matrix
         mainCamera->setMatrix(rotationY * mainCamera->getMatrix() * rotationX);
     }
 
-    // --- RIGHT CLICK: PANNING (Up/Down/Left/Right) ---
     if (isRightDragging) {
         float panSpeed = 0.5f;
-        // Panning usually moves relative to the camera's local axes
+
         glm::vec3 translation(-deltaX * panSpeed, deltaY * panSpeed, 0.0f);
         mainCamera->setMatrix(glm::translate(glm::mat4(1.0f), translation) * mainCamera->getMatrix());
     }
 
-    // Update state for next frame
     lastMouseX = x;
     lastMouseY = y;
 }
