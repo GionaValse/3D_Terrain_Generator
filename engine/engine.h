@@ -241,6 +241,12 @@ namespace Eng
 		void setOnSpecialPressedCallback(void (*callback)(int key, int mouseX, int mouseY));
 
 		/**
+		 * @brief Sets the callback function executed when a special key (e.g., F1, arrow keys) is released.
+		 * @param callback The function pointer: \c void \c (*)(int \c key, \c int \c mouseX, \c int \c mouseY).
+		 */
+		void setOnSpecialReleasedCallback(void (*callback)(int key, int mouseX, int mouseY));
+
+		/**
 		 * @brief Sets the callback function executed when a regular keyboard key is pressed.
 		 * @param callback The function pointer: \c void \c (*)(unsigned \c char \c key, \c int \c mouseX, \c int \c mouseY).
 		 */
@@ -263,6 +269,12 @@ namespace Eng
 		 * @param callback The function pointer: \c void \c (*)(int \c int \c x, \c int \c y).
 		 */
 		void setOnPassiveMouseMotionCallback(void (*callback)(int x, int y));
+
+		/**
+		* @brief Sets the callback function executed when a mouse wheel event occurs.
+		 * @param callback The function pointer: \c void \c (*)(int \c wheelId, \c int \c direction, \c int \c mouseX, \c int \c mouseY).
+		*/
+		void setOnMouseWheelCallback(void(*callback)(int wheelId, int direction, int x, int y));
 
 		/**
 		 * @brief Sets the callback function executed when the engine is idle (between frames).

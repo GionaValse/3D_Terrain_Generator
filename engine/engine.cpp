@@ -62,10 +62,12 @@ Eng::Camera* currentActiveCamera{nullptr};
 // Callbacks vars
 void (*onEngineReshapeCallback)(int width, int height);
 void (*onEngineSpecialCallback)(int key, int mouseX, int mouseY);
+void (*onEngineSpecialUpCallback)(int key, int mouseX, int mouseY);
 void (*onEngineKeyboardCallback)(unsigned char key, int mouseX, int mouseY);
 void (*onEngineMouseCallback)(int buttonId, int buttonState, int mouseX, int mouseY);
 void (*onEngineMouseMotionCallback)(int x, int y);
 void (*onEnginePassiveMouseMotionCallback)(int x, int y);
+void (*onEngineMouseWheelCallback)(int wheelId, int direction, int x, int y);
 void (*onEngineIdleCallback)();
 void (*onEngineCloseCallback)();
 void (*onEngineDrawTextCallback)(Eng::GUIObjects gui);
@@ -81,6 +83,15 @@ static void EngineDisplayCallback() {
 static void EngineSpecialCallback(int key, int mouseX, int mouseY) {
     if (onEngineSpecialCallback) {
         onEngineSpecialCallback(key, mouseX, mouseY);
+
+        // Force rendering refresh:
+        glutPostWindowRedisplay(id);
+    }
+}
+
+static void EngineSpecialUpCallback(int key, int mouseX, int mouseY) {
+    if (onEngineSpecialUpCallback) {
+        onEngineSpecialUpCallback(key, mouseX, mouseY);
 
         // Force rendering refresh:
         glutPostWindowRedisplay(id);
@@ -117,6 +128,15 @@ static void EngineMouseMotionCallback(int x, int y) {
 static void EnginePassiveMouseMotionCallback(int x, int y) {
     if (onEnginePassiveMouseMotionCallback) {
         onEnginePassiveMouseMotionCallback(x, y);
+
+        // Force rendering refresh:
+        glutPostWindowRedisplay(id);
+    }
+}
+
+static void EngineMouseWheelCallback(int wheelId, int direction, int x, int y) {
+    if (onEngineMouseWheelCallback) {
+        onEngineMouseWheelCallback(wheelId, direction, x, y);
 
         // Force rendering refresh:
         glutPostWindowRedisplay(id);
@@ -322,10 +342,12 @@ void Eng::Base::initEngine(int* argc, char* argv[], const char* winName, int wid
     glutDisplayFunc(EngineDisplayCallback);
     glutReshapeFunc(EngineReshapeCallback);
     glutKeyboardFunc(EngineKeyboardCallback);
+    glutSpecialFunc(EngineSpecialCallback);
+    glutSpecialUpFunc(EngineSpecialUpCallback);
     glutMouseFunc(EngineMouseCallback);
     glutMotionFunc(EngineMouseMotionCallback);
     glutPassiveMotionFunc(EnginePassiveMouseMotionCallback);
-    glutSpecialFunc(EngineSpecialCallback);
+    glutMouseWheelFunc(EngineMouseWheelCallback);
     glutCloseFunc(EngineCloseCallback);
     glutIdleFunc(EngineIdleCallback);
 
@@ -652,6 +674,10 @@ void Eng::Base::setOnSpecialPressedCallback(void (*callback)(int key, int mouseX
     onEngineSpecialCallback = callback;
 }
 
+void Eng::Base::setOnSpecialReleasedCallback(void (*callback)(int key, int mouseX, int mouseY)) {
+    onEngineSpecialUpCallback = callback;
+}
+
 void Eng::Base::setOnKeyboardPressedCallback(void (*callback)(unsigned char key, int mouseX, int mouseY)) {
     onEngineKeyboardCallback = callback;
 }
@@ -666,6 +692,10 @@ void Eng::Base::setOnMouseMotionCallback(void(*callback)(int x, int y)) {
 
 void Eng::Base::setOnPassiveMouseMotionCallback(void(*callback)(int x, int y)) {
     onEnginePassiveMouseMotionCallback = callback;
+}
+
+void Eng::Base::setOnMouseWheelCallback(void(*callback)(int wheelId, int direction, int x, int y)) {
+    onEngineMouseWheelCallback = callback;
 }
 
 void Eng::Base::setOnIdleCallback(void (*callback)()) {

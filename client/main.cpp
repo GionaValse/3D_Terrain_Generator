@@ -56,6 +56,11 @@ void updateSunDirection()
     sunPosition = -glm::normalize(dir) * 300.0f;
 }
 
+static int lastMouseX = 0;
+static int lastMouseY = 0;
+static bool isLeftDragging = false;
+static bool isRightDragging = false;
+
 /////////////
 // ATOMICS //
 /////////////
@@ -231,11 +236,48 @@ static void renderingImGui(Eng::GUIObjects obj)
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-static void onSpecialKeyCallback(int key, int x, int y)
+static void addSpecialKeyEvents(ImGuiIO& io, int key, bool down)
+{
+    switch (key)
+    {
+    case ENGINE_KEY_F1:     io.AddKeyEvent(ImGuiKey_F1, true); break;
+    case ENGINE_KEY_F2:     io.AddKeyEvent(ImGuiKey_F2, true); break;
+    case ENGINE_KEY_LEFT:   io.AddKeyEvent(ImGuiKey_LeftArrow, true); break;
+    case ENGINE_KEY_RIGHT:  io.AddKeyEvent(ImGuiKey_RightArrow, true); break;
+    case ENGINE_KEY_UP:     io.AddKeyEvent(ImGuiKey_UpArrow, true); break;
+    case ENGINE_KEY_DOWN:   io.AddKeyEvent(ImGuiKey_DownArrow, true); break;
+    case ENGINE_KEY_PAGE_UP:   io.AddKeyEvent(ImGuiKey_PageUp, true); break;
+    case ENGINE_KEY_PAGE_DOWN: io.AddKeyEvent(ImGuiKey_PageDown, true); break;
+    case ENGINE_KEY_HOME:   io.AddKeyEvent(ImGuiKey_Home, true); break;
+    case ENGINE_KEY_END:    io.AddKeyEvent(ImGuiKey_End, true); break;
+    case ENGINE_KEY_INSERT: io.AddKeyEvent(ImGuiKey_Insert, true); break;
+    case ENGINE_KEY_DELETE: io.AddKeyEvent(ImGuiKey_Delete, true); break;
+
+    case ENGINE_KEY_CTRL_L: io.AddKeyEvent(ImGuiKey_LeftCtrl, true); break;
+    case ENGINE_KEY_CTRL_R:  io.AddKeyEvent(ImGuiKey_RightCtrl, true); break;
+    case ENGINE_KEY_SHIFT_L: io.AddKeyEvent(ImGuiKey_LeftShift, true); break;
+    case ENGINE_KEY_SHIFT_R: io.AddKeyEvent(ImGuiKey_RightShift, true); break;
+    case ENGINE_KEY_ALT_L: io.AddKeyEvent(ImGuiKey_LeftAlt, true); break;
+    case ENGINE_KEY_ALT_R: io.AddKeyEvent(ImGuiKey_RightAlt, true); break;
+    }
+}
+
+static void onSpecialKeyDownCallback(int key, int x, int y)
 {
     if (isExporting) return;
 
-    ImGui_ImplGLUT_SpecialFunc(key, x, y);
+    ImGuiIO& io = ImGui::GetIO();
+    addSpecialKeyEvents(io, key, true);
+    if (io.WantCaptureKeyboard) return;
+}
+
+static void onSpecialKeyUpCallback(int key, int x, int y)
+{
+    if (isExporting) return;
+
+    ImGuiIO& io = ImGui::GetIO();
+    addSpecialKeyEvents(io, key, false);
+    if (io.WantCaptureKeyboard) return;
 }
 
 static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
@@ -314,23 +356,64 @@ static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
     }
 }
 
-static void onMouseCallback(int buttonId, int buttonState, int mouseX, int mouseY)
+static void onMouseCallback(int buttonId, int buttonState, int x, int y)
 {
     if (isExporting) return;
+    std::cout << "Mouse: " << x << ", " << y << std::endl;
 
-    ImGui_ImplGLUT_MouseFunc(buttonId, buttonState, mouseX, mouseY);
+    ImGui_ImplGLUT_MouseFunc(buttonId, buttonState, x, y);
+    if (ImGui::GetIO().WantCaptureMouse) return;
 
-    if (ImGui::GetIO().WantCaptureMouse)
-    {
-        return;
+    // Track button states for dragging
+    if (buttonId == ENGINE_MOUSE_BUTTON_LEFT) {
+        isLeftDragging = (buttonState == ENGINE_MOUSE_BUTTON_DOWN);
     }
+    else if (buttonId == ENGINE_MOUSE_BUTTON_RIGHT || buttonId ==  ENGINE_MOUSE_BUTTON_MIDDLE) {
+        isRightDragging = (buttonState == ENGINE_MOUSE_BUTTON_DOWN);
+    }
+
+    // Initialize last position to avoid "jumps" when first clicking
+    lastMouseX = x;
+    lastMouseY = y;
 }
 
 static void onMouseMotionCallback(int x, int y) 
 {
     if (isExporting) return;
+    std::cout << "Mouse motion: " << x << ", " << y << std::endl;
 
     ImGui_ImplGLUT_MotionFunc(x, y);
+    if (ImGui::GetIO().WantCaptureMouse) return;
+
+    // Calculate how much the mouse moved
+    float deltaX = (float)(x - lastMouseX);
+    float deltaY = (float)(y - lastMouseY);
+
+    float mouseSensitivity = 0.2f; // Adjust this to your liking
+
+    // --- LEFT CLICK: ROTATION (Orbit/Look around) ---
+    if (isLeftDragging) {
+        // Rotation around World Y (Yaw) - same logic as your 'a'/'d' keys
+        glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(-deltaX * mouseSensitivity), glm::vec3(0.0f, 1.0f, 0.0f));
+
+        // Rotation around Camera Local X (Pitch) - same logic as your 'q'/'e' keys
+        glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(-deltaY * mouseSensitivity), glm::vec3(1.0f, 0.0f, 0.0f));
+
+        // Apply both to the camera matrix
+        mainCamera->setMatrix(rotationY * mainCamera->getMatrix() * rotationX);
+    }
+
+    // --- RIGHT CLICK: PANNING (Up/Down/Left/Right) ---
+    if (isRightDragging) {
+        float panSpeed = 0.5f;
+        // Panning usually moves relative to the camera's local axes
+        glm::vec3 translation(-deltaX * panSpeed, deltaY * panSpeed, 0.0f);
+        mainCamera->setMatrix(glm::translate(glm::mat4(1.0f), translation) * mainCamera->getMatrix());
+    }
+
+    // Update state for next frame
+    lastMouseX = x;
+    lastMouseY = y;
 }
 
 static void onPassiveMouseMotionCallback(int x, int y) 
@@ -338,6 +421,27 @@ static void onPassiveMouseMotionCallback(int x, int y)
     if (isExporting) return;
 
     ImGui_ImplGLUT_MotionFunc(x, y);
+    // if (ImGui::GetIO().WantCaptureMouse) return; // If callback needed uncomment this line
+}
+
+static void onMouseWheelCallback(int wheelId, int direction, int x, int y)
+{
+    if (isExporting) return;
+    std::cout << "Wheel Direction: " << direction << std::endl;
+
+    ImGui_ImplGLUT_MouseWheelFunc(wheelId, direction, x, y);
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.WantCaptureMouse) return;
+
+    bool isControlPressed = io.KeyCtrl;
+
+    float sensitivity = isControlPressed ? 5.0f : 10.0f;
+    float scrollDelta = (direction > 0) ? sensitivity : -sensitivity;
+
+    glm::vec3 forward = -glm::vec3(mainCamera->getMatrix()[2]);
+
+    glm::vec3 translation = glm::normalize(forward) * scrollDelta;
+    mainCamera->setMatrix(glm::translate(glm::mat4(1.0f), translation) * mainCamera->getMatrix());
 }
 
 //////////
@@ -402,14 +506,17 @@ int main(int argc, char* argv[])
     eng.setActiveCamera(mainCamera);
 
     // Callbacks
-    eng.setOnResizeCallback(onResize);
-    eng.setOnSpecialPressedCallback(onSpecialKeyCallback);
+    eng.setOnSpecialPressedCallback(onSpecialKeyDownCallback);
+    eng.setOnSpecialReleasedCallback(onSpecialKeyUpCallback);
     eng.setOnKeyboardPressedCallback(onKeyboardPressedCallback);
+
     eng.setOnMouseCallback(onMouseCallback);
     eng.setOnMouseMotionCallback(onMouseMotionCallback);
     eng.setOnPassiveMouseMotionCallback(onPassiveMouseMotionCallback);
-    eng.setOnTextDrawCallback(renderingImGui);
+    eng.setOnMouseWheelCallback(onMouseWheelCallback);
 
+    eng.setOnResizeCallback(onResize);
+    eng.setOnTextDrawCallback(renderingImGui);
     eng.start(renderingLoop);
 
     // Cleanup
