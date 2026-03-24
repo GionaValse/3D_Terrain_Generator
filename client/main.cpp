@@ -404,7 +404,7 @@ static void onMouseMotionCallback(int x, int y)
         glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(-deltaX * mouseSensitivity), glm::vec3(0.0f, 1.0f, 0.0f));
         glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(-deltaY * mouseSensitivity), glm::vec3(1.0f, 0.0f, 0.0f));
 
-        mainCamera->setMatrix(rotationY * mainCamera->getMatrix() * rotationX);
+        mainCamera->setMatrix(rotationX * rotationY * mainCamera->getMatrix());
     }
 
     if (isRightDragging) {
