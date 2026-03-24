@@ -16,7 +16,6 @@
 #include "ObjExporter.hpp"
 #include "GridGenerator.hpp"
 #include "SetupWindow.h"
-#include "EditViewWindow.h"
 #include "LoadingWindow.h"
 
 /////////////
@@ -311,6 +310,8 @@ static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
         return;
     }
 
+    if (!isGenerated) return;
+
 #ifdef _DEBUG
     if (key == 'v')
     {
@@ -322,47 +323,8 @@ static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
     const float rotSpeed = 2.0f;
     const float moveSpeed = 20.0f;
 
-    // Camera controls
-    if (key == 'a')
-    {
-        mainCamera->setMatrix(glm::rotate(glm::mat4(1.0f), glm::radians(-rotSpeed), glm::vec3(0.0f, 1.0f, 0.0f)) * mainCamera->getMatrix());
-    }
-    else if (key == 'd')
-    {
-        mainCamera->setMatrix(glm::rotate(glm::mat4(1.0f), glm::radians(rotSpeed), glm::vec3(0.0f, 1.0f, 0.0f)) * mainCamera->getMatrix());
-    }
-    else if (key == 'w')
-    {
-        glm::vec3 forward = -glm::vec3(mainCamera->getMatrix()[2]);
-        forward.y = 0.0f;
-        forward = glm::normalize(forward) * moveSpeed;
-        mainCamera->setMatrix(glm::translate(glm::mat4(1.0f), forward) * mainCamera->getMatrix());
-    }
-    else if (key == 's')
-    {
-        glm::vec3 forward = -glm::vec3(mainCamera->getMatrix()[2]);
-        forward.y = 0.0f;
-        forward = glm::normalize(forward) * moveSpeed;
-        mainCamera->setMatrix(glm::translate(glm::mat4(1.0f), -forward) * mainCamera->getMatrix());
-    }
-    else if (key == 'e')
-    {
-        mainCamera->setMatrix(mainCamera->getMatrix() * glm::rotate(glm::mat4(1.0f), glm::radians(rotSpeed), glm::vec3(1.0f, 0.0f, 0.0f)));
-    }
-    else if (key == 'q')
-    {
-        mainCamera->setMatrix(mainCamera->getMatrix() * glm::rotate(glm::mat4(1.0f), glm::radians(-rotSpeed), glm::vec3(1.0f, 0.0f, 0.0f)));
-    }
-    else if (key == 'r')
-    {
-        mainCamera->setMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, moveSpeed, 0.0f)) * mainCamera->getMatrix());
-    }
-    else if (key == 'f')
-    {
-        mainCamera->setMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -moveSpeed, 0.0f)) * mainCamera->getMatrix());
-    }
     // Toggle sun rotation
-    else if (key == 'g')
+    if (key == 'g')
     {
         sunRotating = !sunRotating;
     }
@@ -371,10 +333,10 @@ static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
 static void onMouseCallback(int buttonId, int buttonState, int x, int y)
 {
     if (isExporting) return;
-    std::cout << "Mouse: " << x << ", " << y << std::endl;
 
     ImGui_ImplGLUT_MouseFunc(buttonId, buttonState, x, y);
     if (ImGui::GetIO().WantCaptureMouse) return;
+    if (!isGenerated) return;
 
     if (buttonId == ENGINE_MOUSE_BUTTON_LEFT) {
         isLeftDragging = (buttonState == ENGINE_MOUSE_BUTTON_DOWN);
@@ -390,10 +352,10 @@ static void onMouseCallback(int buttonId, int buttonState, int x, int y)
 static void onMouseMotionCallback(int x, int y) 
 {
     if (isExporting) return;
-    std::cout << "Mouse motion: " << x << ", " << y << std::endl;
 
     ImGui_ImplGLUT_MotionFunc(x, y);
     if (ImGui::GetIO().WantCaptureMouse) return;
+    if (!isGenerated) return;
 
     float deltaX = (float)(x - lastMouseX);
     float deltaY = (float)(y - lastMouseY);
@@ -401,16 +363,23 @@ static void onMouseMotionCallback(int x, int y)
     float mouseSensitivity = 0.2f;
 
     if (isLeftDragging) {
-        glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(-deltaX * mouseSensitivity), glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(-deltaY * mouseSensitivity), glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::mat4 matrix = mainCamera->getMatrix();
+        glm::vec3 localRight = glm::normalize(glm::vec3(matrix[0]));
 
-        mainCamera->setMatrix(rotationX * rotationY * mainCamera->getMatrix());
+        glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(deltaY * mouseSensitivity), localRight);
+        glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(deltaX * mouseSensitivity), glm::vec3(0.0f, 1.0f, 0.0f));
+
+        mainCamera->setMatrix(rotationY * rotationX * matrix);
     }
 
     if (isRightDragging) {
         float panSpeed = 0.5f;
 
-        glm::vec3 translation(-deltaX * panSpeed, deltaY * panSpeed, 0.0f);
+        glm::vec3 right = glm::normalize(glm::vec3(mainCamera->getMatrix()[0]));
+        glm::vec3 up = glm::normalize(glm::vec3(mainCamera->getMatrix()[1]));
+
+        glm::vec3 translation = (right * (-deltaX * panSpeed)) + (up * (deltaY * panSpeed));
+
         mainCamera->setMatrix(glm::translate(glm::mat4(1.0f), translation) * mainCamera->getMatrix());
     }
 
@@ -429,11 +398,11 @@ static void onPassiveMouseMotionCallback(int x, int y)
 static void onMouseWheelCallback(int wheelId, int direction, int x, int y)
 {
     if (isExporting) return;
-    std::cout << "Wheel Direction: " << direction << std::endl;
 
     ImGui_ImplGLUT_MouseWheelFunc(wheelId, direction, x, y);
     ImGuiIO& io = ImGui::GetIO();
     if (io.WantCaptureMouse) return;
+    if (!isGenerated) return;
 
     bool isControlPressed = io.KeyCtrl;
 

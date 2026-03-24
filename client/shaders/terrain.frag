@@ -4,6 +4,7 @@ out vec4 fragOutput;
 in vec4 fragPosition;
 in vec3 normal;
 in vec2 texCoord;
+in float v_Height;
 
 // Materiale (stessi nomi dell'engine)
 uniform vec3 matEmission;
@@ -24,16 +25,27 @@ uniform float spotExponent[8];
 uniform int activeLightCount;
 
 // Texture
-layout(binding = 0) uniform sampler2D texSampler;
+layout(binding = 1) uniform sampler2D texSampler;
 uniform bool hasTexture;
 
 void main() {
     vec4 texel = hasTexture ? texture(texSampler, texCoord) : vec4(1.0);
 
+    vec3 colorGrass = vec3(0.2, 0.5, 0.2); // Verde
+    vec3 colorRock  = vec3(0.5, 0.5, 0.5); // Grigio
+    vec3 colorSnow  = vec3(0.9, 0.9, 0.9); // Bianco
+
+    float rockBlend = smoothstep(0.3, 0.5, v_Height); 
+    float snowBlend = smoothstep(0.7, 0.85, v_Height);
+
+    vec3 terrainBaseColor = mix(colorGrass, colorRock, rockBlend);
+    terrainBaseColor = mix(terrainBaseColor, colorSnow, snowBlend);
+
     vec3 norm    = normalize(normal);
     vec3 viewDir = normalize(-fragPosition.xyz); // view space: camera all'origine
 
     vec3 totalLightColor = matEmission;
+    vec3 specularLight = vec3(0.0);
 
     for (int i = 0; i < activeLightCount; i++) {
         vec3 lightDir;
@@ -66,8 +78,10 @@ void main() {
             }
 
             totalLightColor += (ambient + diffuse + specular) * attenuation;
+            specularLight += specular * attenuation;
         }
     }
 
-    fragOutput = texel * vec4(totalLightColor, 1.0);
+    vec3 finalColor = (terrainBaseColor * texel.rgb * totalLightColor) + specularLight;
+    fragOutput = vec4(finalColor, 1.0);
 }

@@ -6,6 +6,7 @@ layout (location = 2) in vec2 aTexCoord;
 out vec4 fragPosition;
 out vec2 texCoord;
 out vec3 normal;
+out float v_Height;
 
 uniform mat4 modelview;
 uniform mat4 projection;
@@ -21,6 +22,8 @@ void main() {
     float hR = texture(heightMap, aTexCoord + vec2( texelSize, 0.0)).r * heightScale;
     float hD = texture(heightMap, aTexCoord + vec2(0.0, -texelSize)).r * heightScale;
     float hU = texture(heightMap, aTexCoord + vec2(0.0,  texelSize)).r * heightScale;
+
+    v_Height = h / heightScale;
 
     vec3 n;
     n.x = hL - hR;

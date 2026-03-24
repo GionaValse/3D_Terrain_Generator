@@ -336,7 +336,7 @@ void Eng::Base::initEngine(int* argc, char* argv[], const char* winName, int wid
 #endif
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
 
     // 6. Callbacks setting
     glutDisplayFunc(EngineDisplayCallback);
@@ -365,7 +365,7 @@ void Eng::Base::initEngine(int* argc, char* argv[], const char* winName, int wid
     printInitInfo();
 
     // Initialize shaders (must be after GL context is ready)
-    initShaders();
+    // initShaders();
 }
 
 void Eng::Base::initShaders()
