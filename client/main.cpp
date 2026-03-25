@@ -18,6 +18,7 @@
 
 #include "SetupWindow.h"
 #include "LoadingWindow.h"
+#include "ToolWindow.h"
 
 /////////////
 // Globals //
@@ -35,6 +36,7 @@ bool isWireFrameMode = false;
 
 SetupWindow* g_SetupWin = nullptr;
 LoadingWindow* g_LoadingWin = nullptr;
+ToolWindow* g_ToolWin = nullptr;
 
 std::vector<float> image;
 bool isGenerated = false;
@@ -121,7 +123,7 @@ static void exportTerrain()
 static void findCoordOnTexture(glm::vec3 coords)
 {
     terrain::TerrainConfig config = g_SetupWin->getTerrainConfiguartion();
-    float terrainPhysicalSize = config.size;
+    float terrainPhysicalSize = 512.0f;
     int imageResolution = config.size;
 
     float localX = coords.x + (terrainPhysicalSize / 2.0f);
@@ -282,6 +284,7 @@ static void renderingImGui(Eng::GUIObjects obj)
 
     if (!isGenerated && g_SetupWin) g_SetupWin->render();
     if (isExporting && g_LoadingWin) g_LoadingWin->render();
+    if (g_ToolWin) g_ToolWin->render();
 
     if (g_SetupWin && g_SetupWin->checkAndResetTrigger()) {
         generateTerrain(g_SetupWin->getTerrainConfiguartion(), g_SetupWin->getHeightScale());
@@ -441,8 +444,8 @@ static void onMouseMotionCallback(int x, int y)
         glm::mat4 matrix = mainCamera->getMatrix();
         glm::vec3 localRight = glm::normalize(glm::vec3(matrix[0]));
 
-        glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(deltaY * mouseSensitivity), localRight);
-        glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(deltaX * mouseSensitivity), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(-deltaY * mouseSensitivity), localRight);
+        glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(-deltaX * mouseSensitivity), glm::vec3(0.0f, 1.0f, 0.0f));
 
         mainCamera->setMatrix(rotationY * rotationX * matrix);
     }
@@ -511,6 +514,7 @@ int main(int argc, char* argv[])
 
     g_SetupWin = new SetupWindow();
     g_LoadingWin = new LoadingWindow();
+    g_ToolWin = new ToolWindow();
 
     // Terrain shader
     Eng::Shader* vShader = new Eng::Shader();

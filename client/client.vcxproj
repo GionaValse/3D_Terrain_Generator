@@ -133,6 +133,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AnchorWindow.h" />
     <ClInclude Include="BaseWindow.h" />
     <ClInclude Include="GridGenerator.hpp" />
     <ClInclude Include="ImageExporter.hpp" />
@@ -144,8 +145,10 @@
     <ClInclude Include="TerrainConfig.hpp" />
     <ClInclude Include="TerrainGenerator.hpp" />
     <ClInclude Include="tinyexr.h" />
+    <ClInclude Include="ToolWindow.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnchorWindow.cpp" />
     <ClCompile Include="BaseWindow.cpp" />
     <ClCompile Include="CentredWindow.cpp" />
     <ClCompile Include="CentredWindow.h" />
@@ -155,6 +158,7 @@
     <ClCompile Include="miniz.c" />
     <ClCompile Include="SetupWindow.cpp" />
     <ClCompile Include="TerrainGenerator.cpp" />
+    <ClCompile Include="ToolWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\engine\engine.vcxproj">
