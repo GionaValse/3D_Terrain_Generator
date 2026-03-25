@@ -18,15 +18,8 @@ namespace Eng {
 	Node::Node(const std::string& name, const glm::mat4& matrix)
 		: Object(name),
 		m_parent{ nullptr },
-		m_matrix{ matrix },
-		m_isMoving(false),
-		anchor{ nullptr },
-		speed{ 60.0f },
-		speed_counter{ 0 }
-
-	{
-		m_destinationMatrix = matrix;
-	}
+		m_matrix{ matrix }
+	{}
 
 	Node::~Node() {
 		for (int i = 0; i < m_children.size(); i++) {
@@ -99,82 +92,12 @@ namespace Eng {
 		return false;
 	}
 
-	float Node::getSpeed() const { return speed; }
-	void Node::setSpeed(float speed_) { speed = speed_; }
-
 	const glm::mat4 Node::getMatrix() const {
 		return m_matrix;
 	}
 
 	void Node::setMatrix(const glm::mat4& matrix) {
 		m_matrix = matrix;
-	}
-
-	void Node::resetMove() {
-		m_stepMatrix.clear();
-		m_steps.clear();
-		m_isMoving = false;
-	}
-
-	void Node::stopMove() {
-		m_isMoving = false;
-	}
-
-	void Node::resumeMove() {
-		m_isMoving = true;
-	}
-
-	void Node::move(glm::mat4 stepMatrix, int steps) {
-		if (steps >= 0) {
-			for (size_t i = 0; i < steps; i++) {
-				m_destinationMatrix = stepMatrix * m_destinationMatrix;
-			}
-		}
-
-		for (size_t i = 0; i < m_stepMatrix.size(); i++) {
-			if (m_stepMatrix[i] == stepMatrix && m_steps[i] == -1) {
-				m_isMoving = true;
-				return;
-			}
-		}
-
-		m_stepMatrix.push_back(stepMatrix);
-		m_isMoving = true;
-		m_steps.push_back(steps);
-	}
-
-	bool Node::isMoving() const {
-		return m_isMoving;
-	}
-
-	void Node::calculateMove() {
-		speed_counter++;
-		if (speed_counter >= Eng::Base::getInstance().getCurrentFPS() * 1 / speed) {
-			if (m_stepMatrix.size() > 0) {
-				int count = 0;
-				for (size_t i = 0; i < m_stepMatrix.size(); i++) {
-					if (m_steps[i] > 0) {
-						setMatrix(m_stepMatrix[i] * getMatrix());
-						m_steps[i]--;
-					}
-					if (m_steps[i] == 0) {
-						m_steps.erase(m_steps.begin() + i);
-						m_stepMatrix.erase(m_stepMatrix.begin() + i);
-					}
-					else if (m_steps[i] == -1) {
-						count++;
-						setMatrix(m_stepMatrix[i] * getMatrix());
-					}
-				}
-				if (m_stepMatrix.size() == count) {
-					m_isMoving = false;
-				}
-			}
-			else {
-				m_isMoving = false;
-			}
-			speed_counter = 0;
-		}
 	}
 
 	Node* Node::getChild(unsigned int n) const {

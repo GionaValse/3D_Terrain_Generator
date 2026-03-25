@@ -25,31 +25,6 @@ class ENG_API Node : public Eng::Object {
     /** @brief Local transformation matrix (position, rotation, scale) relative to the parent node. */
     glm::mat4 m_matrix;
 
-    ////////////////
-    // Animations //
-    ////////////////
-
-    /** @brief Flag indicating if the node is currently undergoing a multi-step scripted movement. */
-    bool m_isMoving;
-
-    /** @brief The target transformation matrix for scripted movement. */
-    glm::mat4 m_destinationMatrix;
-
-    /** @brief List of intermediate transformation matrices to be applied during scripted movement. */
-    std::vector<glm::mat4> m_stepMatrix;
-
-    /** @brief List of steps remaining for each matrix in m_stepMatrix. */
-    std::vector<int> m_steps;
-
-    float speed;
-    int speed_counter;
-
-    /**
-     * @brief An optional anchor point reference, likely used for complex movement or relative positioning.
-     * @note This member's exact usage should be documented further if known (e.g., "Anchor point for joint rotation").
-     */
-    Eng::Node* anchor;
-
    public:
     /**
      * @brief Constructor for a scene Node.
@@ -154,50 +129,10 @@ class ENG_API Node : public Eng::Object {
     void setMatrix(const glm::mat4& matrix = glm::mat4(1.0f));
 
     /**
-     * @brief Initializes a multi-step movement for the node.
-     *
-     * This method schedules a transformation to be applied over multiple frames.
-     * @param stepMatrix The incremental transformation matrix to apply in each step.
-     * @param steps The total number of frames over which the movement should occur.
-     */
-    void move(glm::mat4 stepMatrix, int steps);
-
-    /**
-     * @brief Clears any pending or current movement steps, stopping any scripted movement.
-     */
-    void resetMove();
-
-    /**
-     * @brief Checks if the node is currently in the middle of a scripted move animation.
-     * @return \c true if the node is moving, \c false otherwise.
-     */
-    bool isMoving() const;
-
-    /**
-     * @brief Executes the next step of the scripted movement.
-     *
-     * This method should be called once per frame when \c isMoving() is \c true.
-     */
-    void calculateMove();
-
-    /**
-     * @brief Pauses the current scripted movement without resetting its progress.
-     */
-    void stopMove();
-
-    /**
-     * @brief Resumes a previously paused scripted movement.
-     */
-    void resumeMove();
-
-    /**
      * @brief Calculates and retrieves the node's final world coordinate transformation matrix.
      *
      * This involves recursively concatenating the local matrix with all parent matrices up to the root.
      * @return The world transformation matrix (\c glm::mat4).
      */
     glm::mat4 getWorldCoordinateMatrix() const;
-
-    float getSpeed() const;
-    void setSpeed(float speed_);
 };

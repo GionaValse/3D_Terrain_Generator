@@ -305,6 +305,8 @@ void Eng::Base::initEngine(int* argc, char* argv[], const char* winName, int wid
 #endif
 
     glutInitWindowSize(width, height);
+    reserved->width = width;
+    reserved->height = height;
 
     glutInitWindowPosition(100, 100);
 
@@ -648,6 +650,33 @@ void Eng::Base::fixCameraViewport(Camera* camera, int width, int height) {
 
 int Eng::Base::getCurrentFPS() {
     return fps;
+}
+
+bool Eng::Base::getClickedNode(int x, int y, glm::vec3& coord) {
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    float winX = (float)x;
+    float winY = (float)viewport[3] - (float)y;
+
+    float depth;
+    glReadPixels((int)winX, (int)winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
+
+    if (depth >= 0.999f) {
+        return false;
+    }
+
+    glm::mat4 viewMatrix = glm::inverse(currentActiveCamera->getMatrix());
+    glm::mat4 projectionMatrix = currentActiveCamera->getProjectionMatrix();
+
+    coord = glm::unProject(
+        glm::vec3(winX, winY, depth),
+        viewMatrix,
+        projectionMatrix,
+        glm::vec4(viewport[0], viewport[1], viewport[2], viewport[3])
+    );
+
+    return true;
 }
 
 void Eng::Base::changeWireFrame(bool isWireFrame) {

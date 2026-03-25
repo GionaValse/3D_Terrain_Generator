@@ -60,6 +60,35 @@ namespace Eng
         glBindTexture(GL_TEXTURE_2D, texId);
     }
 
+    void Texture::updateSubImage(int offsetX, int offsetY, int width, int height, const std::vector<float>& data, int totalImageWidth)
+    {
+        // 1. Attiviamo questa texture
+        glBindTexture(GL_TEXTURE_2D, texId);
+
+        // 2. Diciamo a OpenGL quanto è "larga" l'immagine originale in memoria
+        // Così sa di quanti float deve saltare per andare a capo-riga del quadratino
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, totalImageWidth);
+
+        // 3. Calcoliamo il puntatore al primissimo pixel in alto a sinistra del nostro quadratino modificato.
+        // Moltiplichiamo per 3 perché ogni pixel ha 3 float (R, G, B)
+        const float* subImageStartPtr = &data[(offsetY * totalImageWidth + offsetX) * 3];
+
+        // 4. Inviamo SOLO il quadratino alla GPU! Operazione quasi istantanea.
+        glTexSubImage2D(
+            GL_TEXTURE_2D,
+            0,
+            offsetX, offsetY,
+            width, height,
+            GL_RGB,
+            GL_FLOAT,
+            subImageStartPtr
+        );
+
+        // 5. IMPORTANTISSIMO: Ripristiniamo il comportamento standard di OpenGL!
+        // Se non rimettiamo questo a 0, il caricamento delle prossime texture esploderà.
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    }
+
     void Texture::loadTexture(const std::string &filePath)
     {
         // Load an image from file:

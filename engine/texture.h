@@ -50,6 +50,8 @@ public:
      */
     void render(glm::mat4 modelview = glm::mat4(1.0f)) override;
 
+    void updateSubImage(int offsetX, int offsetY, int width, int height, const std::vector<float>& data, int totalImageWidth);
+
 private:
     /** @brief The unique identifier (handle) used by the graphics API (e.g., OpenGL texture ID) for the texture data on the GPU. */
     unsigned int texId;

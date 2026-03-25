@@ -77,7 +77,6 @@ namespace Eng
 
         Instance inst;
         inst.node = root;
-        inst.node->calculateMove();
         inst.nodeWorldMatrix = root->getWorldCoordinateMatrix();
 
         if (dynamic_cast<Light*>(inst.node) != nullptr)

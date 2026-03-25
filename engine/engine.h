@@ -230,6 +230,8 @@ namespace Eng
 		 */
 		int getCurrentFPS();
 
+		bool getClickedNode(int x, int y, glm::vec3& coord);
+
 		// Engine external callbacks:
 		/**
 		 * @brief Sets the callback function executed when the rendering window is resized.
