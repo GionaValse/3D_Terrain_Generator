@@ -9,7 +9,7 @@ public:
 		const std::string& name = "",
 		bool startVisible = true,
 		bool cancelable = false,
-		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse
+		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration
 	);
 
 	void basePosition() override;

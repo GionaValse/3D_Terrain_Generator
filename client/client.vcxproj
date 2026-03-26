@@ -135,6 +135,9 @@
   <ItemGroup>
     <ClInclude Include="AnchorWindow.h" />
     <ClInclude Include="BaseWindow.h" />
+    <ClInclude Include="BrushBrushModel.h" />
+    <ClInclude Include="BrushModel.h" />
+    <ClInclude Include="ErosionBrushModel.h" />
     <ClInclude Include="GridGenerator.hpp" />
     <ClInclude Include="ImageExporter.hpp" />
     <ClInclude Include="LoadingWindow.h" />
@@ -145,20 +148,27 @@
     <ClInclude Include="TerrainConfig.hpp" />
     <ClInclude Include="TerrainGenerator.hpp" />
     <ClInclude Include="tinyexr.h" />
-    <ClInclude Include="ToolWindow.h" />
+    <ClInclude Include="BrushToolWindow.h" />
+    <ClInclude Include="ViewToolModel.h" />
+    <ClInclude Include="ViewToolWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnchorWindow.cpp" />
     <ClCompile Include="BaseWindow.cpp" />
+    <ClCompile Include="BrushBrushModel.cpp" />
+    <ClCompile Include="BrushModel.cpp" />
     <ClCompile Include="CentredWindow.cpp" />
     <ClCompile Include="CentredWindow.h" />
+    <ClCompile Include="ErosionBrushModel.cpp" />
     <ClCompile Include="ImageExporter.cpp" />
     <ClCompile Include="LoadingWindow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="miniz.c" />
     <ClCompile Include="SetupWindow.cpp" />
     <ClCompile Include="TerrainGenerator.cpp" />
-    <ClCompile Include="ToolWindow.cpp" />
+    <ClCompile Include="BrushToolWindow.cpp" />
+    <ClCompile Include="ViewToolModel.cpp" />
+    <ClCompile Include="ViewToolWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\engine\engine.vcxproj">

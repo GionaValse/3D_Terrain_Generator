@@ -2,15 +2,29 @@
 
 #include "BaseWindow.h"
 
+enum class AnchorSide { LEFT, RIGHT, TOP, BOTTOM, CENTER };
+
 class AnchorWindow : public BaseWindow
 {
 public:
 	AnchorWindow(
 		const std::string& name = "",
+		AnchorSide side = AnchorSide::RIGHT, 
+		ImVec2 offset = ImVec2(0, 0),
 		bool startVisible = true,
 		bool cancelable = false,
-		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse
+		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration
 	);
 
 	void basePosition() override;
+
+	AnchorSide getAnchorSide() const;
+
+	ImVec2 getOffset() const;
+
+	void setAnchor(AnchorSide newSide, ImVec2 newOffset = ImVec2(0, 0));
+
+private:
+	AnchorSide side;
+	ImVec2 offset;
 };

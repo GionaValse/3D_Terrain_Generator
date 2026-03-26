@@ -28,18 +28,25 @@ uniform int activeLightCount;
 layout(binding = 1) uniform sampler2D texSampler;
 uniform bool hasTexture;
 
+// Terrain color
+uniform bool hasColor;
+
 void main() {
     vec4 texel = hasTexture ? texture(texSampler, texCoord) : vec4(1.0);
 
-    vec3 colorGrass = vec3(0.2, 0.5, 0.2); // Verde
-    vec3 colorRock  = vec3(0.5, 0.5, 0.5); // Grigio
-    vec3 colorSnow  = vec3(0.9, 0.9, 0.9); // Bianco
+    vec3 terrainBaseColor = vec3(1.0f);
 
-    float rockBlend = smoothstep(0.3, 0.5, v_Height); 
-    float snowBlend = smoothstep(0.7, 0.85, v_Height);
+    if (hasColor) {
+        vec3 colorGrass = vec3(0.2, 0.5, 0.2); // Verde
+        vec3 colorRock  = vec3(0.5, 0.5, 0.5); // Grigio
+        vec3 colorSnow  = vec3(0.9, 0.9, 0.9); // Bianco
 
-    vec3 terrainBaseColor = mix(colorGrass, colorRock, rockBlend);
-    terrainBaseColor = mix(terrainBaseColor, colorSnow, snowBlend);
+        float rockBlend = smoothstep(0.3, 0.5, v_Height); 
+        float snowBlend = smoothstep(0.7, 0.85, v_Height);
+
+        terrainBaseColor = mix(colorGrass, colorRock, rockBlend);
+        terrainBaseColor = mix(terrainBaseColor, colorSnow, snowBlend);
+    }
 
     vec3 norm    = normalize(normal);
     vec3 viewDir = normalize(-fragPosition.xyz); // view space: camera all'origine

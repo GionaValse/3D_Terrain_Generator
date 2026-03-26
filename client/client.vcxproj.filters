@@ -19,6 +19,12 @@
     <Filter Include="File di origine\views">
       <UniqueIdentifier>{2511c713-ae55-47dd-b266-2d51d88523af}</UniqueIdentifier>
     </Filter>
+    <Filter Include="File di intestazione\models">
+      <UniqueIdentifier>{40997d9b-f247-4858-a9b1-ed4929de7bc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File di origine\models">
+      <UniqueIdentifier>{a7b84027-9a74-49f0-9b03-a5d9ed5c8a8b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GridGenerator.hpp">
@@ -57,8 +63,23 @@
     <ClInclude Include="AnchorWindow.h">
       <Filter>File di intestazione\views</Filter>
     </ClInclude>
-    <ClInclude Include="ToolWindow.h">
+    <ClInclude Include="BrushToolWindow.h">
       <Filter>File di intestazione\views</Filter>
+    </ClInclude>
+    <ClInclude Include="BrushModel.h">
+      <Filter>File di intestazione\models</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewToolWindow.h">
+      <Filter>File di intestazione\views</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewToolModel.h">
+      <Filter>File di intestazione\models</Filter>
+    </ClInclude>
+    <ClInclude Include="BrushBrushModel.h">
+      <Filter>File di intestazione\models</Filter>
+    </ClInclude>
+    <ClInclude Include="ErosionBrushModel.h">
+      <Filter>File di intestazione\models</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -92,8 +113,23 @@
     <ClCompile Include="AnchorWindow.cpp">
       <Filter>File di origine\views</Filter>
     </ClCompile>
-    <ClCompile Include="ToolWindow.cpp">
+    <ClCompile Include="BrushToolWindow.cpp">
       <Filter>File di origine\views</Filter>
+    </ClCompile>
+    <ClCompile Include="BrushModel.cpp">
+      <Filter>File di origine\models</Filter>
+    </ClCompile>
+    <ClCompile Include="ViewToolWindow.cpp">
+      <Filter>File di origine\views</Filter>
+    </ClCompile>
+    <ClCompile Include="ViewToolModel.cpp">
+      <Filter>File di origine\models</Filter>
+    </ClCompile>
+    <ClCompile Include="BrushBrushModel.cpp">
+      <Filter>File di origine\models</Filter>
+    </ClCompile>
+    <ClCompile Include="ErosionBrushModel.cpp">
+      <Filter>File di origine\models</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

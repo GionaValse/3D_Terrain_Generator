@@ -20,9 +20,9 @@
 namespace Eng
 {
 
-    ////////////////
-    // Texture CLASS //
-    ////////////////
+    ///////////////////
+    // TEXTURE CLASS //
+    ///////////////////
 
     Texture::Texture(std::string name, const std::string &filePath)
         : Object(name),
@@ -62,18 +62,11 @@ namespace Eng
 
     void Texture::updateSubImage(int offsetX, int offsetY, int width, int height, const std::vector<float>& data, int totalImageWidth)
     {
-        // 1. Attiviamo questa texture
         glBindTexture(GL_TEXTURE_2D, texId);
-
-        // 2. Diciamo a OpenGL quanto è "larga" l'immagine originale in memoria
-        // Così sa di quanti float deve saltare per andare a capo-riga del quadratino
         glPixelStorei(GL_UNPACK_ROW_LENGTH, totalImageWidth);
 
-        // 3. Calcoliamo il puntatore al primissimo pixel in alto a sinistra del nostro quadratino modificato.
-        // Moltiplichiamo per 3 perché ogni pixel ha 3 float (R, G, B)
         const float* subImageStartPtr = &data[(offsetY * totalImageWidth + offsetX) * 3];
 
-        // 4. Inviamo SOLO il quadratino alla GPU! Operazione quasi istantanea.
         glTexSubImage2D(
             GL_TEXTURE_2D,
             0,
@@ -84,9 +77,12 @@ namespace Eng
             subImageStartPtr
         );
 
-        // 5. IMPORTANTISSIMO: Ripristiniamo il comportamento standard di OpenGL!
-        // Se non rimettiamo questo a 0, il caricamento delle prossime texture esploderà.
         glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    }
+
+    unsigned int Texture::getTexId() const
+    {
+        return texId;
     }
 
     void Texture::loadTexture(const std::string &filePath)
@@ -100,18 +96,26 @@ namespace Eng
             return;
         }
 
+        bool useAlpha = FreeImage_GetBPP(bitmap) == 32;
+        int inFormat = useAlpha ? GL_RGBA8 : GL_RGB8;
+        GLenum exFormat = useAlpha ? GL_BGRA : GL_BGR;
+
         glGenTextures(1, &texId);
         glBindTexture(GL_TEXTURE_2D, texId);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
         int width = FreeImage_GetWidth(bitmap);
         int height = FreeImage_GetHeight(bitmap);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, (void *)FreeImage_GetBits(bitmap));
+        glTexImage2D(GL_TEXTURE_2D, 0, inFormat, width, height, 0, exFormat, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(bitmap));
         glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+        // Free resource
+        FreeImage_Unload(bitmap);
     }
 }; // end of namespace Eng::

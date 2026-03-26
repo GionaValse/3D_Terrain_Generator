@@ -52,6 +52,8 @@ public:
 
     void updateSubImage(int offsetX, int offsetY, int width, int height, const std::vector<float>& data, int totalImageWidth);
 
+    unsigned int getTexId() const;
+
 private:
     /** @brief The unique identifier (handle) used by the graphics API (e.g., OpenGL texture ID) for the texture data on the GPU. */
     unsigned int texId;
