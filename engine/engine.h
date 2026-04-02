@@ -216,6 +216,12 @@ namespace Eng
 		void setActiveCamera(Camera *camera);
 
 		/**
+		* @brief Gets the currently active camera used for rendering.
+		* @return A pointer to the active Camera object, or \c nullptr if no camera is set.
+		*/
+		Camera* getActiveCamera() const;
+
+		/**
 		 * @brief Forces a camera to recalculate its viewport and projection matrix.
 		 * @param camera A pointer to the Camera object to be updated.
 		 * @param width The new width of the viewport.

@@ -167,6 +167,8 @@ namespace Eng
 		glBindVertexArray(0);
 
 		buffersInitialized = true;
+
+		loadShaderParams(Shader::getCurrentInstance());
     }
 
     void Mesh::deleteBuffers()

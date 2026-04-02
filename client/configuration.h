@@ -1,0 +1,5 @@
+#pragma once
+
+#define CURSOR_SENSITIVITY 0.2f
+#define ZOOM_SENSITIVITY 10.0f
+#define ZOOM_CTRL_SENSITIVITY 7.5f

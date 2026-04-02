@@ -1,54 +1,61 @@
-#include <algorithm>
-#include <cmath>
+#include "TerrainGenerator.h"
 
-#include "TerrainGenerator.hpp"
+#include <vector>
 
-namespace terrain {
+#include <glm/glm.hpp>
 
-    TerrainGenerator::TerrainGenerator(const TerrainConfig& config)
-        : m_config(config), m_perlin(config.seed) 
-    {
-    }
 
-    std::vector<float> TerrainGenerator::generate() const
-    {
-        const int width = m_config.size;
-        const int height = m_config.size;
-        std::vector<float> image(width * height * 3);
-
-        const double macroAmplifier = 10.0;
-        const double microAmplifier = 1.0;
-
-        const double macroFrequency = m_config.frequency;
-        const double microFrequency = m_config.frequency * 4.0;
-
-        const double macroWeight = 0.85;
-        const double microWeight = 0.15;
-
-        for (int y = 0; y < height; ++y) {
-            for (int x = 0; x < width; ++x) {
-                double nx = static_cast<double>(x) / width;
-                double ny = static_cast<double>(y) / height;
-
-                double macroNoise = m_perlin.noise2D(nx * macroFrequency, ny * macroFrequency) * macroAmplifier;
-
-                double microNoise = m_perlin.normalizedOctave2D(nx * microFrequency, ny * microFrequency, m_config.octaves) * microAmplifier;
-
-                double macro01 = (macroNoise + macroAmplifier) / (2.0 * macroAmplifier);
-                double micro01 = (microNoise + microAmplifier) / (2.0 * microAmplifier);
-
-                double noiseValue = macro01 * macroWeight + micro01 * microWeight;
-
-                noiseValue = std::pow(noiseValue, 1.5);
-
-                int pixelIndex = (y * width + x) * 3;
-                image[pixelIndex + 0] = static_cast<float>(noiseValue);
-                image[pixelIndex + 1] = static_cast<float>(noiseValue);
-                image[pixelIndex + 2] = static_cast<float>(noiseValue);
-            }
-        }
-
-        return image;
-    }
-
+TerrainGenerator::TerrainGenerator(const TerrainConfig& config)
+	: m_config(config)
+{
 }
+
+Eng::Mesh* TerrainGenerator::generate() const{
+	float resolution = 1.0;
+	float size = m_config.size;
+	std::vector<glm::vec3> vertexes;
+	std::vector<glm::uvec3> faces;
+	std::vector<glm::vec3> normals;
+	std::vector<glm::vec2> textureCoordinates;
+
+	int segments = static_cast<int>(m_config.size / resolution);
+	int vertexCount = segments + 1;
+
+	vertexes.reserve(vertexCount * vertexCount);
+	faces.reserve(segments * segments * 2);
+
+	for (int z = 0; z < vertexCount; ++z)
+	{
+		for (int x = 0; x < vertexCount; ++x)
+		{
+			float xPos = x * resolution - (size / 2.0f);
+			float zPos = z * resolution - (size / 2.0f);
+
+			vertexes.push_back(glm::vec3(xPos, 0.0f, zPos));
+			// normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f)); // GPU edit normals by shaders
+
+			float xCoord = (float)x / segments;
+			float zCoord = (float)z / segments;
+
+			textureCoordinates.push_back(glm::vec2(xCoord, zCoord));
+		}
+	}
+
+	for (int z = 0; z < segments; ++z)
+	{
+		for (int x = 0; x < segments; ++x)
+		{
+			unsigned int topLeft = z * vertexCount + x;
+			unsigned int topRight = z * vertexCount + (x + 1);
+			unsigned int bottomLeft = (z + 1) * vertexCount + x;
+			unsigned int bottomRight = (z + 1) * vertexCount + (x + 1);
+
+			faces.push_back(glm::uvec3(topLeft, bottomLeft, topRight));
+			faces.push_back(glm::uvec3(topRight, bottomLeft, bottomRight));
+		}
+	}
+
+	return new Eng::Mesh("GridMesh", glm::mat4(1.0f), vertexes, faces, normals, textureCoordinates);
+}
+
+

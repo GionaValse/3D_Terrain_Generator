@@ -1,5 +1,5 @@
 #pragma once
-#include "TerrainConfig.hpp"
+#include "TextureConfig.h"
 #include <vector>
 #include <string>
 
@@ -11,7 +11,7 @@ namespace terrain
     public:
         static bool saveEXR(
             const std::vector<float> &image, 
-            const TerrainConfig &config, 
+            const TextureConfig &config, 
             std::string &fileName,
             const std::string &outputDir = "bin/noises"
         );

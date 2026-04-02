@@ -11,42 +11,60 @@
 
 #include "engine.h"
 
-#include "TerrainGenerator.hpp"
+#include "TerrainGenerator.h"
+#include "TextureGenerator.h"
 #include "ImageExporter.hpp"
 #include "ObjExporter.hpp"
-#include "GridGenerator.hpp"
+
+#include "configuration.h"
+
+// Models //
+#include "CursorTool.h"
+
+#include "ErosionBrushTool.h"
+#include "SculpingBrushTool.h"
+#include "SmoothingBrushTool.h"
+
+#include "ShadesVisualTool.h"
+#include "SolidVisualTool.h"
+#include "WireframeVisualTool.h"
+
+// Views //
+#include "PointerToolWindow.h"
+#include "VisualToolWindow.h"
 
 #include "SetupWindow.h"
 #include "LoadingWindow.h"
-#include "BrushToolWindow.h"
-#include "ViewToolWindow.h"
 
-#include "BrushBrushModel.h"
-#include "ErosionBrushModel.h"
+// Controllers //
+#include "ConfigController.h"
+#include "PointerController.h"
+#include "VisualController.h"
+
+/////////////////
+// DISPATCHERS //
+/////////////////
+
+using MouseMoveDispatcher = EventDispatcher<int, int, int, int>;
+using MouseWheelDispatcher = EventDispatcher<int, int, int>;
 
 /////////////
 // Globals //
 /////////////
 
+std::vector<BaseWindow*> windows;
+
 Eng::Camera* mainCamera = nullptr;
 Eng::Mesh* gridMesh = nullptr;
 Eng::Shader* terrainShader = nullptr;
-Eng::Texture* heightMap = nullptr;
 Eng::InfiniteLight* sunLight = nullptr;
 
 SetupWindow* g_SetupWin = nullptr;
 LoadingWindow* g_LoadingWin = nullptr;
-BrushToolWindow* g_BrushToolWin = nullptr;
-ViewToolWindow* g_ViewToolWin = nullptr;
-
-BrushBrushModel* brushBrush = nullptr;
-ErosionBrushModel* erosionBrush = nullptr;
 
 std::vector<float> image;
 bool isWireFrameMode = false;
 bool isGenerated = false;
-
-int hasColorLoc = -1;
 
 // Sun parameters
 float sunAzimuth = glm::radians(210.0f);
@@ -81,14 +99,21 @@ std::atomic<bool> isExporting = false;
 // Terrain Generator //
 ///////////////////////
 
-static void generateTerrain(terrain::TerrainConfig config, float heightScale)
+static void generateTerrain(float heightScale)
 {
-	terrain::TerrainGenerator generator(config);
+	ConfigController& config = ConfigController::getInstance();
+
+	TextureConfig textureConfiguration = config.getActiveTextureConfig();
+	TerrainConfig terrainConfiguration = config.getActiveTerrainConfig();
+
+	TextureGenerator textureGenerator(textureConfiguration);
+	TerrainGenerator terrainGenerator(terrainConfiguration);
+
 	image.clear();
-	image = generator.generate();
+	image = textureGenerator.generate();
 	std::string textureName;
 
-	if (!terrain::ImageExporter::saveEXR(image, config, textureName))
+	if (!terrain::ImageExporter::saveEXR(image, textureConfiguration, textureName))
 	{
 		std::cerr << "Operazione fallita.\n";
 		return;
@@ -98,30 +123,44 @@ static void generateTerrain(terrain::TerrainConfig config, float heightScale)
 	std::cout << "\n--- TEST GENERAZIONE GRIGLIA ---\n";
 
 	terrainShader->setFloat(terrainShader->getParamLocation("heightScale"), heightScale);
+	config.setHeightMapImage(image);
 
-	if (heightMap)
+	Eng::Node* root = Eng::Base::getInstance().getSceneGraphInstance();
+
+	if (gridMesh)
 	{
-		delete heightMap;
-		heightMap = nullptr;
+		root->removeChild(gridMesh);
+		delete gridMesh;
+		gridMesh = nullptr;
 	}
 
-	heightMap = new Eng::Texture("TerrainHeightMap", config.size, config.size, image);
+	Eng::Texture* heightMap = new Eng::Texture("TerrainHeightMap", textureConfiguration.size, textureConfiguration.size, image);
 	isGenerated = true;
 
-	brushBrush->setHeightMap(heightMap);
-	erosionBrush->setHeightMap(heightMap);
+	Eng::Material* material = new Eng::Material("TerrainMaterial");
+	material->setSpecular(glm::vec4(0.0f));
+	material->setTexture(heightMap);
+
+	gridMesh = terrainGenerator.generate();
+	gridMesh->setMatrix(glm::mat4(1.0f));
+	gridMesh->setMaterial(material);
+
+	root->addChild(gridMesh);
+
+	PointerController::getInstance().setHeightMapForTools(heightMap);
 }
 
 static void exportTerrain()
 {
 	isExporting = true;
 
-	terrain::TerrainConfig config = g_SetupWin->getTerrainConfiguartion();
+
+	TerrainConfig terrainConfiguration = ConfigController::getInstance().getActiveTerrainConfig();
 	float heightScale = g_SetupWin->getHeightScale();
 
 	std::thread([
 		imgData = image,
-		size = config.size,
+		size = terrainConfiguration.size,
 		hScale = heightScale,
 		&mesh = *gridMesh
 	]() mutable {
@@ -166,7 +205,6 @@ static void renderMainMenuBar()
 		{
 			isWireFrameMode = !isWireFrameMode;
 			Eng::Base::getInstance().changeWireFrame(isWireFrameMode);
-			if (g_ViewToolWin) g_ViewToolWin->setCurrentTool(isWireFrameMode ? 2 : 0);
 		}
 
 		ImGui::EndMenu();
@@ -224,9 +262,6 @@ static void renderingLoop(Eng::Node* root)
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGLUT_NewFrame();
 	ImGui::NewFrame();
-
-	bool isColorToolSelected = g_ViewToolWin && g_ViewToolWin->getCurrentTool()->getToolType() == ViewToolType::SHADED;
-	Eng::Shader::getCurrentInstance()->setBool(hasColorLoc, isColorToolSelected);
 }
 
 static void renderingImGui(Eng::GUIObjects obj)
@@ -236,11 +271,14 @@ static void renderingImGui(Eng::GUIObjects obj)
 
 	if (!isGenerated && g_SetupWin) g_SetupWin->render();
 	if (isExporting && g_LoadingWin) g_LoadingWin->render();
-	if (g_BrushToolWin) g_BrushToolWin->render();
-	if (g_ViewToolWin) g_ViewToolWin->render();
+
+	for (BaseWindow* win : windows)
+	{
+		if (win) win->render();
+	}
 
 	if (g_SetupWin && g_SetupWin->checkAndResetTrigger()) {
-		generateTerrain(g_SetupWin->getTerrainConfiguartion(), g_SetupWin->getHeightScale());
+		generateTerrain( g_SetupWin->getHeightScale());
 	}
 
 	// Draw sun indicator on screen
@@ -375,57 +413,17 @@ static void onMouseCallback(int buttonId, int buttonState, int x, int y)
 
 static void onMouseMotionCallback(int x, int y)
 {
+	TerrainConfig& terrainConfig = ConfigController::getInstance().getActiveTerrainConfig();
 	if (isExporting) return;
 
 	ImGui_ImplGLUT_MotionFunc(x, y);
 	if (ImGui::GetIO().WantCaptureMouse) return;
 	if (!isGenerated) return;
 
-	float deltaX = (float)(x - lastMouseX);
-	float deltaY = (float)(y - lastMouseY);
-
-	float mouseSensitivity = 0.2f;
-
-	if (isLeftDragging) {
-
-		if (g_BrushToolWin && g_BrushToolWin->getCurrentTool()->getToolType() == BrushToolType::NONE)
-		{
-			glm::mat4 matrix = mainCamera->getMatrix();
-			glm::vec3 localRight = glm::normalize(glm::vec3(matrix[0]));
-
-			glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(-deltaY * mouseSensitivity), localRight);
-			glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(-deltaX * mouseSensitivity), glm::vec3(0.0f, 1.0f, 0.0f));
-
-			mainCamera->setMatrix(rotationY * rotationX * matrix);
-		}
-		else
-		{
-			glm::vec3 clickedPos;
-			if (g_BrushToolWin && g_SetupWin && Eng::Base::getInstance().getClickedNode(x, y, clickedPos))
-				g_BrushToolWin->getCurrentTool()->use(clickedPos, g_SetupWin->getTerrainConfiguartion(), image);
-		}
-	}
-
-	if (isMiddleDragging) {
-		glm::mat4 matrix = mainCamera->getMatrix();
-		glm::vec3 localRight = glm::normalize(glm::vec3(matrix[0]));
-
-		glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(-deltaY * mouseSensitivity), localRight);
-		glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(-deltaX * mouseSensitivity), glm::vec3(0.0f, 1.0f, 0.0f));
-
-		mainCamera->setMatrix(rotationY * rotationX * matrix);
-	}
-
-	if (isRightDragging) {
-		float panSpeed = 0.5f;
-
-		glm::vec3 right = glm::normalize(glm::vec3(mainCamera->getMatrix()[0]));
-		glm::vec3 up = glm::normalize(glm::vec3(mainCamera->getMatrix()[1]));
-
-		glm::vec3 translation = (right * (-deltaX * panSpeed)) + (up * (deltaY * panSpeed));
-
-		mainCamera->setMatrix(glm::translate(glm::mat4(1.0f), translation) * mainCamera->getMatrix());
-	}
+	std::string eventType = isLeftDragging ? "LEFT_MOUSE_MOVE" 
+		: (isMiddleDragging ? "MIDDLE_MOUSE_MOVE" 
+			: (isRightDragging ? "RIGHT_MOUSE_MOVE" : "MOUSE_MOVE"));
+	MouseMoveDispatcher::getInstance().dispatch(eventType, x, y, lastMouseX, lastMouseY);
 
 	lastMouseX = x;
 	lastMouseY = y;
@@ -436,7 +434,9 @@ static void onPassiveMouseMotionCallback(int x, int y)
 	if (isExporting) return;
 
 	ImGui_ImplGLUT_MotionFunc(x, y);
-	// if (ImGui::GetIO().WantCaptureMouse) return; // If callback needed uncomment this line
+	if (ImGui::GetIO().WantCaptureMouse) return;
+
+	MouseMoveDispatcher::getInstance().dispatch("MOUSE_HOVER", x, y, 0, 0);
 }
 
 static void onMouseWheelCallback(int wheelId, int direction, int x, int y)
@@ -444,19 +444,10 @@ static void onMouseWheelCallback(int wheelId, int direction, int x, int y)
 	if (isExporting) return;
 
 	ImGui_ImplGLUT_MouseWheelFunc(wheelId, direction, x, y);
-	ImGuiIO& io = ImGui::GetIO();
-	if (io.WantCaptureMouse) return;
+	if (ImGui::GetIO().WantCaptureMouse) return;
 	if (!isGenerated) return;
 
-	bool isControlPressed = io.KeyCtrl;
-
-	float sensitivity = isControlPressed ? 5.0f : 10.0f;
-	float scrollDelta = (direction > 0) ? sensitivity : -sensitivity;
-
-	glm::vec3 forward = -glm::vec3(mainCamera->getMatrix()[2]);
-
-	glm::vec3 translation = glm::normalize(forward) * scrollDelta;
-	mainCamera->setMatrix(glm::translate(glm::mat4(1.0f), translation) * mainCamera->getMatrix());
+	MouseWheelDispatcher::getInstance().dispatch("MOUSE_WHEEL", x, y, direction);
 }
 
 //////////
@@ -481,26 +472,46 @@ int main(int argc, char* argv[])
 	g_SetupWin = new SetupWindow();
 	g_LoadingWin = new LoadingWindow();
 
-	// Brush setup
-	std::vector<BrushModel*> brushes;
+	// Visual tools setup
+	std::vector<std::vector<BaseTool*>> visualToolGroups;
+	std::vector<BaseTool*> visualGroup;
 
-	brushBrush = new BrushBrushModel("BrushBrush", "./res/paint.png");
-	erosionBrush = new ErosionBrushModel("ErosionBrush", "./res/eraser.png");
+	visualGroup.push_back(&ShadesVisualTool::getInstance());
+	visualGroup.push_back(&SolidVisualTool::getInstance());
+	visualGroup.push_back(&WireframeVisualTool::getInstance());
 
-	brushes.push_back(brushBrush);
-	brushes.push_back(erosionBrush);
+	visualToolGroups.push_back(visualGroup);
 
-	g_BrushToolWin = new BrushToolWindow(brushes);
+	// Brush tools setup
+	std::vector<std::vector<BaseTool*>> brushToolGroups;
+	std::vector<BaseTool*> selectGroup;
+	std::vector<BaseTool*> brushGroup;
 
-	// View setup
-	std::vector<ViewToolModel*> views;
+	selectGroup.push_back(new CursorTool(CURSOR_SENSITIVITY));
 
-	views.push_back(new ViewToolModel("ShadedView", "./res/shades.png", ViewToolType::SHADED));
-	views.push_back(new ViewToolModel("SolidView", "./res/solid.png", ViewToolType::SOLID));
-	views.push_back(new ViewToolModel("WireframeView", "./res/wireframe.png", ViewToolType::WIREFRAME));
+	brushGroup.push_back(&SculptingBrushTool::getInstance());
+	brushGroup.push_back(&SmoothingBrushTool::getInstance());
+	brushGroup.push_back(&ErosionBrushTool::getInstance());
 
-	g_ViewToolWin = new ViewToolWindow(views);
-	g_ViewToolWin->setCurrentTool(1);
+	brushToolGroups.push_back(selectGroup);
+	brushToolGroups.push_back(brushGroup);
+
+	// Views setup
+	PointerToolWindow& pointerToolWin = PointerToolWindow::getInstance();
+	VisualToolWindow& visualToolWin = VisualToolWindow::getInstance();
+
+	pointerToolWin.init(brushToolGroups);
+	visualToolWin.init(visualToolGroups);
+
+	windows.push_back(&pointerToolWin);
+	windows.push_back(&visualToolWin);
+
+	// Controllers setup
+	PointerController& pointerController = PointerController::getInstance();
+	VisualController& visualController = VisualController::getInstance();
+
+	pointerController.init(&pointerToolWin);
+	visualController.init(&visualToolWin);
 
 	// Terrain shader
 	Eng::Shader* vShader = new Eng::Shader();
@@ -511,16 +522,6 @@ int main(int argc, char* argv[])
 	terrainShader = new Eng::Shader();
 	terrainShader->build(vShader, fShader);
 	terrainShader->render();
-	hasColorLoc = terrainShader->getParamLocation("hasColor");
-
-	Eng::Material* material = new Eng::Material("TerrainMaterial");
-	material->setSpecular(glm::vec4(0.0f));
-	material->setShader(terrainShader);
-	material->setTexture(heightMap);
-
-	gridMesh = terrain::GridGenerator::generate(512, 1.0f);
-	gridMesh->setMatrix(glm::mat4(1.0f));
-	gridMesh->setMaterial(material);
 
 	// Camera
 	glm::mat4 camera = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 96.0f, 512.0f));
@@ -538,7 +539,6 @@ int main(int argc, char* argv[])
 	Eng::Node* root = eng.getSceneGraphInstance();
 	root->addChild(perspectiveCamera);
 	root->addChild(sunLight);
-	root->addChild(gridMesh);
 
 	mainCamera = perspectiveCamera;
 	eng.setActiveCamera(mainCamera);
@@ -562,8 +562,6 @@ int main(int argc, char* argv[])
 
 	delete g_SetupWin;
 	delete g_LoadingWin;
-	delete g_BrushToolWin;
-	delete g_ViewToolWin;
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGLUT_Shutdown();

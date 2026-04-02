@@ -623,6 +623,11 @@ void Eng::Base::setActiveCamera(Camera* camera) {
     fixCameraViewport(currentActiveCamera, reserved->width, reserved->height);
 }
 
+Eng::Camera* Eng::Base::getActiveCamera() const
+{
+    return currentActiveCamera;
+}
+
 void Eng::Base::fixCameraViewport(Camera* camera, int width, int height) {
     if (!camera)
         return;

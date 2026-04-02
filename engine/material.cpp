@@ -61,7 +61,6 @@ namespace Eng
 		matSpecularLoc = shader->getParamLocation("matSpecular");
 		matShininessLoc = shader->getParamLocation("matShininess");
 		hasTextureLoc = shader->getParamLocation("hasTexture");
-
 	}
 
 	void Material::renderShader(Eng::Shader* shader)
@@ -75,7 +74,6 @@ namespace Eng
 		shader->setVec3(matSpecularLoc, specular);
 		shader->setFloat(matShininessLoc, shininess);
 		shader->setBool(hasTextureLoc, texture);
-
 	}
 
 	glm::vec4 Material::getEmission() const

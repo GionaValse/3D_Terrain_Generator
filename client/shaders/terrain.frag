@@ -89,6 +89,6 @@ void main() {
         }
     }
 
-    vec3 finalColor = (terrainBaseColor * texel.rgb * totalLightColor) + specularLight;
+    vec3 finalColor = (terrainBaseColor * totalLightColor) + specularLight; // removed texel.rgb * 
     fragOutput = vec4(finalColor, 1.0);
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CentredWindow.h"
-#include "TerrainConfig.hpp"
+#include "ConfigController.h"
 
 class SetupWindow : public CentredWindow
 {
@@ -10,14 +10,11 @@ public:
 
 	void drawContent() override;
 
-	terrain::TerrainConfig getTerrainConfiguartion() const;
-
 	float getHeightScale() const;
 
 	bool checkAndResetTrigger();
 
 private:
-	terrain::TerrainConfig config;
 	float heightScale;
 	bool triggerGeneration;
 };

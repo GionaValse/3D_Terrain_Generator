@@ -91,7 +91,9 @@ namespace Eng
         for (Node* child : root->getChildren())
         {
             if (child)
+            {
                 this->pass(child, matrix);
+            }
         }
     }
 

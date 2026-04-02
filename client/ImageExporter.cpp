@@ -12,7 +12,7 @@ namespace terrain {
 
 bool ImageExporter::saveEXR(
     const std::vector<float>& image,
-    const TerrainConfig& config,
+    const TextureConfig& config,
     std::string& fileName,
     const std::string& outputDir
 ) {

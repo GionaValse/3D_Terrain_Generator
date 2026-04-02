@@ -1,36 +1,36 @@
 #include "SetupWindow.h"
 
 SetupWindow::SetupWindow()
-	: CentredWindow("Terrain Setup"),
+	: CentredWindow("Texture Setup"),
 	heightScale(100.0f),
 	triggerGeneration(false)
 {
-	config.size = 512;
-	config.frequency = 4.0f;
-	config.octaves = 6;
-	config.seed = 12345;
+	TextureConfig& textureConfig = ConfigController::getInstance().getActiveTextureConfig();
+
+	textureConfig.size = 512;
+	textureConfig.frequency = 4.0f;
+	textureConfig.octaves = 6;
+	textureConfig.seed = 12345;
 }
 
 void SetupWindow::drawContent()
 {
+	TextureConfig& textureConfig = ConfigController::getInstance().getActiveTextureConfig();
+	TerrainConfig& terrainConfig = ConfigController::getInstance().getActiveTerrainConfig();
 	ImGui::Text("Noise Parameters");
-	ImGui::InputInt("Size (px)", (int*)&config.size);
-	ImGui::SliderFloat("Frequency", &config.frequency, 0.1f, 20.0f);
-	ImGui::SliderInt("Octaves", &config.octaves, 1, 10);
-	ImGui::InputScalar("Seed", ImGuiDataType_U32, &config.seed);
+	ImGui::InputInt("Size (px)", (int*)&textureConfig.size);
+	ImGui::SliderFloat("Frequency", &textureConfig.frequency, 0.1f, 20.0f);
+	ImGui::SliderInt("Octaves", &textureConfig.octaves, 1, 10);
+	ImGui::InputScalar("Seed", ImGuiDataType_U32, &textureConfig.seed);
 
 	ImGui::Separator();
 	ImGui::Text("Mesh Parameters");
+	ImGui::InputInt("Size", (int*)&terrainConfig.size);
 	ImGui::DragFloat("Height Scale", &heightScale, 1.0f, 0.1f, 5000.0f);
 
 	if (ImGui::Button("Generate New Terrain", ImVec2(-1, 0))) {
 		triggerGeneration = true;
 	}
-}
-
-terrain::TerrainConfig SetupWindow::getTerrainConfiguartion() const
-{
-	return config;
 }
 
 float SetupWindow::getHeightScale() const
