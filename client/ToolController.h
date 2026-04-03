@@ -1,15 +1,22 @@
 #pragma once
 
-#include <vector>
+#include "IToolListener.h"
 
 #include "BaseTool.h"
+#include "ToolWindow.h"
 
-class ToolController
+class ToolController : public IToolListener
 {
 public:
-	ToolController() {}
+	ToolController() 
+		: currentTool(nullptr), 
+		toolWindow(nullptr) 
+	{}
 
-	virtual void setActiveTool(BaseTool* tool) = 0;
+	virtual void init(ToolWindow* window) = 0;
+	virtual void free() const = 0;
 
-	virtual BaseTool* getActiveTool() const = 0;
+protected:
+	BaseTool* currentTool;
+	ToolWindow* toolWindow;
 };

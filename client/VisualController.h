@@ -9,11 +9,11 @@ class VisualController : public ToolController
 public:
 	static VisualController& getInstance();
 
-	void setActiveTool(BaseTool* tool) override;
+	void init(ToolWindow* window) override;
+	void free() const override;
 
 	BaseTool* getActiveTool() const override;
-
-	void init(ToolWindow* window);
+	void onToolSelected(BaseTool* tool) override;
 
 private:
 	VisualController();

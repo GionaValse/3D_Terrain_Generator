@@ -142,6 +142,7 @@
     <ClInclude Include="CameraGestureController.h" />
     <ClInclude Include="ErosionBrushTool.h" />
     <ClInclude Include="EventDispatcher.h" />
+    <ClInclude Include="IToolListener.h" />
     <ClInclude Include="PointerToolWindow.h" />
     <ClInclude Include="SculpingBrushTool.h" />
     <ClInclude Include="configuration.h" />

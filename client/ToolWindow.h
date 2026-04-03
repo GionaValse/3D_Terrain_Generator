@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "BaseTool.h"
+#include "IToolListener.h"
 
 class ToolWindow : public AnchorWindow
 {
@@ -22,19 +23,17 @@ public:
 
 	virtual void init(std::vector<std::vector<BaseTool*>> toolGroups) = 0;
 
+	void setListener(IToolListener* listener);
+
 	virtual void onToolSelected(BaseTool* tool);
 
     void drawContent() override;
 
     void clearTools();
 
-    void setCurrentTool(BaseTool* tool);
-
-    BaseTool* getCurrentTool() const;
-
 protected:
     std::vector<std::vector<BaseTool*>> tools;
-	BaseTool* currentTool;
+	IToolListener* toolListener;
 
     void renderToolButton(BaseTool* tool, ImVec2 iconSize);
 };

@@ -1,17 +1,13 @@
 #include "PointerController.h"
 
 #include "ConfigController.h"
+#include "CameraGestureController.h"
 
 #include "CursorTool.h"
 #include "BaseBrushTool.h"
 
-#include "ErosionBrushTool.h"
-#include "SculpingBrushTool.h"
-#include "SmoothingBrushTool.h"
-
 PointerController::PointerController()
 	: ToolController(),
-	toolWindow(nullptr),
 	mouseMoveSubscriptionId(-1)
 {}
 
@@ -22,13 +18,16 @@ PointerController& PointerController::getInstance()
 }
 
 PointerController::~PointerController()
-{
-	MouseMoveDispatcher::getInstance().unsubscribe("LEFT_MOUSE_MOVE", mouseMoveSubscriptionId);
-}
+{}
 
 void PointerController::init(ToolWindow* window)
 {
-	toolWindow = window;
+	this->toolWindow = window;
+
+	if (this->toolWindow)
+	{
+		this->toolWindow->setListener(this);
+	}
 
 	mouseMoveSubscriptionId = MouseMoveDispatcher::getInstance().subscribe(
 		"LEFT_MOUSE_MOVE", 
@@ -39,26 +38,24 @@ void PointerController::init(ToolWindow* window)
 	);
 }
 
-void PointerController::setActiveTool(BaseTool* tool)
+void PointerController::free() const
 {
-	if (toolWindow)
-	{
-		toolWindow->setCurrentTool(tool);
-	}
+	MouseMoveDispatcher::getInstance().unsubscribe("LEFT_MOUSE_MOVE", mouseMoveSubscriptionId);
+}
+
+void PointerController::setHeightMap(Eng::Texture* texture)
+{
+	this->heightMapTexture = texture;
 }
 
 BaseTool* PointerController::getActiveTool() const
 {
-	if (toolWindow)
-		return toolWindow->getCurrentTool();
-	return nullptr;
+	return this->currentTool;
 }
 
-void PointerController::setHeightMapForTools(Eng::Texture* texture)
+void PointerController::onToolSelected(BaseTool* tool)
 {
-	ErosionBrushTool::getInstance().setHeightMap(texture);
-	SculptingBrushTool::getInstance().setHeightMap(texture);
-	SmoothingBrushTool::getInstance().setHeightMap(texture);
+	this->currentTool = tool;
 }
 
 void PointerController::onCursorMove(int x, int y, int lastX, int lastY)
@@ -66,21 +63,32 @@ void PointerController::onCursorMove(int x, int y, int lastX, int lastY)
 	auto* activeTool = getActiveTool();
 	if (!activeTool) return;
 
-	float deltaX = (float)(x - lastX);
-	float deltaY = (float)(y - lastY);
-
 	if (auto* brushTool = dynamic_cast<BaseBrushTool*>(activeTool))
 	{
 		glm::vec3 clickedPos;
 		if (Eng::Base::getInstance().getClickedNode(x, y, clickedPos))
 		{
 			ConfigController& config = ConfigController::getInstance();
-			brushTool->use(clickedPos, config.getActiveTerrainConfig(), config.getHeightMapImage());
+			std::vector<float>& imageData = config.getHeightMapImage();
+			int resolution = config.getActiveTerrainConfig().size;
+
+			UpdateArea area = brushTool->use(clickedPos, config.getActiveTerrainConfig(), imageData);
+
+			if (area.isModified && this->heightMapTexture != nullptr)
+			{
+				this->heightMapTexture->updateSubImage(
+					area.startX,
+					area.startY,
+					area.width,
+					area.height,
+					imageData,
+					resolution
+				);
+			}
 		}
 	}
 	else if (auto* cursorTool = dynamic_cast<CursorTool*>(activeTool))
 	{
-		Eng::Camera* camera = Eng::Base::getInstance().getActiveCamera();
-		cursorTool->use(camera, deltaX, deltaY);
+		CameraGestureController::getInstance().cameraRotate(x, y, lastX, lastY);
 	}
 }

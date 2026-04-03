@@ -13,12 +13,7 @@ CameraGestureController& CameraGestureController::getInstance()
 }
 
 CameraGestureController::~CameraGestureController()
-{
-	MouseMoveDispatcher::getInstance().unsubscribe("RIGHT_MOUSE_MOVE", panSubscriptionId);
-	MouseMoveDispatcher::getInstance().unsubscribe("MIDDLE_MOUSE_MOVE", rotateSubscriptionId);
-
-	MouseWheelDispatcher::getInstance().unsubscribe("MOUSE_WHEEL", zoomSubscriptionId);
-}
+{}
 
 void CameraGestureController::init()
 {
@@ -45,6 +40,14 @@ void CameraGestureController::init()
 			this->cameraZoom(x, y, direction);
 		}
 	);
+}
+
+void CameraGestureController::free() const
+{
+	MouseMoveDispatcher::getInstance().unsubscribe("RIGHT_MOUSE_MOVE", panSubscriptionId);
+	MouseMoveDispatcher::getInstance().unsubscribe("MIDDLE_MOUSE_MOVE", rotateSubscriptionId);
+
+	MouseWheelDispatcher::getInstance().unsubscribe("MOUSE_WHEEL", zoomSubscriptionId);
 }
 
 void CameraGestureController::cameraPan(int x, int y, int lastX, int lastY)

@@ -8,11 +8,16 @@ using MouseWheelDispatcher = EventDispatcher<int, int, int>;
 class CameraGestureController
 {
 public:
-	CameraGestureController& getInstance();
+	static CameraGestureController& getInstance();
 
 	~CameraGestureController();
 
 	void init();
+	void free() const;
+
+	void cameraPan(int x, int y, int lastX, int lastY);
+	void cameraRotate(int x, int y, int lastX, int lastY);
+	void cameraZoom(int x, int y, int direction);
 
 private:
 	CameraGestureController() = default;
@@ -23,8 +28,4 @@ private:
 	size_t panSubscriptionId;
 	size_t rotateSubscriptionId;
 	size_t zoomSubscriptionId;
-
-	void cameraPan(int x, int y, int lastX, int lastY);
-	void cameraRotate(int x, int y, int lastX, int lastY);
-	void cameraZoom(int x, int y, int direction);
 };

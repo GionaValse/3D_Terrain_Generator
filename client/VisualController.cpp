@@ -1,5 +1,7 @@
 #include "VisualController.h"
 
+#include "BaseVisualTool.h"
+
 VisualController::VisualController()
 	: ToolController(),
 	toolWindow(nullptr)
@@ -11,17 +13,30 @@ VisualController& VisualController::getInstance()
 	return instance;
 }
 
-void VisualController::setActiveTool(BaseTool* tool)
-{
-	this->toolWindow->setCurrentTool(tool);
-}
-
 BaseTool* VisualController::getActiveTool() const
 {
-    return this->toolWindow->getCurrentTool();
+    return this->currentTool;
+}
+
+void VisualController::onToolSelected(BaseTool* tool)
+{
+	this->currentTool = tool;
+
+	if (auto visualTool = dynamic_cast<BaseVisualTool*>(this->currentTool))
+	{
+		visualTool->use();
+	}
 }
 
 void VisualController::init(ToolWindow* window)
 {
-	toolWindow = window;
+	this->toolWindow = window;
+
+	if (this->toolWindow)
+	{
+		this->toolWindow->setListener(this);
+	}
 }
+
+void VisualController::free() const
+{}
