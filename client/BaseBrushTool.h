@@ -2,6 +2,7 @@
 
 #include "BaseTool.h"
 #include "TerrainConfig.h"
+#include "TextureConfig.h"
 
 class BaseBrushTool : public BaseTool
 {
@@ -16,10 +17,10 @@ public:
 
 	virtual void applyBrushEffect(int x, int y, int pixelX, int pixelY, int resolution, std::vector<float>& image, bool& modified) = 0;
 
-	virtual void use(glm::vec3 coords, TerrainConfig config, std::vector<float>& image)
+	virtual void use(glm::vec3 coords, TextureConfig texConfig, TerrainConfig terConfig, std::vector<float>& image)
 	{
-		float terrainPhysicalSize = 512.0f;
-		int imageResolution = config.size;
+		float terrainPhysicalSize = terConfig.size;
+		int imageResolution = texConfig.size;
 
 		float localX = coords.x + (terrainPhysicalSize / 2.0f);
 		float localZ = coords.z + (terrainPhysicalSize / 2.0f);

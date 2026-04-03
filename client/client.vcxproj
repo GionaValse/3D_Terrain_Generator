@@ -152,6 +152,7 @@
     <ClInclude Include="ObjExporter.hpp" />
     <ClInclude Include="PerlinNoise.hpp" />
     <ClInclude Include="PointerController.h" />
+    <ClInclude Include="SetupController.h" />
     <ClInclude Include="SetupWindow.h" />
     <ClInclude Include="ShadesVisualTool.h" />
     <ClInclude Include="SmoothingBrushTool.h" />

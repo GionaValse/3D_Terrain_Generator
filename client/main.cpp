@@ -40,6 +40,7 @@
 #include "ConfigController.h"
 #include "PointerController.h"
 #include "VisualController.h"
+#include "SetupController.h"
 
 /////////////////
 // DISPATCHERS //
@@ -269,7 +270,8 @@ static void renderingImGui(Eng::GUIObjects obj)
 	renderMainMenuBar();
 	renderStatusBar();
 
-	if (!isGenerated && g_SetupWin) g_SetupWin->render();
+	SetupController::getInstance().render(isGenerated);
+
 	if (isExporting && g_LoadingWin) g_LoadingWin->render();
 
 	for (BaseWindow* win : windows)
@@ -277,8 +279,9 @@ static void renderingImGui(Eng::GUIObjects obj)
 		if (win) win->render();
 	}
 
-	if (g_SetupWin && g_SetupWin->checkAndResetTrigger()) {
-		generateTerrain( g_SetupWin->getHeightScale());
+	if (SetupController::getInstance().shouldGenerateTerrain()) {
+		float heightScale = SetupController::getInstance().getTerrainHeightScale();
+		generateTerrain(heightScale);
 	}
 
 	// Draw sun indicator on screen
@@ -469,7 +472,12 @@ int main(int argc, char* argv[])
 	ImGui_ImplGLUT_Init();
 	ImGui_ImplOpenGL3_Init("#version 440");
 
-	g_SetupWin = new SetupWindow();
+	ConfigController& config = ConfigController::getInstance();
+
+	g_SetupWin = new SetupWindow(config.getActiveTextureConfig(), config.getActiveTerrainConfig());
+
+	SetupController::getInstance().init(g_SetupWin);
+
 	g_LoadingWin = new LoadingWindow();
 
 	// Visual tools setup

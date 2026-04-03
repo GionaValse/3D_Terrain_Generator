@@ -75,7 +75,7 @@ void PointerController::onCursorMove(int x, int y, int lastX, int lastY)
 		if (Eng::Base::getInstance().getClickedNode(x, y, clickedPos))
 		{
 			ConfigController& config = ConfigController::getInstance();
-			brushTool->use(clickedPos, config.getActiveTerrainConfig(), config.getHeightMapImage());
+			brushTool->use(clickedPos, config.getActiveTextureConfig(), config.getActiveTerrainConfig(), config.getHeightMapImage());
 		}
 	}
 	else if (auto* cursorTool = dynamic_cast<CursorTool*>(activeTool))

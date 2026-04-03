@@ -1,7 +1,5 @@
 #pragma once
-
 #include <vector>
-
 #include "TerrainConfig.h"
 #include "TextureConfig.h"
 
@@ -9,12 +7,12 @@ class ConfigController
 {
 public:
 	static ConfigController& getInstance()
-	{ 
+	{
 		static ConfigController instance;
 		return instance;
 	}
 
-	TerrainConfig& getActiveTerrainConfig() 
+	TerrainConfig& getActiveTerrainConfig()
 	{
 		return m_terrainConfig;
 	}
@@ -35,7 +33,7 @@ public:
 	}
 
 private:
-	ConfigController() = default; 
+	ConfigController() = default;
 
 	ConfigController(const ConfigController&) = delete;
 	ConfigController& operator=(const ConfigController&) = delete;

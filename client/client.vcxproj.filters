@@ -168,6 +168,9 @@
     <ClInclude Include="WireframeVisualTool.h">
       <Filter>File di intestazione\models\visuals</Filter>
     </ClInclude>
+    <ClInclude Include="SetupController.h">
+      <Filter>File di intestazione\controllers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
