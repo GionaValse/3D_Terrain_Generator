@@ -26,9 +26,19 @@ public:
 
     void unsubscribe(const std::string& eventId, size_t id)
     {
-        auto& list = listeners[eventId];
-        list.erase(std::remove_if(list.begin(), list.end(),
-            [id](const Handler& h) { return h.id == id; }), list.end());
+        auto it = listeners.find(eventId);
+        if (it != listeners.end())
+        {
+            auto& list = it->second;
+            auto originalSize = list.size();
+
+            list.erase(std::remove_if(list.begin(), list.end(),
+                [id](const Handler& h) { return h.id == id; }), list.end());
+
+            if (list.empty()) {
+                listeners.erase(it);
+            }
+        }
     }
 
     void dispatch(const std::string& eventId, Args... args)

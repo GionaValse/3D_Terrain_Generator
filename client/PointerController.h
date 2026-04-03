@@ -14,13 +14,13 @@ public:
 
 	~PointerController();
 
-	void init(ToolWindow* window);
+	void init(ToolWindow* window) override;
+	void free() const override;
 
-	void setActiveTool(BaseTool* tool) override;
+	void setHeightMap(Eng::Texture* texture);
 
 	BaseTool* getActiveTool() const override;
-
-	void setHeightMapForTools(Eng::Texture* texture);
+	void onToolSelected(BaseTool* tool) override;
 
 private:
 	PointerController();
@@ -30,8 +30,7 @@ private:
 
 	size_t mouseMoveSubscriptionId;
 
-	void onCursorMove(int x, int y, int lastX, int lastY);
+	Eng::Texture* heightMapTexture;
 
-protected:
-	ToolWindow* toolWindow;
+	void onCursorMove(int x, int y, int lastX, int lastY);
 };

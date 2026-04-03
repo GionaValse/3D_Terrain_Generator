@@ -9,8 +9,6 @@ public:
 
 	void init(std::vector<std::vector<BaseTool*>> toolGroups) override;
 
-	void onToolSelected(BaseTool* tool) override;
-
 private:
 	VisualToolWindow();
 

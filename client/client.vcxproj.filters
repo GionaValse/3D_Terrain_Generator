@@ -70,6 +70,9 @@
     <Filter Include="File di origine\models\visual">
       <UniqueIdentifier>{934b2ca3-c3d1-4fad-b5ed-5d7cef7bb27f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="File di intestazione\dispatchers">
+      <UniqueIdentifier>{5cc40dc1-6836-499e-a028-020532307243}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PerlinNoise.hpp">
@@ -141,9 +144,6 @@
     <ClInclude Include="VisualController.h">
       <Filter>File di intestazione\controllers</Filter>
     </ClInclude>
-    <ClInclude Include="EventDispatcher.h">
-      <Filter>File di intestazione\controllers</Filter>
-    </ClInclude>
     <ClInclude Include="CameraGestureController.h">
       <Filter>File di intestazione\controllers</Filter>
     </ClInclude>
@@ -168,7 +168,10 @@
     <ClInclude Include="WireframeVisualTool.h">
       <Filter>File di intestazione\models\visuals</Filter>
     </ClInclude>
-    <ClInclude Include="SetupController.h">
+    <ClInclude Include="EventDispatcher.h">
+      <Filter>File di intestazione\dispatchers</Filter>
+    </ClInclude>
+    <ClInclude Include="IToolListener.h">
       <Filter>File di intestazione\controllers</Filter>
     </ClInclude>
   </ItemGroup>

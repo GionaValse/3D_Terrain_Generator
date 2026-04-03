@@ -2,12 +2,25 @@
 
 ToolWindow::ToolWindow(const std::string& name, AnchorSide side, ImVec2 offset, bool startVisible, bool cancelable, ImGuiWindowFlags windowFlags)
 	: AnchorWindow(name, side, offset, startVisible, cancelable, windowFlags),
-	currentTool(nullptr)
+	toolListener(nullptr)
 {}
+
+void ToolWindow::setListener(IToolListener* listener)
+{
+	this->toolListener = listener;
+
+    if (tools.size() > 0 && tools[0].size() > 0 && this->toolListener)
+    {
+        this->toolListener->onToolSelected(tools[0][0]);
+	}
+}
 
 void ToolWindow::onToolSelected(BaseTool* tool)
 {
-	currentTool = tool;
+	if (toolListener)
+    {
+        toolListener->onToolSelected(tool);
+	}
 }
 
 void ToolWindow::drawContent()
@@ -32,6 +45,7 @@ void ToolWindow::drawContent()
         {
             ImGui::Dummy(ImVec2(0, 5));
             ImGui::Separator();
+            ImGui::Dummy(ImVec2(0, 5));
         }
     }
 }
@@ -39,22 +53,12 @@ void ToolWindow::drawContent()
 void ToolWindow::clearTools()
 {
     tools.clear();
-    currentTool = nullptr;
-}
-
-void ToolWindow::setCurrentTool(BaseTool* tool)
-{
-    currentTool = tool;
-}
-
-BaseTool* ToolWindow::getCurrentTool() const
-{
-    return currentTool;
 }
 
 void ToolWindow::renderToolButton(BaseTool* tool, ImVec2 iconSize)
 {
     if (!tool) return;
+	BaseTool* currentTool = toolListener ? toolListener->getActiveTool() : nullptr;
     bool isBrushActive = (currentTool == tool);
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(6.0f, 6.0f));

@@ -37,6 +37,7 @@
 #include "LoadingWindow.h"
 
 // Controllers //
+#include "CameraGestureController.h"
 #include "ConfigController.h"
 #include "PointerController.h"
 #include "VisualController.h"
@@ -148,7 +149,7 @@ static void generateTerrain(float heightScale)
 
 	root->addChild(gridMesh);
 
-	PointerController::getInstance().setHeightMapForTools(heightMap);
+	PointerController::getInstance().setHeightMap(heightMap);
 }
 
 static void exportTerrain()
@@ -462,6 +463,16 @@ int main(int argc, char* argv[])
 	Eng::Base& eng = Eng::Base::getInstance();
 	eng.init(&argc, argv, "3D Terrain Editor");
 
+	// Terrain shader
+	Eng::Shader* vShader = new Eng::Shader();
+	Eng::Shader* fShader = new Eng::Shader();
+	vShader->loadFromFile(Eng::Shader::TYPE_VERTEX, "./shaders/terrain.vert");
+	fShader->loadFromFile(Eng::Shader::TYPE_FRAGMENT, "./shaders/terrain.frag");
+
+	terrainShader = new Eng::Shader();
+	terrainShader->build(vShader, fShader);
+	terrainShader->render();
+
 	// ImGui setup
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -515,21 +526,13 @@ int main(int argc, char* argv[])
 	windows.push_back(&visualToolWin);
 
 	// Controllers setup
+	CameraGestureController& cameraController = CameraGestureController::getInstance();
 	PointerController& pointerController = PointerController::getInstance();
 	VisualController& visualController = VisualController::getInstance();
 
+	cameraController.init();
 	pointerController.init(&pointerToolWin);
 	visualController.init(&visualToolWin);
-
-	// Terrain shader
-	Eng::Shader* vShader = new Eng::Shader();
-	Eng::Shader* fShader = new Eng::Shader();
-	vShader->loadFromFile(Eng::Shader::TYPE_VERTEX, "./shaders/terrain.vert");
-	fShader->loadFromFile(Eng::Shader::TYPE_FRAGMENT, "./shaders/terrain.frag");
-
-	terrainShader = new Eng::Shader();
-	terrainShader->build(vShader, fShader);
-	terrainShader->render();
 
 	// Camera
 	glm::mat4 camera = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 96.0f, 512.0f));
@@ -567,6 +570,10 @@ int main(int argc, char* argv[])
 
 	// Cleanup
 	eng.free();
+
+	cameraController.free();
+	pointerController.free();
+	visualController.free();
 
 	delete g_SetupWin;
 	delete g_LoadingWin;
