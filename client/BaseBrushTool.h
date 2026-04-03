@@ -25,7 +25,7 @@ public:
 
 	virtual void applyBrushEffect(int x, int y, int pixelX, int pixelY, int resolution, std::vector<float>& image, bool& modified) = 0;
 
-	virtual UpdateArea use(glm::vec3 coords, TerrainConfig config, std::vector<float>& image)
+	virtual UpdateArea use(glm::vec3 coords, TerrainConfig terConfig, TextureConfig texConfig, std::vector<float>& image)
 	{
 		float terrainPhysicalSize = terConfig.size;
 		int imageResolution = texConfig.size;
