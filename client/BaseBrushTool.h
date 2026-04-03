@@ -23,7 +23,7 @@ public:
 		falloff(falloff)
 	{}
 
-	virtual void applyBrushEffect(int x, int y, int pixelX, int pixelY, int resolution, std::vector<float>& image, bool& modified) = 0;
+	virtual void applyBrushEffect(int x, int y, int pixelX, int pixelY, int pixelRadius, int resolution, std::vector<float>& image, bool& modified) = 0;
 
 	virtual UpdateArea use(glm::vec3 coords, TerrainConfig terConfig, TextureConfig texConfig, std::vector<float>& image)
 	{
@@ -57,7 +57,7 @@ public:
 		{
 			for (int x = startX; x <= endX; ++x)
 			{
-				applyBrushEffect(x, y, pixelX, pixelY, imageResolution, image, modified);
+				applyBrushEffect(x, y, pixelX, pixelY, (int)radius, imageResolution, image, modified);
 			}
 		}
 

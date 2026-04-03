@@ -7,7 +7,7 @@ class SmoothingBrushTool : public BaseBrushTool
 public:
 	static SmoothingBrushTool& getInstance();
 
-	void applyBrushEffect(int x, int y, int pixelX, int pixelY, int resolution, std::vector<float>& image, bool& modified) override;
+	void applyBrushEffect(int x, int y, int pixelX, int pixelY, int pixelRadius, int resolution, std::vector<float>& image, bool& modified) override;
 
 private:
 	SmoothingBrushTool(unsigned int radius = 15, float strength = 0.005f, float falloff = 1.0f);

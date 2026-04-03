@@ -1,7 +1,8 @@
 #pragma once
 #include "SetupWindow.h"
+#include "ISetupListener.h"
 
-class SetupController
+class SetupController : public ISetupListener
 {
 public:
 	static SetupController& getInstance()
@@ -12,39 +13,50 @@ public:
 
 	void init(SetupWindow* window)
 	{
-		m_setupWindow = window;
-	}
+		this->setupWindow = window;
 
-	void render(bool isGenerated)
-	{
-		if (!isGenerated && m_setupWindow)
+		if (this->setupWindow)
 		{
-			m_setupWindow->render();
+			this->setupWindow->setListener(this); 
 		}
 	}
 
-	bool shouldGenerateTerrain()
+	void render(bool isGenerated) const
 	{
-		if (m_setupWindow)
+		if (!isGenerated && this->setupWindow)
 		{
-			return m_setupWindow->checkAndResetTrigger();
+			this->setupWindow->render();
 		}
-		return false;
+	}
+
+	void free() const
+	{
+	
+	}
+
+	void onTerrainGenerationRequested() override
+	{
+
+		this->generationRequested = true;
+	}
+
+	bool consumeGenerationRequest()
+	{
+		bool val = this->generationRequested;
+		this->generationRequested = false;
+		return val;
 	}
 
 	float getTerrainHeightScale() const
 	{
-		if (m_setupWindow)
-		{
-			return m_setupWindow->getHeightScale();
-		}
-		return 100.0f;
+		return this->setupWindow ? this->setupWindow->getHeightScale() : 100.0f;
 	}
 
 private:
-	SetupController() = default;
+	SetupController() : setupWindow(nullptr), generationRequested(false) {}
 	SetupController(const SetupController&) = delete;
 	SetupController& operator=(const SetupController&) = delete;
 
-	SetupWindow* m_setupWindow = nullptr;
+	SetupWindow* setupWindow;
+	bool generationRequested;
 };

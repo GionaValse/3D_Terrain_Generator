@@ -158,7 +158,7 @@ static void exportTerrain()
 
 
 	TerrainConfig terrainConfiguration = ConfigController::getInstance().getActiveTerrainConfig();
-	float heightScale = g_SetupWin->getHeightScale();
+	float heightScale = SetupController::getInstance().getTerrainHeightScale();
 
 	std::thread([
 		imgData = image,
@@ -280,7 +280,7 @@ static void renderingImGui(Eng::GUIObjects obj)
 		if (win) win->render();
 	}
 
-	if (SetupController::getInstance().shouldGenerateTerrain()) {
+	if (SetupController::getInstance().consumeGenerationRequest()) {
 		float heightScale = SetupController::getInstance().getTerrainHeightScale();
 		generateTerrain(heightScale);
 	}
@@ -574,6 +574,7 @@ int main(int argc, char* argv[])
 	cameraController.free();
 	pointerController.free();
 	visualController.free();
+	SetupController::getInstance().free();
 
 	delete g_SetupWin;
 	delete g_LoadingWin;

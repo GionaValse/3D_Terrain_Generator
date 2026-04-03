@@ -14,15 +14,15 @@ SculptingBrushTool& SculptingBrushTool::getInstance()
 	return instance;
 }
 
-void SculptingBrushTool::applyBrushEffect(int x, int y, int pixelX, int pixelY, int resolution, std::vector<float>& image, bool& modified)
+void SculptingBrushTool::applyBrushEffect(int x, int y, int pixelX, int pixelY, int pixelRadius, int resolution, std::vector<float>& image, bool& modified)
 {
 	float distX = (float)(x - pixelX);
 	float distY = (float)(y - pixelY);
 	float distance = std::sqrt(distX * distX + distY * distY);
 
-	if (distance <= radius)
+	if (distance <= pixelRadius)
 	{
-		float normalizedDist = distance / radius;
+		float normalizedDist = distance / pixelRadius;
 		float influence = std::pow(1.0f - normalizedDist, this->falloff);
 
 		float raiseAmount = strength * influence;

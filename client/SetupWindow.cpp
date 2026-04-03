@@ -5,13 +5,18 @@ SetupWindow::SetupWindow(TextureConfig& textureConfig, TerrainConfig& terrainCon
 	: CentredWindow("Texture Setup"),
 	m_textureConfig(textureConfig),
 	m_terrainConfig(terrainConfig),
-	heightScale(100.0f),
-	triggerGeneration(false)
+	m_listener(nullptr),
+	heightScale(100.0f) 
 {
 	m_textureConfig.size = 512;
 	m_textureConfig.frequency = 4.0f;
 	m_textureConfig.octaves = 6;
 	m_textureConfig.seed = 12345;
+}
+
+void SetupWindow::setListener(ISetupListener* listener)
+{
+	m_listener = listener;
 }
 
 void SetupWindow::drawContent()
@@ -27,19 +32,15 @@ void SetupWindow::drawContent()
 	ImGui::InputInt("Size", (int*)&m_terrainConfig.size);
 	ImGui::DragFloat("Height Scale", &heightScale, 1.0f, 0.1f, 5000.0f);
 
+	
 	if (ImGui::Button("Generate New Terrain", ImVec2(-1, 0))) {
-		triggerGeneration = true;
+		if (m_listener) {
+			m_listener->onTerrainGenerationRequested();
+		}
 	}
 }
 
 float SetupWindow::getHeightScale() const
 {
 	return heightScale;
-}
-
-bool SetupWindow::checkAndResetTrigger()
-{
-	bool val = triggerGeneration;
-	triggerGeneration = false;
-	return val;
 }
