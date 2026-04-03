@@ -61,7 +61,6 @@ Eng::Mesh* gridMesh = nullptr;
 Eng::Shader* terrainShader = nullptr;
 Eng::InfiniteLight* sunLight = nullptr;
 
-SetupWindow* g_SetupWin = nullptr;
 LoadingWindow* g_LoadingWin = nullptr;
 
 std::vector<float> image;
@@ -460,10 +459,11 @@ static void onMouseWheelCallback(int wheelId, int direction, int x, int y)
 
 int main(int argc, char* argv[])
 {
+	// Engine Initialization
 	Eng::Base& eng = Eng::Base::getInstance();
 	eng.init(&argc, argv, "3D Terrain Editor");
 
-	// Terrain shader
+	// Shader Setup
 	Eng::Shader* vShader = new Eng::Shader();
 	Eng::Shader* fShader = new Eng::Shader();
 	vShader->loadFromFile(Eng::Shader::TYPE_VERTEX, "./shaders/terrain.vert");
@@ -473,7 +473,7 @@ int main(int argc, char* argv[])
 	terrainShader->build(vShader, fShader);
 	terrainShader->render();
 
-	// ImGui setup
+	// ImGui Setup
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -483,15 +483,11 @@ int main(int argc, char* argv[])
 	ImGui_ImplGLUT_Init();
 	ImGui_ImplOpenGL3_Init("#version 440");
 
-	ConfigController& config = ConfigController::getInstance();
-
-	g_SetupWin = new SetupWindow(config.getActiveTextureConfig(), config.getActiveTerrainConfig());
-
-	SetupController::getInstance().init(g_SetupWin);
-
+	// Core Windows & Controllers Setup
+	SetupController::getInstance().init();
 	g_LoadingWin = new LoadingWindow();
 
-	// Visual tools setup
+	// Visual Tools Setup
 	std::vector<std::vector<BaseTool*>> visualToolGroups;
 	std::vector<BaseTool*> visualGroup;
 
@@ -501,7 +497,7 @@ int main(int argc, char* argv[])
 
 	visualToolGroups.push_back(visualGroup);
 
-	// Brush tools setup
+	// Brush Tools Setup
 	std::vector<std::vector<BaseTool*>> brushToolGroups;
 	std::vector<BaseTool*> selectGroup;
 	std::vector<BaseTool*> brushGroup;
@@ -515,7 +511,7 @@ int main(int argc, char* argv[])
 	brushToolGroups.push_back(selectGroup);
 	brushToolGroups.push_back(brushGroup);
 
-	// Views setup
+	// Views Setup
 	PointerToolWindow& pointerToolWin = PointerToolWindow::getInstance();
 	VisualToolWindow& visualToolWin = VisualToolWindow::getInstance();
 
@@ -524,8 +520,9 @@ int main(int argc, char* argv[])
 
 	windows.push_back(&pointerToolWin);
 	windows.push_back(&visualToolWin);
+	windows.push_back(SetupController::getInstance().getWindow());
 
-	// Controllers setup
+	// Tool Controllers Setup
 	CameraGestureController& cameraController = CameraGestureController::getInstance();
 	PointerController& pointerController = PointerController::getInstance();
 	VisualController& visualController = VisualController::getInstance();
@@ -534,19 +531,19 @@ int main(int argc, char* argv[])
 	pointerController.init(&pointerToolWin);
 	visualController.init(&visualToolWin);
 
-	// Camera
+	// Camera Setup
 	glm::mat4 camera = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 96.0f, 512.0f));
 	Eng::PerspectiveCamera* perspectiveCamera = new Eng::PerspectiveCamera("mainCamera", camera);
 	perspectiveCamera->setCameraParams(45.0f, RATIO_16_9, 1.0f, 5000.0f);
 
-	// Sun light
+	// Lighting Setup
 	sunLight = new Eng::InfiniteLight("sun");
 	updateSunDirection();
 	sunLight->setAmbient(glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
 	sunLight->setDiffuse(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	sunLight->setSpecular(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
-	// Scene graph
+	// Scene Graph Setup
 	Eng::Node* root = eng.getSceneGraphInstance();
 	root->addChild(perspectiveCamera);
 	root->addChild(sunLight);
@@ -554,7 +551,7 @@ int main(int argc, char* argv[])
 	mainCamera = perspectiveCamera;
 	eng.setActiveCamera(mainCamera);
 
-	// Callbacks
+	// Callbacks Setup
 	eng.setOnSpecialPressedCallback(onSpecialKeyDownCallback);
 	eng.setOnSpecialReleasedCallback(onSpecialKeyUpCallback);
 	eng.setOnKeyboardPressedCallback(onKeyboardPressedCallback);
@@ -566,6 +563,8 @@ int main(int argc, char* argv[])
 
 	eng.setOnResizeCallback(onResize);
 	eng.setOnTextDrawCallback(renderingImGui);
+
+	// Start Main Loop
 	eng.start(renderingLoop);
 
 	// Cleanup
@@ -576,7 +575,6 @@ int main(int argc, char* argv[])
 	visualController.free();
 	SetupController::getInstance().free();
 
-	delete g_SetupWin;
 	delete g_LoadingWin;
 
 	ImGui_ImplOpenGL3_Shutdown();

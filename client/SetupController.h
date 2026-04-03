@@ -1,5 +1,6 @@
 #pragma once
 #include "SetupWindow.h"
+#include "ConfigController.h"
 #include "ISetupListener.h"
 
 class SetupController : public ISetupListener
@@ -11,13 +12,26 @@ public:
 		return instance;
 	}
 
-	void init(SetupWindow* window)
+	void init()
 	{
-		this->setupWindow = window;
+		if (this->setupWindow) return;
 
+		ConfigController& config = ConfigController::getInstance();
+
+		this->setupWindow = new SetupWindow(
+			config.getActiveTextureConfig(),
+			config.getActiveTerrainConfig()
+		);
+
+		this->setupWindow->setListener(this);
+	}
+
+	void free()
+	{
 		if (this->setupWindow)
 		{
-			this->setupWindow->setListener(this); 
+			delete this->setupWindow;
+			this->setupWindow = nullptr;
 		}
 	}
 
@@ -29,14 +43,8 @@ public:
 		}
 	}
 
-	void free() const
-	{
-	
-	}
-
 	void onTerrainGenerationRequested() override
 	{
-
 		this->generationRequested = true;
 	}
 
@@ -50,6 +58,11 @@ public:
 	float getTerrainHeightScale() const
 	{
 		return this->setupWindow ? this->setupWindow->getHeightScale() : 100.0f;
+	}
+
+	SetupWindow* getWindow() const
+	{
+		return this->setupWindow;
 	}
 
 private:
