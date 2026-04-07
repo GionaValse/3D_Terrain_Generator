@@ -24,8 +24,7 @@ public:
 	virtual void init(std::vector<std::vector<BaseTool*>> toolGroups) = 0;
 
 	void setListener(IToolListener* listener);
-
-	virtual void onToolSelected(BaseTool* tool);
+    void setSelectedTool(int groupPos, int itemPos);
 
     void drawContent() override;
 
@@ -35,5 +34,5 @@ protected:
     std::vector<std::vector<BaseTool*>> tools;
 	IToolListener* toolListener;
 
-    void renderToolButton(BaseTool* tool, ImVec2 iconSize);
+    void renderToolButton(BaseTool* tool, ImVec2 iconSize, int groupPos, int itemPos);
 };

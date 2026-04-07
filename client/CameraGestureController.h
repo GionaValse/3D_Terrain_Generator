@@ -4,6 +4,7 @@
 
 using MouseMoveDispatcher = EventDispatcher<int, int, int, int>;
 using MouseWheelDispatcher = EventDispatcher<int, int, int>;
+using MenuDispatcher = EventDispatcher<>;
 
 class CameraGestureController
 {
@@ -18,6 +19,7 @@ public:
 	void cameraPan(int x, int y, int lastX, int lastY);
 	void cameraRotate(int x, int y, int lastX, int lastY);
 	void cameraZoom(int x, int y, int direction);
+	void cameraReset();
 
 private:
 	CameraGestureController() = default;
@@ -28,4 +30,5 @@ private:
 	size_t panSubscriptionId;
 	size_t rotateSubscriptionId;
 	size_t zoomSubscriptionId;
+	size_t resetSubscriptionId;
 };

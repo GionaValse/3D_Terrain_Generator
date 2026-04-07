@@ -69,6 +69,7 @@ bool BaseWindow::isOpen() const
 void BaseWindow::setVisible(bool visible)
 {
     isVisible = visible;
+    forceReposition = true;
 }
 
 void BaseWindow::setFlags(ImGuiWindowFlags newFlags)

@@ -41,6 +41,14 @@ void CameraGestureController::init()
 			this->cameraZoom(x, y, direction);
 		}
 	);
+
+	resetSubscriptionId = MenuDispatcher::getInstance().subscribe(
+		AppEvents::MENU_RESET_CAMERA,
+		[this]()
+		{
+			this->cameraReset();
+		}
+	);
 }
 
 void CameraGestureController::free() const
@@ -95,4 +103,11 @@ void CameraGestureController::cameraZoom(int x, int y, int direction)
 
 	glm::vec3 translation = glm::normalize(forward) * scrollDelta;
 	camera->setMatrix(glm::translate(glm::mat4(1.0f), translation) * camera->getMatrix());
+}
+
+void CameraGestureController::cameraReset()
+{
+	Eng::Camera* camera = Eng::Base::getInstance().getActiveCamera();
+	glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 96.0f, 512.0f));
+	camera->setMatrix(translation);
 }

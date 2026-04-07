@@ -8,19 +8,16 @@ ToolWindow::ToolWindow(const std::string& name, AnchorSide side, ImVec2 offset, 
 void ToolWindow::setListener(IToolListener* listener)
 {
 	this->toolListener = listener;
-
-    if (tools.size() > 0 && tools[0].size() > 0 && this->toolListener)
-    {
-        this->toolListener->onToolSelected(tools[0][0]);
-	}
+    setSelectedTool(0, 0);
 }
 
-void ToolWindow::onToolSelected(BaseTool* tool)
+void ToolWindow::setSelectedTool(int groupPos, int itemPos)
 {
-	if (toolListener)
-    {
-        toolListener->onToolSelected(tool);
-	}
+    if (!this->toolListener) return;
+    if (groupPos < 0 || groupPos >= this->tools.size()) return;
+    if (itemPos < 0 || itemPos >= this->tools[groupPos].size()) return;
+
+    this->toolListener->onToolSelected(tools[groupPos][itemPos], groupPos, itemPos);
 }
 
 void ToolWindow::drawContent()
@@ -38,7 +35,7 @@ void ToolWindow::drawContent()
                 ImGui::Dummy(ImVec2(0, 5));
             }
 
-            renderToolButton(group[j], iconSize);
+            renderToolButton(group[j], iconSize, i, j);
         }
 
         if (i < tools.size() - 1)
@@ -55,7 +52,7 @@ void ToolWindow::clearTools()
     tools.clear();
 }
 
-void ToolWindow::renderToolButton(BaseTool* tool, ImVec2 iconSize)
+void ToolWindow::renderToolButton(BaseTool* tool, ImVec2 iconSize, int groupPos, int itemPos)
 {
     if (!tool) return;
 	BaseTool* currentTool = toolListener ? toolListener->getActiveTool() : nullptr;
@@ -89,13 +86,13 @@ void ToolWindow::renderToolButton(BaseTool* tool, ImVec2 iconSize)
     {
         ImGui::SetTooltip("%s", tool->getName().c_str());
     }
-    if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+    if (toolListener && ImGui::IsItemClicked(ImGuiMouseButton_Left))
     {
-        onToolSelected(tool);
+        toolListener->onToolSelected(tool, groupPos, itemPos);
     }
-    if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+    if (toolListener && ImGui::IsItemClicked(ImGuiMouseButton_Right))
     {
-		// TODO: Show context menu for tool settings
+        toolListener->onToolEditor(tool, groupPos, itemPos);
     }
 
     ImGui::PopID();

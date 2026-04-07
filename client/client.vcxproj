@@ -144,8 +144,10 @@
     <ClInclude Include="CameraGestureController.h" />
     <ClInclude Include="ErosionBrushTool.h" />
     <ClInclude Include="EventDispatcher.h" />
+    <ClInclude Include="IToolSettingsWindow.h" />
     <ClInclude Include="ISetupListener.h" />
     <ClInclude Include="IToolListener.h" />
+    <ClInclude Include="PointerToolSettingsWindow.h" />
     <ClInclude Include="PointerToolWindow.h" />
     <ClInclude Include="SculpingBrushTool.h" />
     <ClInclude Include="configuration.h" />
@@ -187,6 +189,7 @@
     <ClCompile Include="LoadingWindow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="miniz.c" />
+    <ClCompile Include="PointerToolSettingsWindow.cpp" />
     <ClCompile Include="ShadesVisualTool.cpp" />
     <ClCompile Include="SolidVisualTool.cpp" />
     <ClCompile Include="StatusBar.cpp" />

@@ -72,5 +72,5 @@ void StatusBar::basePosition()
     AnchorWindow::basePosition();
 
     ImGuiViewport* viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowSize(ImVec2(viewport->Size.x, 30.0f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(viewport->Size.x, 30.0f), ImGuiCond_Always);
 }

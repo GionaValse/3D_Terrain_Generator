@@ -14,13 +14,15 @@ public:
 
 	~PointerController();
 
-	void init(ToolWindow* window) override;
+	void init(ToolWindow* window, IToolSettingsWindow* editorWindow) override;
 	void free() const override;
 
 	void setHeightMap(Eng::Texture* texture);
 
 	BaseTool* getActiveTool() const override;
-	void onToolSelected(BaseTool* tool) override;
+
+	void onToolSelected(BaseTool* tool, int groupPos, int itemPos) override;
+	void onToolEditor(BaseTool* tool, int groupPos, int itemPos) override;
 
 private:
 	PointerController();

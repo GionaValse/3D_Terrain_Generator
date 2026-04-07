@@ -22,31 +22,31 @@ void TopMenuBar::render()
         // ==========================================
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Nuovo Progetto"))
+            if (ImGui::MenuItem("New Project"))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_NEW_PROJECT);
 
-            if (ImGui::MenuItem("Apri Heightmap..."))
+            if (ImGui::MenuItem("Open Heightmap...", "", false, false))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_OPEN_HEIGHTMAP);
 
             ImGui::Separator();
 
-            if (ImGui::MenuItem("Salva Progetto", "Ctrl+S"))
+            if (ImGui::MenuItem("Save", "Ctrl+S", false, false))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_SAVE_PROJECT);
 
-            if (ImGui::MenuItem("Salva con nome..."))
+            if (ImGui::MenuItem("Save as...", "", false, false))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_SAVE_AS);
 
             ImGui::Separator();
 
-            if (ImGui::MenuItem("Esporta Mesh 3D (.obj)"))
+            if (ImGui::MenuItem("Export 3D Terrain (.obj)"))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_EXPORT_MESH);
 
-            if (ImGui::MenuItem("Esporta Heightmap (.exr)", "Ctrl+E"))
+            if (ImGui::MenuItem("Export Heightmap (.exr)", "Ctrl+E", false, false))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_EXPORT_HEIGHTMAP);
 
             ImGui::Separator();
 
-            if (ImGui::MenuItem("Esci", "Alt+F4"))
+            if (ImGui::MenuItem("Quit", "Alt+F4"))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::APP_EXIT);
 
             ImGui::EndMenu();
@@ -55,17 +55,17 @@ void TopMenuBar::render()
         // ==========================================
         // MENU: EDIT
         // ==========================================
-        if (ImGui::BeginMenu("Modifica"))
+        if (ImGui::BeginMenu("Edit"))
         {
-            if (ImGui::MenuItem("Annulla (Undo)", "Ctrl+Z"))
+            if (ImGui::MenuItem("Undo", "Ctrl+Z", false, false))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_UNDO);
 
-            if (ImGui::MenuItem("Ripristina (Redo)", "Ctrl+Y"))
+            if (ImGui::MenuItem("Redo", "Ctrl+Y", false, false))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_REDO);
 
             ImGui::Separator();
 
-            if (ImGui::MenuItem("Opzioni Editor..."))
+            if (ImGui::MenuItem("Editor Settings...", "", false, false))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_OPTIONS);
 
             ImGui::EndMenu();
@@ -74,21 +74,20 @@ void TopMenuBar::render()
         // ==========================================
         // MENU: VIEW
         // ==========================================
-        if (ImGui::BeginMenu("Visualizza"))
+        if (ImGui::BeginMenu("View"))
         {
-            if (ImGui::BeginMenu("Modalità Shading"))
+            if (ImGui::BeginMenu("Shading Mode"))
             {
-                // Mostra un pallino accanto alla modalità attiva (usando currentShadingMode)
-                if (ImGui::MenuItem("Realistico", nullptr, currentShadingMode == 0))
+                if (ImGui::MenuItem("Realisitc", nullptr, currentShadingMode == 0))
                     EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_SHADING_REAL);
 
-                if (ImGui::MenuItem("Wireframe", nullptr, currentShadingMode == 1))
+                if (ImGui::MenuItem("Solid", nullptr, currentShadingMode == 1))
+                    EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_SHADING_SOLID);
+
+                if (ImGui::MenuItem("Wireframe", nullptr, currentShadingMode == 2))
                     EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_SHADING_WIREFRAME);
 
-                if (ImGui::MenuItem("Normali", nullptr, currentShadingMode == 2))
-                    EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_SHADING_NORMALS);
-
-                if (ImGui::MenuItem("Colori Altitudine", nullptr, currentShadingMode == 3))
+                if (ImGui::MenuItem("Colors Altitude", nullptr, currentShadingMode == 3, false))
                     EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_SHADING_ALTITUDE);
 
                 ImGui::EndMenu();
@@ -97,18 +96,18 @@ void TopMenuBar::render()
             ImGui::Separator();
 
             // Checkbox integrata nel menu
-            if (ImGui::MenuItem("Mostra Griglia", nullptr, &showGrid))
+            if (ImGui::MenuItem("Show Grid", nullptr, &showGrid, false))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_TOGGLE_GRID);
 
-            if (ImGui::MenuItem("Mostra Assi XYZ", nullptr, &showAxes))
+            if (ImGui::MenuItem("Show Axsis XYZ", nullptr, &showAxes, false))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_TOGGLE_AXES);
 
             ImGui::Separator();
 
-            if (ImGui::MenuItem("Reset Camera"))
+            if (ImGui::MenuItem("Camera Reset"))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_RESET_CAMERA);
 
-            if (ImGui::MenuItem("Ripristina Layout UI"))
+            if (ImGui::MenuItem("Layout UI Reset", "", false, false))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_RESET_LAYOUT);
 
             ImGui::EndMenu();
@@ -117,17 +116,17 @@ void TopMenuBar::render()
         // ==========================================
         // MENU: TERRAIN
         // ==========================================
-        if (ImGui::BeginMenu("Terreno"))
+        if (ImGui::BeginMenu("Terrain"))
         {
-            if (ImGui::MenuItem("Ridimensiona Terreno..."))
+            if (ImGui::MenuItem("Resize Terrain...", "", false, false))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_RESIZE_TERRAIN);
 
-            if (ImGui::MenuItem("Genera da Rumore (Noise)..."))
+            if (ImGui::MenuItem("Generates from Noise...", "", false, false))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_GENERATE_NOISE);
 
             ImGui::Separator();
 
-            if (ImGui::MenuItem("Azzera Altitudini"))
+            if (ImGui::MenuItem("Reset Altitudes", "", false, false))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_FLATTEN_TERRAIN);
 
             ImGui::EndMenu();

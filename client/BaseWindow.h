@@ -24,7 +24,7 @@ public:
 
     bool isOpen() const;
 
-    void setVisible(bool visible);
+    virtual void setVisible(bool visible);
     void setFlags(ImGuiWindowFlags newFlags);
 
 protected:

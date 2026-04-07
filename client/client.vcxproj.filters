@@ -207,6 +207,12 @@
     <ClInclude Include="StatusBar.h">
       <Filter>File di intestazione\views\dockers</Filter>
     </ClInclude>
+    <ClInclude Include="IToolSettingsWindow.h">
+      <Filter>File di intestazione\views\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="PointerToolSettingsWindow.h">
+      <Filter>File di intestazione\views\tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -295,6 +301,9 @@
     </ClCompile>
     <ClCompile Include="StatusBar.cpp">
       <Filter>File di origine\views\dockers</Filter>
+    </ClCompile>
+    <ClCompile Include="PointerToolSettingsWindow.cpp">
+      <Filter>File di origine\views\tools</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

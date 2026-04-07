@@ -23,9 +23,10 @@ PointerController& PointerController::getInstance()
 PointerController::~PointerController()
 {}
 
-void PointerController::init(ToolWindow* window)
+void PointerController::init(ToolWindow* window, IToolSettingsWindow* editorWindow)
 {
 	this->toolWindow = window;
+	this->editorToolWindow = editorWindow;
 
 	if (this->toolWindow)
 	{
@@ -56,9 +57,28 @@ BaseTool* PointerController::getActiveTool() const
 	return this->currentTool;
 }
 
-void PointerController::onToolSelected(BaseTool* tool)
+void PointerController::onToolSelected(BaseTool* tool, int groupPos, int itemPos)
 {
 	this->currentTool = tool;
+
+	if (this->editorToolWindow)
+	{
+		auto* brushTool = dynamic_cast<BaseBrushTool*>(tool);
+		if (brushTool)
+			editorToolWindow->setActiveTool(brushTool);
+		else
+			editorToolWindow->setVisible(false);
+	}
+}
+
+void PointerController::onToolEditor(BaseTool* tool, int groupPos, int itemPos)
+{
+	auto* brushTool = dynamic_cast<BaseBrushTool*>(tool);
+	if (!brushTool) return;
+	
+	editorToolWindow->setActiveTool(brushTool);
+	editorToolWindow->setVisible(true);
+	this->currentTool = brushTool;
 }
 
 void PointerController::onCursorMove(int x, int y, int lastX, int lastY)

@@ -30,6 +30,7 @@
 #include "StatusBar.h"
 
 #include "PointerToolWindow.h"
+#include "PointerToolSettingsWindow.h"
 #include "VisualToolWindow.h"
 
 #include "SetupWindow.h"
@@ -374,8 +375,6 @@ int main(int argc, char* argv[])
 	terrainShader->build(vShader, fShader);
 	terrainShader->render();	
 
-	
-
 	// Core Windows & Controllers Setup
 	SetupController::getInstance().init();
 	g_LoadingWin = new LoadingWindow();
@@ -409,12 +408,14 @@ int main(int argc, char* argv[])
 	StatusBar* statusBar = new StatusBar();
 
 	PointerToolWindow* pointerToolWin = new PointerToolWindow();
+	PointerToolSettingsWindow* pointerToolSetWin = new PointerToolSettingsWindow();
 	VisualToolWindow* visualToolWin = new VisualToolWindow();
 
 	pointerToolWin->init(brushToolGroups);
 	visualToolWin->init(visualToolGroups);
 
 	windows.push_back(pointerToolWin);
+	windows.push_back(pointerToolSetWin);
 	windows.push_back(visualToolWin);
 
 	// Controllers setup
@@ -427,8 +428,10 @@ int main(int argc, char* argv[])
 	appController.init(topMenuBar, statusBar);
 	uiController.init(windows, topMenuBar, statusBar);
 	cameraController.init();
-	pointerController.init(pointerToolWin);
+	pointerController.init(pointerToolWin, pointerToolSetWin);
 	visualController.init(visualToolWin);
+
+	visualController.setTopMenuSupport(topMenuBar);
 
 	// Camera Setup
 	glm::mat4 camera = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 96.0f, 512.0f));

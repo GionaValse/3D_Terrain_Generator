@@ -21,7 +21,7 @@ namespace AppEvents
     // --- VIEW ---
     inline const std::string MENU_SHADING_REAL = "MENU_SHADING_REAL";
     inline const std::string MENU_SHADING_WIREFRAME = "MENU_SHADING_WIREFRAME";
-    inline const std::string MENU_SHADING_NORMALS = "MENU_SHADING_NORMALS";
+    inline const std::string MENU_SHADING_SOLID = "MENU_SHADING_SOLID";
     inline const std::string MENU_SHADING_ALTITUDE = "MENU_SHADING_ALTITUDE";
     inline const std::string MENU_TOGGLE_GRID = "MENU_TOGGLE_GRID";
     inline const std::string MENU_TOGGLE_AXES = "MENU_TOGGLE_AXES";
