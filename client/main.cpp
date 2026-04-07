@@ -13,6 +13,7 @@
 #include "ImageExporter.hpp"
 
 #include "configuration.h"
+#include "AppEvents.h"
 
 // Models //
 #include "CursorTool.h"
@@ -325,9 +326,9 @@ static void onMouseMotionCallback(int x, int y)
 	if (ImGui::GetIO().WantCaptureMouse) return;
 	if (!isGenerated) return;
 
-	std::string eventType = isLeftDragging ? "LEFT_MOUSE_MOVE" 
-		: (isMiddleDragging ? "MIDDLE_MOUSE_MOVE" 
-			: (isRightDragging ? "RIGHT_MOUSE_MOVE" : "MOUSE_MOVE"));
+	std::string eventType = isLeftDragging ? AppEvents::LEFT_MOUSE_MOVE 
+		: (isMiddleDragging ? AppEvents::MIDDLE_MOUSE_MOVE 
+			: (isRightDragging ? AppEvents::RIGHT_MOUSE_MOVE : AppEvents::MOUSE_MOVE));
 	MouseMoveDispatcher::getInstance().dispatch(eventType, x, y, lastMouseX, lastMouseY);
 
 	lastMouseX = x;
@@ -341,7 +342,7 @@ static void onPassiveMouseMotionCallback(int x, int y)
 	ImGui_ImplGLUT_MotionFunc(x, y);
 	if (ImGui::GetIO().WantCaptureMouse) return;
 
-	MouseMoveDispatcher::getInstance().dispatch("MOUSE_HOVER", x, y, 0, 0);
+	MouseMoveDispatcher::getInstance().dispatch(AppEvents::MOUSE_HOVER, x, y, 0, 0);
 }
 
 static void onMouseWheelCallback(int wheelId, int direction, int x, int y)
@@ -352,7 +353,7 @@ static void onMouseWheelCallback(int wheelId, int direction, int x, int y)
 	if (ImGui::GetIO().WantCaptureMouse) return;
 	if (!isGenerated) return;
 
-	MouseWheelDispatcher::getInstance().dispatch("MOUSE_WHEEL", x, y, direction);
+	MouseWheelDispatcher::getInstance().dispatch(AppEvents::MOUSE_WHEEL, x, y, direction);
 }
 
 //////////

@@ -11,7 +11,11 @@
 PointerController::PointerController()
 	: ToolController(),
 	mouseMoveSubscriptionId(-1),
-	heightMapTexture(nullptr)
+	mouseHoverSubscriptionId(-1),
+	heightMapTexture(nullptr),
+	brushPositionLoc(-1),
+	brushRadiusLoc(-1),
+	brushActiveLoc(-1)
 {}
 
 PointerController& PointerController::getInstance()
@@ -40,6 +44,14 @@ void PointerController::init(ToolWindow* window, IToolSettingsWindow* editorWind
 			this->onCursorMove(x, y, lastX, lastY);
 		}
 	);
+
+	mouseHoverSubscriptionId = MouseMoveDispatcher::getInstance().subscribe(
+		AppEvents::MOUSE_HOVER,
+		[this](int x, int y, int lastX, int lastY)
+		{
+			this->onCursorHover(x, y);
+		}
+	);
 }
 
 void PointerController::free() const
@@ -60,6 +72,15 @@ BaseTool* PointerController::getActiveTool() const
 void PointerController::onToolSelected(BaseTool* tool, int groupPos, int itemPos)
 {
 	this->currentTool = tool;
+
+	Eng::Shader* shader = Eng::Shader::getCurrentInstance();
+
+	if (shader)
+	{
+		brushPositionLoc = shader->getParamLocation("brushPosition");
+		brushRadiusLoc = shader->getParamLocation("brushRadius");
+		brushActiveLoc = shader->getParamLocation("isBrushActive");
+	}
 
 	if (this->editorToolWindow)
 	{
@@ -86,11 +107,15 @@ void PointerController::onCursorMove(int x, int y, int lastX, int lastY)
 	auto* activeTool = getActiveTool();
 	if (!activeTool) return;
 
+	Eng::Shader* shader = Eng::Shader::getCurrentInstance();
+
 	if (auto* brushTool = dynamic_cast<BaseBrushTool*>(activeTool))
 	{
 		glm::vec3 clickedPos;
 		if (Eng::Base::getInstance().getClickedNode(x, y, clickedPos))
 		{
+			showBrushArea(brushTool, clickedPos);
+
 			ConfigController& config = ConfigController::getInstance();
 			std::vector<float>& imageData = config.getHeightMapImage();
 			int resolution = config.getActiveTextureConfig().size;
@@ -113,5 +138,36 @@ void PointerController::onCursorMove(int x, int y, int lastX, int lastY)
 	else if (auto* cursorTool = dynamic_cast<CursorTool*>(activeTool))
 	{
 		CameraGestureController::getInstance().cameraRotate(x, y, lastX, lastY);
+		hideBrushArea();
 	}
+}
+
+void PointerController::onCursorHover(int x, int y)
+{
+	auto* brushTool = dynamic_cast<BaseBrushTool*>(currentTool);
+	glm::vec3 hoverPos;
+
+	if (brushTool && Eng::Base::getInstance().getClickedNode(x, y, hoverPos))
+		showBrushArea(brushTool, hoverPos);
+	else
+		hideBrushArea();
+}
+
+void PointerController::hideBrushArea()
+{
+	Eng::Shader* shader = Eng::Shader::getCurrentInstance();
+	if (shader) shader->setBool(brushActiveLoc, false);
+}
+
+void PointerController::showBrushArea(BaseBrushTool* brush, glm::vec3 mousePos)
+{
+	Eng::Shader* shader = Eng::Shader::getCurrentInstance();
+	if (!shader) return;
+
+	shader->setBool(brushActiveLoc, true);
+	shader->setFloat(brushRadiusLoc, brush->getRadius());
+
+	Eng::Camera* camera = Eng::Base::getInstance().getActiveCamera();
+	glm::vec4 eyeBrushPos = camera->getViewMatrix() * glm::vec4(mousePos, 1.0f);
+	shader->setVec4(brushPositionLoc, eyeBrushPos);
 }

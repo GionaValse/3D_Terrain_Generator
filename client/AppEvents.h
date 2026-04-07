@@ -34,8 +34,10 @@ namespace AppEvents
     inline const std::string MENU_FLATTEN_TERRAIN = "MENU_FLATTEN_TERRAIN";
 
     // --- GESTURE ---
+    inline const std::string MOUSE_MOVE = "MOUSE_MOVE";
     inline const std::string LEFT_MOUSE_MOVE = "LEFT_MOUSE_MOVE";
     inline const std::string MIDDLE_MOUSE_MOVE = "MIDDLE_MOUSE_MOVE";
     inline const std::string RIGHT_MOUSE_MOVE = "RIGHT_MOUSE_MOVE";
     inline const std::string MOUSE_WHEEL = "MOUSE_WHEEL";
+    inline const std::string MOUSE_HOVER = "MOUSE_HOVER";
 }

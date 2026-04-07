@@ -31,6 +31,10 @@ uniform bool hasTexture;
 // Terrain color
 uniform bool hasColor;
 
+uniform bool isBrushActive;
+uniform float brushRadius;
+uniform vec4 brushPosition;
+
 void main() {
     vec4 texel = hasTexture ? texture(texSampler, texCoord) : vec4(1.0);
 
@@ -90,5 +94,13 @@ void main() {
     }
 
     vec3 finalColor = (terrainBaseColor * totalLightColor) + specularLight; // removed texel.rgb * 
+
+    if (isBrushActive) {
+        float dist = distance(fragPosition.xyz, brushPosition.xyz);
+        if (dist < brushRadius) {
+            finalColor = mix(finalColor, vec3(0.57, 0.26, 0.96), 0.6);
+        }
+    }
+
     fragOutput = vec4(finalColor, 1.0);
 }

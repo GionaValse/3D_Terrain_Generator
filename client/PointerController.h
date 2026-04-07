@@ -31,8 +31,17 @@ private:
 	void operator=(const PointerController&) = delete;
 
 	size_t mouseMoveSubscriptionId;
+	size_t mouseHoverSubscriptionId;
+
+	int brushPositionLoc;
+	int brushRadiusLoc;
+	int brushActiveLoc;
 
 	Eng::Texture* heightMapTexture;
 
 	void onCursorMove(int x, int y, int lastX, int lastY);
+	void onCursorHover(int x, int y);
+
+	void hideBrushArea();
+	void showBrushArea(BaseBrushTool* brush, glm::vec3 mousePos);
 };
