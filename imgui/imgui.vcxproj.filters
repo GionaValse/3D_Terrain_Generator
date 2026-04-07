@@ -13,14 +13,14 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="File di intestazione\backends">
+      <UniqueIdentifier>{1cc5830f-14c9-4bfc-88f4-a29a8ba5416b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File di origine\backends">
+      <UniqueIdentifier>{5012e9e5-936d-432a-8b3d-07117180cddf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="backends\imgui_impl_glut.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="backends\imgui_impl_opengl3.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
     <ClCompile Include="imgui.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
@@ -33,14 +33,14 @@
     <ClCompile Include="imgui_widgets.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="backends\imgui_impl_glut.cpp">
+      <Filter>File di origine\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="backends\imgui_impl_opengl3.cpp">
+      <Filter>File di origine\backends</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="backends\imgui_impl_glut.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="backends\imgui_impl_opengl3.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="imconfig.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
@@ -59,8 +59,14 @@
     <ClInclude Include="imstb_truetype.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="backends\imgui_impl_glut.h">
+      <Filter>File di intestazione\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="backends\imgui_impl_opengl3.h">
+      <Filter>File di intestazione\backends</Filter>
+    </ClInclude>
     <ClInclude Include="backends\imgui_impl_opengl3_loader.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>File di intestazione\backends</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

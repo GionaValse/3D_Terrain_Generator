@@ -5,6 +5,7 @@
 #include "engine.h"
 
 #include "configuration.h"
+#include "AppEvents.h"
 
 CameraGestureController& CameraGestureController::getInstance()
 {
@@ -18,7 +19,7 @@ CameraGestureController::~CameraGestureController()
 void CameraGestureController::init()
 {
 	panSubscriptionId = MouseMoveDispatcher::getInstance().subscribe(
-		"RIGHT_MOUSE_MOVE",
+		AppEvents::RIGHT_MOUSE_MOVE,
 		[this](int x, int y, int lastX, int lastY)
 		{
 			this->cameraPan(x, y, lastX, lastY);
@@ -26,7 +27,7 @@ void CameraGestureController::init()
 	);
 
 	rotateSubscriptionId = MouseMoveDispatcher::getInstance().subscribe(
-		"MIDDLE_MOUSE_MOVE",
+		AppEvents::MIDDLE_MOUSE_MOVE,
 		[this](int x, int y, int lastX, int lastY)
 		{
 			this->cameraRotate(x, y, lastX, lastY);
@@ -34,7 +35,7 @@ void CameraGestureController::init()
 	);
 
 	zoomSubscriptionId = MouseWheelDispatcher::getInstance().subscribe(
-		"MOUSE_WHEEL",
+		AppEvents::MOUSE_WHEEL,
 		[this](int x, int y, int direction)
 		{
 			this->cameraZoom(x, y, direction);
@@ -44,10 +45,10 @@ void CameraGestureController::init()
 
 void CameraGestureController::free() const
 {
-	MouseMoveDispatcher::getInstance().unsubscribe("RIGHT_MOUSE_MOVE", panSubscriptionId);
-	MouseMoveDispatcher::getInstance().unsubscribe("MIDDLE_MOUSE_MOVE", rotateSubscriptionId);
+	MouseMoveDispatcher::getInstance().unsubscribe(AppEvents::RIGHT_MOUSE_MOVE, panSubscriptionId);
+	MouseMoveDispatcher::getInstance().unsubscribe(AppEvents::MIDDLE_MOUSE_MOVE, rotateSubscriptionId);
 
-	MouseWheelDispatcher::getInstance().unsubscribe("MOUSE_WHEEL", zoomSubscriptionId);
+	MouseWheelDispatcher::getInstance().unsubscribe(AppEvents::MOUSE_WHEEL, zoomSubscriptionId);
 }
 
 void CameraGestureController::cameraPan(int x, int y, int lastX, int lastY)

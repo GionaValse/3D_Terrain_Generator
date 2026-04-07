@@ -5,7 +5,7 @@
 #include <cstddef>
 
 SculptingBrushTool::SculptingBrushTool(unsigned int radius, float strength, float falloff)
-	: BaseBrushTool("SculptingBrush", "./res/paint.png", radius, strength, falloff)
+	: BaseBrushTool("Sculpting", "./res/paint.png", radius, strength, falloff)
 {}
 
 SculptingBrushTool& SculptingBrushTool::getInstance()

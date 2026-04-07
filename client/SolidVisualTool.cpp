@@ -1,7 +1,7 @@
 #include "SolidVisualTool.h"
 
 SolidVisualTool::SolidVisualTool()
-    : BaseVisualTool("SolidVisualTool", "res/solid.png")
+    : BaseVisualTool("Solid", "res/solid.png")
 {}
 
 SolidVisualTool& SolidVisualTool::getInstance()

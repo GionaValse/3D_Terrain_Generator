@@ -16,13 +16,14 @@ public:
 		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration
 	);
 
-	void basePosition() override;
-
 	AnchorSide getAnchorSide() const;
 
 	ImVec2 getOffset() const;
 
 	void setAnchor(AnchorSide newSide, ImVec2 newOffset = ImVec2(0, 0));
+
+protected:
+	void basePosition() override;
 
 private:
 	AnchorSide side;

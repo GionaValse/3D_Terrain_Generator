@@ -5,7 +5,7 @@
 #include <cstddef>
 
 ErosionBrushTool::ErosionBrushTool(unsigned int radius, float strength, float falloff)
-	: BaseBrushTool("ErosionBrush", "./res/eraser.png", radius, strength, falloff)
+	: BaseBrushTool("Erosion", "./res/eraser.png", radius, strength, falloff)
 {}
 
 ErosionBrushTool& ErosionBrushTool::getInstance()

@@ -1,7 +1,7 @@
 #include "ShadesVisualTool.h"
 
 ShadesVisualTool::ShadesVisualTool()
-	: BaseVisualTool("ShadesVisualTool", "res/shades.png")
+	: BaseVisualTool("Shades", "res/shades.png")
 {}
 
 ShadesVisualTool& ShadesVisualTool::getInstance()

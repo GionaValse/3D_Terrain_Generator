@@ -1,5 +1,7 @@
 #include "BaseWindow.h"
 
+#include <iostream>
+
 BaseWindow::BaseWindow(const std::string& name, bool startVisible, bool cancelable, ImGuiWindowFlags windowFlags)
 	: title(name),
     isVisible(startVisible),
@@ -7,7 +9,8 @@ BaseWindow::BaseWindow(const std::string& name, bool startVisible, bool cancelab
     flags(windowFlags),
     defaultPos(-1.0f, -1.0f),
     defaultSize(-1.0f, -1.0f),
-    posCond(ImGuiCond_FirstUseEver)
+    posCond(ImGuiCond_FirstUseEver),
+	forceReposition(true)
 {}
 
 void BaseWindow::setNextWindowPos(float x, float y, ImGuiCond cond)
@@ -23,6 +26,7 @@ void BaseWindow::setNextWindowSize(float w, float h)
 
 void BaseWindow::basePosition()
 {
+	std::cout << "BaseWindow::basePosition() called for " << title << std::endl;
     if (defaultPos.x != -1.0f) {
         ImGui::SetNextWindowPos(defaultPos, posCond);
     }
@@ -36,7 +40,11 @@ void BaseWindow::render()
 {
     if (!isVisible) return;
 
-    basePosition();
+    if (forceReposition)
+    {
+        basePosition();
+		forceReposition = false;
+    }
 
     if (!ImGui::Begin(title.c_str(), cancelable ? &isVisible : nullptr, flags)) {
         ImGui::End();
@@ -46,6 +54,11 @@ void BaseWindow::render()
     drawContent();
 
     ImGui::End();
+}
+
+void BaseWindow::onResize(int width, int height)
+{
+    forceReposition = true;
 }
 
 bool BaseWindow::isOpen() const

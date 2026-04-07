@@ -1,7 +1,7 @@
 #include "WireframeVisualTool.h"
 
 WireframeVisualTool::WireframeVisualTool()
-    : BaseVisualTool("WireframeVisualTool", "res/wireframe.png")
+    : BaseVisualTool("Wireframe", "res/wireframe.png")
 {}
 
 WireframeVisualTool& WireframeVisualTool::getInstance()

@@ -12,5 +12,6 @@ public:
 		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration
 	);
 
+protected:
 	void basePosition() override;
 };

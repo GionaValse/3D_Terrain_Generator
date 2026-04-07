@@ -5,10 +5,10 @@
 struct TerrainConfig
 {
 	int size = 512;
-
+	float heightScale = 100.0f;
 
 	bool isValid() const
 	{
-		return size > 0;
+		return size > 0 && heightScale >= 0;
 	}
 };

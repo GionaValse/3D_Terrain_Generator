@@ -30,6 +30,9 @@
 #include "WireframeVisualTool.h"
 
 // Views //
+#include "TopMenuBar.h"
+#include "StatusBar.h"
+
 #include "PointerToolWindow.h"
 #include "VisualToolWindow.h"
 
@@ -37,10 +40,14 @@
 #include "LoadingWindow.h"
 
 // Controllers //
+#include "AppController.h"
 #include "CameraGestureController.h"
 #include "ConfigController.h"
+
 #include "PointerController.h"
 #include "VisualController.h"
+
+#include "UIController.h"
 
 /////////////////
 // DISPATCHERS //
@@ -148,6 +155,7 @@ static void generateTerrain(float heightScale)
 
 	root->addChild(gridMesh);
 
+	AppController::getInstance().setTerrain(image, gridMesh);
 	PointerController::getInstance().setHeightMap(heightMap);
 }
 
@@ -170,85 +178,13 @@ static void exportTerrain()
 		}).detach();
 }
 
-//////////////////
-// WINDOW VIEWS //
-//////////////////
-
-static void renderMainMenuBar()
-{
-	if (!ImGui::BeginMainMenuBar())
-		return;
-
-	if (ImGui::BeginMenu("File"))
-	{
-		if (ImGui::MenuItem("Nuovo", "Ctrl+N"))
-		{
-			isGenerated = false;
-		}
-		if (ImGui::MenuItem("Salva EXR", "Ctrl+S")) { /* Logica */ }
-		if (ImGui::MenuItem("Esporta terreno", "Ctrl+E"))
-		{
-			exportTerrain();
-		}
-		ImGui::Separator();
-		if (ImGui::MenuItem("Esci", "Alt+F4"))
-		{
-			Eng::Base::getInstance().stop();
-		}
-		ImGui::EndMenu();
-	}
-
-	if (ImGui::BeginMenu("Modifica"))
-	{
-		if (ImGui::MenuItem("Reset Camera")) { /* Logica */ }
-
-		if (ImGui::MenuItem(isWireFrameMode ? "Realistico" : "Wireframe"))
-		{
-			isWireFrameMode = !isWireFrameMode;
-			Eng::Base::getInstance().changeWireFrame(isWireFrameMode);
-		}
-
-		ImGui::EndMenu();
-	}
-
-	ImGui::EndMainMenuBar();
-}
-
-static void renderStatusBar()
-{
-	ImGuiViewport* viewport = ImGui::GetMainViewport();
-
-	float barHeight = 25.0f;
-	ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + viewport->Size.y - barHeight));
-	ImGui::SetNextWindowSize(ImVec2(viewport->Size.x, barHeight));
-
-	ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration |
-		ImGuiWindowFlags_NoInputs |
-		ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoScrollWithMouse |
-		ImGuiWindowFlags_NoSavedSettings;
-
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(5, 2));
-	if (ImGui::Begin("StatusBar", nullptr, flags))
-	{
-		int currentFps = Eng::Base::getInstance().getCurrentFPS();
-		ImGui::Text("FPS: %d | Status: Ready | Camera Pos: %.1f, %.1f, %.1f",
-			currentFps,
-			mainCamera->getMatrix()[3].x,
-			mainCamera->getMatrix()[3].y,
-			mainCamera->getMatrix()[3].z);
-
-		ImGui::End();
-	}
-	ImGui::PopStyleVar();
-}
-
 ///////////////
 // Callbacks //
 ///////////////
 
 void onResize(int w, int h) {
 	ImGui_ImplGLUT_ReshapeFunc(w, h);
+	UIController::getInstance().onResize(w, h);
 }
 
 static void renderingLoop(Eng::Node* root)
@@ -260,23 +196,16 @@ static void renderingLoop(Eng::Node* root)
 		updateSunDirection();
 	}
 
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplGLUT_NewFrame();
-	ImGui::NewFrame();
+	UIController::getInstance().prepareFrame();
 }
 
 static void renderingImGui(Eng::GUIObjects obj)
 {
-	renderMainMenuBar();
-	renderStatusBar();
+	UIController::getInstance().render();
+	AppController::getInstance().update();
 
 	if (!isGenerated && g_SetupWin) g_SetupWin->render();
 	if (isExporting && g_LoadingWin) g_LoadingWin->render();
-
-	for (BaseWindow* win : windows)
-	{
-		if (win) win->render();
-	}
 
 	if (g_SetupWin && g_SetupWin->checkAndResetTrigger()) {
 		generateTerrain( g_SetupWin->getHeightScale());
@@ -468,17 +397,7 @@ int main(int argc, char* argv[])
 
 	terrainShader = new Eng::Shader();
 	terrainShader->build(vShader, fShader);
-	terrainShader->render();
-
-	// ImGui setup
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-	ImGui::StyleColorsDark();
-
-	ImGui_ImplGLUT_Init();
-	ImGui_ImplOpenGL3_Init("#version 440");
+	terrainShader->render();	
 
 	g_SetupWin = new SetupWindow();
 	g_LoadingWin = new LoadingWindow();
@@ -508,23 +427,30 @@ int main(int argc, char* argv[])
 	brushToolGroups.push_back(brushGroup);
 
 	// Views setup
-	PointerToolWindow& pointerToolWin = PointerToolWindow::getInstance();
-	VisualToolWindow& visualToolWin = VisualToolWindow::getInstance();
+	TopMenuBar* topMenuBar = new TopMenuBar();
+	StatusBar* statusBar = new StatusBar();
 
-	pointerToolWin.init(brushToolGroups);
-	visualToolWin.init(visualToolGroups);
+	PointerToolWindow* pointerToolWin = new PointerToolWindow();
+	VisualToolWindow* visualToolWin = new VisualToolWindow();
 
-	windows.push_back(&pointerToolWin);
-	windows.push_back(&visualToolWin);
+	pointerToolWin->init(brushToolGroups);
+	visualToolWin->init(visualToolGroups);
+
+	windows.push_back(pointerToolWin);
+	windows.push_back(visualToolWin);
 
 	// Controllers setup
+	AppController& appController = AppController::getInstance();
 	CameraGestureController& cameraController = CameraGestureController::getInstance();
 	PointerController& pointerController = PointerController::getInstance();
 	VisualController& visualController = VisualController::getInstance();
+	UIController& uiController = UIController::getInstance();
 
+	appController.init(topMenuBar, statusBar);
+	uiController.init(windows, topMenuBar, statusBar);
 	cameraController.init();
-	pointerController.init(&pointerToolWin);
-	visualController.init(&visualToolWin);
+	pointerController.init(pointerToolWin);
+	visualController.init(visualToolWin);
 
 	// Camera
 	glm::mat4 camera = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 96.0f, 512.0f));
@@ -563,6 +489,7 @@ int main(int argc, char* argv[])
 	// Cleanup
 	eng.free();
 
+	appController.free();
 	cameraController.free();
 	pointerController.free();
 	visualController.free();
@@ -570,9 +497,7 @@ int main(int argc, char* argv[])
 	delete g_SetupWin;
 	delete g_LoadingWin;
 
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGLUT_Shutdown();
-	ImGui::DestroyContext();
+	uiController.free();
 
 	return 0;
 }

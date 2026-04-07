@@ -134,6 +134,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AnchorWindow.h" />
+    <ClInclude Include="AppController.h" />
+    <ClInclude Include="AppEvents.h" />
     <ClInclude Include="BaseBrushTool.h" />
     <ClInclude Include="BaseTool.h" />
     <ClInclude Include="BaseVisualTool.h" />
@@ -157,18 +159,22 @@
     <ClInclude Include="ShadesVisualTool.h" />
     <ClInclude Include="SmoothingBrushTool.h" />
     <ClInclude Include="SolidVisualTool.h" />
+    <ClInclude Include="StatusBar.h" />
     <ClInclude Include="TerrainConfig.h" />
     <ClInclude Include="TerrainGenerator.h" />
     <ClInclude Include="TextureConfig.h" />
     <ClInclude Include="tinyexr.h" />
     <ClInclude Include="ToolController.h" />
     <ClInclude Include="ToolWindow.h" />
+    <ClInclude Include="TopMenuBar.h" />
+    <ClInclude Include="UIController.h" />
     <ClInclude Include="VisualController.h" />
     <ClInclude Include="VisualToolWindow.h" />
     <ClInclude Include="WireframeVisualTool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnchorWindow.cpp" />
+    <ClCompile Include="AppController.cpp" />
     <ClCompile Include="BaseWindow.cpp" />
     <ClCompile Include="CameraGestureController.cpp" />
     <ClCompile Include="CentredWindow.cpp" />
@@ -181,6 +187,7 @@
     <ClCompile Include="miniz.c" />
     <ClCompile Include="ShadesVisualTool.cpp" />
     <ClCompile Include="SolidVisualTool.cpp" />
+    <ClCompile Include="StatusBar.cpp" />
     <ClCompile Include="TerrainGenerator.cpp" />
     <ClCompile Include="TextureGenerator.cpp" />
     <ClCompile Include="TextureGenerator.h" />
@@ -190,6 +197,8 @@
     <ClCompile Include="SetupWindow.cpp" />
     <ClCompile Include="SmoothingBrushTool.cpp" />
     <ClCompile Include="ToolWindow.cpp" />
+    <ClCompile Include="TopMenuBar.cpp" />
+    <ClCompile Include="UIController.cpp" />
     <ClCompile Include="VisualController.cpp" />
     <ClCompile Include="VisualToolWindow.cpp" />
     <ClCompile Include="WireframeVisualTool.cpp" />

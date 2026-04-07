@@ -79,11 +79,23 @@ void ToolWindow::renderToolButton(BaseTool* tool, ImVec2 iconSize)
 
     ImVec4 tint = isBrushActive ? ImVec4(1.0f, 0.85f, 0.4f, 1.0f) : ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-    if (ImGui::ImageButton("##btn", (ImTextureID)(intptr_t)tool->getIconId(),
+    ImGui::ImageButton(
+        "##btn", (ImTextureID)(intptr_t)tool->getIconId(),
         iconSize, ImVec2(0, 1), ImVec2(1, 0),
-        ImVec4(0, 0, 0, 0), tint))
+        ImVec4(0, 0, 0, 0), tint
+    );
+
+	if (ImGui::IsItemHovered())
+    {
+        ImGui::SetTooltip("%s", tool->getName().c_str());
+    }
+    if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
     {
         onToolSelected(tool);
+    }
+    if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+    {
+		// TODO: Show context menu for tool settings
     }
 
     ImGui::PopID();

@@ -1,5 +1,7 @@
 #include "PointerController.h"
 
+#include "AppEvents.h"
+
 #include "ConfigController.h"
 #include "CameraGestureController.h"
 
@@ -8,7 +10,8 @@
 
 PointerController::PointerController()
 	: ToolController(),
-	mouseMoveSubscriptionId(-1)
+	mouseMoveSubscriptionId(-1),
+	heightMapTexture(nullptr)
 {}
 
 PointerController& PointerController::getInstance()
@@ -30,7 +33,7 @@ void PointerController::init(ToolWindow* window)
 	}
 
 	mouseMoveSubscriptionId = MouseMoveDispatcher::getInstance().subscribe(
-		"LEFT_MOUSE_MOVE", 
+		AppEvents::LEFT_MOUSE_MOVE,
 		[this](int x, int y, int lastX, int lastY)
 		{
 			this->onCursorMove(x, y, lastX, lastY);
@@ -40,7 +43,7 @@ void PointerController::init(ToolWindow* window)
 
 void PointerController::free() const
 {
-	MouseMoveDispatcher::getInstance().unsubscribe("LEFT_MOUSE_MOVE", mouseMoveSubscriptionId);
+	MouseMoveDispatcher::getInstance().unsubscribe(AppEvents::LEFT_MOUSE_MOVE, mouseMoveSubscriptionId);
 }
 
 void PointerController::setHeightMap(Eng::Texture* texture)

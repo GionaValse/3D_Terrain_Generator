@@ -5,7 +5,7 @@
 #include <cstddef>
 
 SmoothingBrushTool::SmoothingBrushTool(unsigned int radius, float strength, float falloff)
-	: BaseBrushTool("SmoothingBrush", "./res/smooth.png", radius, strength, falloff)
+	: BaseBrushTool("Smoothing", "./res/smooth.png", radius, strength, falloff)
 {}
 
 SmoothingBrushTool& SmoothingBrushTool::getInstance()
