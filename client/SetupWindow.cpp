@@ -1,46 +1,42 @@
 #include "SetupWindow.h"
+#include <imgui.h>
 
-SetupWindow::SetupWindow()
+SetupWindow::SetupWindow(TextureConfig& textureConfig, TerrainConfig& terrainConfig)
 	: CentredWindow("Texture Setup"),
-	heightScale(100.0f),
-	triggerGeneration(false)
+	m_textureConfig(textureConfig),
+	m_terrainConfig(terrainConfig),
+	m_listener(nullptr)
 {
-	TextureConfig& textureConfig = ConfigController::getInstance().getActiveTextureConfig();
+	m_textureConfig.size = 512;
+	m_textureConfig.frequency = 4.0f;
+	m_textureConfig.octaves = 6;
+	m_textureConfig.seed = 12345;
+	m_terrainConfig.heightScale = 100;
+}
 
-	textureConfig.size = 512;
-	textureConfig.frequency = 4.0f;
-	textureConfig.octaves = 6;
-	textureConfig.seed = 12345;
+void SetupWindow::setListener(ISetupListener* listener)
+{
+	m_listener = listener;
 }
 
 void SetupWindow::drawContent()
 {
-	TextureConfig& textureConfig = ConfigController::getInstance().getActiveTextureConfig();
-	TerrainConfig& terrainConfig = ConfigController::getInstance().getActiveTerrainConfig();
 	ImGui::Text("Noise Parameters");
-	ImGui::InputInt("Size (px)", (int*)&textureConfig.size);
-	ImGui::SliderFloat("Frequency", &textureConfig.frequency, 0.1f, 20.0f);
-	ImGui::SliderInt("Octaves", &textureConfig.octaves, 1, 10);
-	ImGui::InputScalar("Seed", ImGuiDataType_U32, &textureConfig.seed);
+	ImGui::InputInt("Size (px)", (int*)&m_textureConfig.size);
+	ImGui::SliderFloat("Frequency", &m_textureConfig.frequency, 0.1f, 20.0f);
+	ImGui::SliderInt("Octaves", &m_textureConfig.octaves, 1, 10);
+	ImGui::InputScalar("Seed", ImGuiDataType_U32, &m_textureConfig.seed);
 
 	ImGui::Separator();
 	ImGui::Text("Mesh Parameters");
-	ImGui::InputInt("Size", (int*)&terrainConfig.size);
-	ImGui::DragFloat("Height Scale", &heightScale, 1.0f, 0.1f, 5000.0f);
+	ImGui::InputInt("Size", (int*)&m_terrainConfig.size);
+	ImGui::DragFloat("Height Scale", &m_terrainConfig.heightScale, 1.0f, 0.1f, 5000.0f);
 
+	
 	if (ImGui::Button("Generate New Terrain", ImVec2(-1, 0))) {
-		triggerGeneration = true;
+		if (m_listener) {
+			m_listener->onTerrainGenerationRequested();
+		}
 	}
 }
 
-float SetupWindow::getHeightScale() const
-{
-	return heightScale;
-}
-
-bool SetupWindow::checkAndResetTrigger()
-{
-	bool val = triggerGeneration;
-	triggerGeneration = false;
-	return val;
-}

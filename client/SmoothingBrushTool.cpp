@@ -14,7 +14,7 @@ SmoothingBrushTool& SmoothingBrushTool::getInstance()
 	return instance;
 }
 
-void SmoothingBrushTool::applyBrushEffect(int x, int y, int pixelX, int pixelY, int resolution, std::vector<float>& image, bool& modified)
+void SmoothingBrushTool::applyBrushEffect(int x, int y, int pixelX, int pixelY, int pixelRadius, int resolution, std::vector<float>& image, bool& modified)
 {
     float sum = 0.0f;
     int count = 0;
@@ -29,7 +29,7 @@ void SmoothingBrushTool::applyBrushEffect(int x, int y, int pixelX, int pixelY, 
     float average = sum / count;
 
 	float dist = 1.0f; // Calculate distance from the center of the brush
-    float influence = std::pow(1.0f - (dist / radius), this->falloff);
+    float influence = std::pow(1.0f - (dist / pixelRadius), this->falloff);
 
     int index = (y * resolution + x) * 3;
     float currentVal = image[index];

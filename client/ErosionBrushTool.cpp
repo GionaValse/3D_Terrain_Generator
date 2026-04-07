@@ -14,15 +14,15 @@ ErosionBrushTool& ErosionBrushTool::getInstance()
 	return instance;
 }
 
-void ErosionBrushTool::applyBrushEffect(int x, int y, int pixelX, int pixelY, int resolution, std::vector<float>& image, bool& modified)
+void ErosionBrushTool::applyBrushEffect(int x, int y, int pixelX, int pixelY, int pixelRadius, int resolution, std::vector<float>& image, bool& modified)
 {
 	float distX = (float)(x - pixelX);
 	float distY = (float)(y - pixelY);
 	float distance = std::sqrt(distX * distX + distY * distY);
 
-	if (distance <= radius)
+	if (distance <= pixelRadius)
 	{
-		float falloff = 1.0f - (distance / radius);
+		float falloff = 1.0f - (distance / pixelRadius);
 		float raiseAmount = -(strength * falloff);
 		int index = (y * resolution + x) * 3;
 

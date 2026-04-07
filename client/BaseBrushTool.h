@@ -2,6 +2,7 @@
 
 #include "BaseTool.h"
 #include "TerrainConfig.h"
+#include "TextureConfig.h"
 
 struct UpdateArea
 {
@@ -22,12 +23,12 @@ public:
 		falloff(falloff)
 	{}
 
-	virtual void applyBrushEffect(int x, int y, int pixelX, int pixelY, int resolution, std::vector<float>& image, bool& modified) = 0;
+	virtual void applyBrushEffect(int x, int y, int pixelX, int pixelY, int pixelRadius, int resolution, std::vector<float>& image, bool& modified) = 0;
 
-	virtual UpdateArea use(glm::vec3 coords, TerrainConfig config, std::vector<float>& image)
+	virtual UpdateArea use(glm::vec3 coords, TerrainConfig terConfig, TextureConfig texConfig, std::vector<float>& image)
 	{
-		float terrainPhysicalSize = 512.0f;
-		int imageResolution = config.size;
+		float terrainPhysicalSize = terConfig.size;
+		int imageResolution = texConfig.size;
 
 		float localX = coords.x + (terrainPhysicalSize / 2.0f);
 		float localZ = coords.z + (terrainPhysicalSize / 2.0f);
@@ -56,7 +57,7 @@ public:
 		{
 			for (int x = startX; x <= endX; ++x)
 			{
-				applyBrushEffect(x, y, pixelX, pixelY, imageResolution, image, modified);
+				applyBrushEffect(x, y, pixelX, pixelY, (int)radius, imageResolution, image, modified);
 			}
 		}
 

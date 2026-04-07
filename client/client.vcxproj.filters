@@ -189,6 +189,12 @@
     <ClInclude Include="UIController.h">
       <Filter>File di intestazione\controllers</Filter>
     </ClInclude>
+    <ClInclude Include="ISetupListener.h">
+      <Filter>File di intestazione\controllers</Filter>
+    </ClInclude>
+    <ClInclude Include="SetupController.h">
+      <Filter>File di intestazione\controllers</Filter>
+    </ClInclude>
     <ClInclude Include="TopMenuBar.h">
       <Filter>File di intestazione\views\dockers</Filter>
     </ClInclude>

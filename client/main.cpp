@@ -42,6 +42,7 @@
 
 #include "PointerController.h"
 #include "VisualController.h"
+#include "SetupController.h"
 
 #include "UIController.h"
 
@@ -63,7 +64,6 @@ Eng::Mesh* gridMesh = nullptr;
 Eng::Shader* terrainShader = nullptr;
 Eng::InfiniteLight* sunLight = nullptr;
 
-SetupWindow* g_SetupWin = nullptr;
 LoadingWindow* g_LoadingWin = nullptr;
 
 std::vector<float> image;
@@ -175,11 +175,14 @@ static void renderingImGui(Eng::GUIObjects obj)
 	UIController::getInstance().render();
 	AppController::getInstance().update();
 
-	if (!isGenerated && g_SetupWin) g_SetupWin->render();
-	if (AppController::getInstance().AppController::getInstance().isExportingMesh() && g_LoadingWin) g_LoadingWin->render();
+	SetupController::getInstance().render(isGenerated);
 
-	if (g_SetupWin && g_SetupWin->checkAndResetTrigger()) {
-		generateTerrain( g_SetupWin->getHeightScale());
+	if (AppController::getInstance().isExportingMesh() && g_LoadingWin) g_LoadingWin->render();
+
+	
+	if (SetupController::getInstance().consumeGenerationRequest()) {
+		float heightScale = SetupController::getInstance().getTerrainConfig().heightScale;
+		generateTerrain(heightScale);
 	}
 
 	// Draw sun indicator on screen
@@ -357,10 +360,11 @@ static void onMouseWheelCallback(int wheelId, int direction, int x, int y)
 
 int main(int argc, char* argv[])
 {
+	// Engine Initialization
 	Eng::Base& eng = Eng::Base::getInstance();
 	eng.init(&argc, argv, "3D Terrain Editor");
 
-	// Terrain shader
+	// Shader Setup
 	Eng::Shader* vShader = new Eng::Shader();
 	Eng::Shader* fShader = new Eng::Shader();
 	vShader->loadFromFile(Eng::Shader::TYPE_VERTEX, "./shaders/terrain.vert");
@@ -370,10 +374,13 @@ int main(int argc, char* argv[])
 	terrainShader->build(vShader, fShader);
 	terrainShader->render();	
 
-	g_SetupWin = new SetupWindow();
+	
+
+	// Core Windows & Controllers Setup
+	SetupController::getInstance().init();
 	g_LoadingWin = new LoadingWindow();
 
-	// Visual tools setup
+	// Visual Tools Setup
 	std::vector<std::vector<BaseTool*>> visualToolGroups;
 	std::vector<BaseTool*> visualGroup;
 
@@ -383,7 +390,7 @@ int main(int argc, char* argv[])
 
 	visualToolGroups.push_back(visualGroup);
 
-	// Brush tools setup
+	// Brush Tools Setup
 	std::vector<std::vector<BaseTool*>> brushToolGroups;
 	std::vector<BaseTool*> selectGroup;
 	std::vector<BaseTool*> brushGroup;
@@ -423,19 +430,19 @@ int main(int argc, char* argv[])
 	pointerController.init(pointerToolWin);
 	visualController.init(visualToolWin);
 
-	// Camera
+	// Camera Setup
 	glm::mat4 camera = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 96.0f, 512.0f));
 	Eng::PerspectiveCamera* perspectiveCamera = new Eng::PerspectiveCamera("mainCamera", camera);
 	perspectiveCamera->setCameraParams(45.0f, RATIO_16_9, 1.0f, 5000.0f);
 
-	// Sun light
+	// Lighting Setup
 	sunLight = new Eng::InfiniteLight("sun");
 	updateSunDirection();
 	sunLight->setAmbient(glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
 	sunLight->setDiffuse(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	sunLight->setSpecular(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
-	// Scene graph
+	// Scene Graph Setup
 	Eng::Node* root = eng.getSceneGraphInstance();
 	root->addChild(perspectiveCamera);
 	root->addChild(sunLight);
@@ -443,7 +450,7 @@ int main(int argc, char* argv[])
 	mainCamera = perspectiveCamera;
 	eng.setActiveCamera(mainCamera);
 
-	// Callbacks
+	// Callbacks Setup
 	eng.setOnSpecialPressedCallback(onSpecialKeyDownCallback);
 	eng.setOnSpecialReleasedCallback(onSpecialKeyUpCallback);
 	eng.setOnKeyboardPressedCallback(onKeyboardPressedCallback);
@@ -455,6 +462,8 @@ int main(int argc, char* argv[])
 
 	eng.setOnResizeCallback(onResize);
 	eng.setOnTextDrawCallback(renderingImGui);
+
+	// Start Main Loop
 	eng.start(renderingLoop);
 
 	// Cleanup
@@ -464,8 +473,8 @@ int main(int argc, char* argv[])
 	cameraController.free();
 	pointerController.free();
 	visualController.free();
+	SetupController::getInstance().free();
 
-	delete g_SetupWin;
 	delete g_LoadingWin;
 
 	uiController.free();

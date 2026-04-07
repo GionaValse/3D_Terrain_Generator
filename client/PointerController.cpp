@@ -73,9 +73,9 @@ void PointerController::onCursorMove(int x, int y, int lastX, int lastY)
 		{
 			ConfigController& config = ConfigController::getInstance();
 			std::vector<float>& imageData = config.getHeightMapImage();
-			int resolution = config.getActiveTerrainConfig().size;
+			int resolution = config.getActiveTextureConfig().size;
 
-			UpdateArea area = brushTool->use(clickedPos, config.getActiveTerrainConfig(), imageData);
+			UpdateArea area = brushTool->use(clickedPos, config.getActiveTerrainConfig(), config.getActiveTextureConfig(), imageData);
 
 			if (area.isModified && this->heightMapTexture != nullptr)
 			{
