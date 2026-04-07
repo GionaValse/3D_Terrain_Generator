@@ -2,9 +2,6 @@
 #include <vector>
 #include <string>
 
-#include <atomic>
-#include <future>
-
 #include <imgui.h>
 #include <backends/imgui_impl_glut.h>
 #include <backends/imgui_impl_opengl3.h>
@@ -14,7 +11,6 @@
 #include "TerrainGenerator.h"
 #include "TextureGenerator.h"
 #include "ImageExporter.hpp"
-#include "ObjExporter.hpp"
 
 #include "configuration.h"
 
@@ -97,12 +93,6 @@ static bool isLeftDragging = false;
 static bool isMiddleDragging = false;
 static bool isRightDragging = false;
 
-/////////////
-// ATOMICS //
-/////////////
-
-std::atomic<bool> isExporting = false;
-
 ///////////////////////
 // Terrain Generator //
 ///////////////////////
@@ -159,25 +149,6 @@ static void generateTerrain(float heightScale)
 	PointerController::getInstance().setHeightMap(heightMap);
 }
 
-static void exportTerrain()
-{
-	isExporting = true;
-
-
-	TerrainConfig terrainConfiguration = ConfigController::getInstance().getActiveTerrainConfig();
-	float heightScale = g_SetupWin->getHeightScale();
-
-	std::thread([
-		imgData = image,
-		size = terrainConfiguration.size,
-		hScale = heightScale,
-		&mesh = *gridMesh
-	]() mutable {
-			ObjExporter::exportToObj("./bin/export/terrain.obj", mesh, imgData, size, hScale);
-			isExporting = false;
-		}).detach();
-}
-
 ///////////////
 // Callbacks //
 ///////////////
@@ -205,7 +176,7 @@ static void renderingImGui(Eng::GUIObjects obj)
 	AppController::getInstance().update();
 
 	if (!isGenerated && g_SetupWin) g_SetupWin->render();
-	if (isExporting && g_LoadingWin) g_LoadingWin->render();
+	if (AppController::getInstance().AppController::getInstance().isExportingMesh() && g_LoadingWin) g_LoadingWin->render();
 
 	if (g_SetupWin && g_SetupWin->checkAndResetTrigger()) {
 		generateTerrain( g_SetupWin->getHeightScale());
@@ -261,7 +232,7 @@ static void addSpecialKeyEvents(ImGuiIO& io, int key, bool down)
 
 static void onSpecialKeyDownCallback(int key, int x, int y)
 {
-	if (isExporting) return;
+	if (AppController::getInstance().isExportingMesh()) return;
 
 	ImGuiIO& io = ImGui::GetIO();
 	addSpecialKeyEvents(io, key, true);
@@ -270,7 +241,7 @@ static void onSpecialKeyDownCallback(int key, int x, int y)
 
 static void onSpecialKeyUpCallback(int key, int x, int y)
 {
-	if (isExporting) return;
+	if (AppController::getInstance().isExportingMesh()) return;
 
 	ImGuiIO& io = ImGui::GetIO();
 	addSpecialKeyEvents(io, key, false);
@@ -279,7 +250,7 @@ static void onSpecialKeyUpCallback(int key, int x, int y)
 
 static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
 {
-	if (isExporting) return;
+	if (AppController::getInstance().isExportingMesh()) return;
 	ImGuiIO& io = ImGui::GetIO();
 
 	if (key >= 32)
@@ -318,7 +289,7 @@ static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
 
 static void onMouseCallback(int buttonId, int buttonState, int x, int y)
 {
-	if (isExporting) return;
+	if (AppController::getInstance().isExportingMesh()) return;
 
 	ImGui_ImplGLUT_MouseFunc(buttonId, buttonState, x, y);
 	if (ImGui::GetIO().WantCaptureMouse) return;
@@ -344,7 +315,7 @@ static void onMouseCallback(int buttonId, int buttonState, int x, int y)
 static void onMouseMotionCallback(int x, int y)
 {
 	TerrainConfig& terrainConfig = ConfigController::getInstance().getActiveTerrainConfig();
-	if (isExporting) return;
+	if (AppController::getInstance().isExportingMesh()) return;
 
 	ImGui_ImplGLUT_MotionFunc(x, y);
 	if (ImGui::GetIO().WantCaptureMouse) return;
@@ -361,7 +332,7 @@ static void onMouseMotionCallback(int x, int y)
 
 static void onPassiveMouseMotionCallback(int x, int y)
 {
-	if (isExporting) return;
+	if (AppController::getInstance().isExportingMesh()) return;
 
 	ImGui_ImplGLUT_MotionFunc(x, y);
 	if (ImGui::GetIO().WantCaptureMouse) return;
@@ -371,7 +342,7 @@ static void onPassiveMouseMotionCallback(int x, int y)
 
 static void onMouseWheelCallback(int wheelId, int direction, int x, int y)
 {
-	if (isExporting) return;
+	if (AppController::getInstance().isExportingMesh()) return;
 
 	ImGui_ImplGLUT_MouseWheelFunc(wheelId, direction, x, y);
 	if (ImGui::GetIO().WantCaptureMouse) return;
