@@ -36,6 +36,7 @@ private:
 	int brushPositionLoc;
 	int brushRadiusLoc;
 	int brushActiveLoc;
+	int brushRadiusColorLoc;
 
 	Eng::Texture* heightMapTexture;
 

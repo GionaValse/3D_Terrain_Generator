@@ -15,7 +15,8 @@ PointerController::PointerController()
 	heightMapTexture(nullptr),
 	brushPositionLoc(-1),
 	brushRadiusLoc(-1),
-	brushActiveLoc(-1)
+	brushActiveLoc(-1),
+	brushRadiusColorLoc(-1)
 {}
 
 PointerController& PointerController::getInstance()
@@ -80,6 +81,7 @@ void PointerController::onToolSelected(BaseTool* tool, int groupPos, int itemPos
 		brushPositionLoc = shader->getParamLocation("brushPosition");
 		brushRadiusLoc = shader->getParamLocation("brushRadius");
 		brushActiveLoc = shader->getParamLocation("isBrushActive");
+		brushRadiusColorLoc = shader->getParamLocation("brushRadiusColor");
 	}
 
 	if (this->editorToolWindow)
@@ -166,6 +168,7 @@ void PointerController::showBrushArea(BaseBrushTool* brush, glm::vec3 mousePos)
 
 	shader->setBool(brushActiveLoc, true);
 	shader->setFloat(brushRadiusLoc, brush->getRadius());
+	shader->setVec3(brushRadiusColorLoc, brush->getRadiusColor());
 
 	Eng::Camera* camera = Eng::Base::getInstance().getActiveCamera();
 	glm::vec4 eyeBrushPos = camera->getViewMatrix() * glm::vec4(mousePos, 1.0f);

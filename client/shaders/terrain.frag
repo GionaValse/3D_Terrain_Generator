@@ -34,6 +34,7 @@ uniform bool hasColor;
 uniform bool isBrushActive;
 uniform float brushRadius;
 uniform vec4 brushPosition;
+uniform vec3 brushRadiusColor;
 
 void main() {
     vec4 texel = hasTexture ? texture(texSampler, texCoord) : vec4(1.0);
@@ -98,7 +99,7 @@ void main() {
     if (isBrushActive) {
         float dist = distance(fragPosition.xyz, brushPosition.xyz);
         if (dist < brushRadius) {
-            finalColor = mix(finalColor, vec3(0.57, 0.26, 0.96), 0.6);
+            finalColor = mix(finalColor, brushRadiusColor, 0.6);
         }
     }
 

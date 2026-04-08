@@ -16,6 +16,14 @@ SmoothingBrushTool& SmoothingBrushTool::getInstance()
 
 void SmoothingBrushTool::applyBrushEffect(int x, int y, int pixelX, int pixelY, int pixelRadius, int resolution, std::vector<float>& image, bool& modified)
 {
+    float dx = static_cast<float>(x - pixelX);
+    float dy = static_cast<float>(y - pixelY);
+    float dist = std::sqrt(dx * dx + dy * dy);
+
+    if (dist > static_cast<float>(pixelRadius)) {
+        return;
+    }
+
     float sum = 0.0f;
     int count = 0;
     for (int ny = -1; ny <= 1; ++ny) {
@@ -26,15 +34,23 @@ void SmoothingBrushTool::applyBrushEffect(int x, int y, int pixelX, int pixelY, 
             count++;
         }
     }
-    float average = sum / count;
 
-	float dist = 1.0f; // Calculate distance from the center of the brush
-    float influence = std::pow(1.0f - (dist / pixelRadius), this->falloff);
+    float average = sum / count;
+    float influence = std::pow(1.0f - (dist / static_cast<float>(pixelRadius)), this->falloff);
+    float actualStrength = strength * 4.0f;
 
     int index = (y * resolution + x) * 3;
     float currentVal = image[index];
+    float smoothedVal = currentVal + (average - currentVal) * actualStrength * influence;
 
-    float smoothedVal = currentVal + (average - currentVal) * strength * influence;
+    if (std::abs(smoothedVal - currentVal) > 0.0001f) {
+        modified = true;
+    }
 
     image[index] = image[index + 1] = image[index + 2] = smoothedVal;
+}
+
+glm::vec3 SmoothingBrushTool::getRadiusColor() const
+{
+    return glm::vec3(0.490, 0.663, 0.780);
 }

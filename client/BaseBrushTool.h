@@ -78,6 +78,7 @@ public:
 	unsigned int getRadius() const { return radius; }
 	float getStrength() const { return strength; }
 	float getFalloff() const { return falloff; }
+	virtual glm::vec3 getRadiusColor() const = 0;
 
 	void setRadius(unsigned int r) { radius = r; }
 	void setStrength(float s) { strength = s; }

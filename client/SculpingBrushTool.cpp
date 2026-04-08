@@ -24,8 +24,9 @@ void SculptingBrushTool::applyBrushEffect(int x, int y, int pixelX, int pixelY, 
 	{
 		float normalizedDist = distance / pixelRadius;
 		float influence = std::pow(1.0f - normalizedDist, this->falloff);
+		float actualStrength = strength * 0.1;
 
-		float raiseAmount = strength * influence;
+		float raiseAmount = actualStrength * influence;
 		int index = (y * resolution + x) * 3;
 
 		image[index + 0] = std::clamp(image[index + 0] + raiseAmount, 0.0f, 1.0f);
@@ -34,4 +35,9 @@ void SculptingBrushTool::applyBrushEffect(int x, int y, int pixelX, int pixelY, 
 
 		modified = true;
 	}
+}
+
+glm::vec3 SculptingBrushTool::getRadiusColor() const
+{
+	return glm::vec3(0.435, 0.561, 0.416);
 }
