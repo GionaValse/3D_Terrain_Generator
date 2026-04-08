@@ -88,7 +88,7 @@ void AppController::onExportMesh()
     }
 
     exportThread = std::thread([
-        imgData = image,
+        imgData = ConfigController::getInstance().getHeightMapImage(),
         size = terrainConfiguration.size,
         hScale = terrainConfiguration.heightScale,
         &mesh = *gridMesh // Do not edit the orginal mash until exporting done
