@@ -30,7 +30,7 @@ layout(binding = 1) uniform sampler2D texSampler;
 uniform bool hasTexture;
 
 // Terrain color
-uniform bool hasColor;
+uniform int shadingMode;
 
 uniform bool isBrushActive;
 uniform float brushRadius;
@@ -39,66 +39,75 @@ uniform vec3 brushRadiusColor;
 
 void main() {
     vec4 texel = hasTexture ? texture(texSampler, texCoord) : vec4(1.0);
+    vec3 finalColor = vec3(1.0);
 
-    vec3 terrainBaseColor = vec3(1.0f);
+    if (shadingMode == 3) { // Altitude mode
+        vec3 colorLow  = vec3(0.0, 0.0, 0.8); // Blu
+        vec3 colorMid  = vec3(0.2, 0.8, 0.2); // Verde
+        vec3 colorHigh = vec3(0.8, 0.1, 0.1); // Rosso
 
-    if (hasColor) {
-        vec3 colorGrass = vec3(0.2, 0.5, 0.2); // Verde
-        vec3 colorRock  = vec3(0.5, 0.5, 0.5); // Grigio
-        // vec3 colorSnow  = vec3(0.9, 0.9, 0.9); // Bianco
-
-        vec3 normWorld = normalize(worldNormal);
-        float slope = dot(normWorld, vec3(0.0, 1.0, 0.0));
-
-        float rockBlend = smoothstep(0.15, 0.45, slope); 
-        // float snowBlend = smoothstep(0.7, 0.85, v_Height);
-
-        terrainBaseColor = mix(colorRock, colorGrass, rockBlend);
-        // terrainBaseColor = mix(terrainBaseColor, colorSnow, snowBlend);
-    }
-
-    vec3 norm    = normalize(normal);
-    vec3 viewDir = normalize(-fragPosition.xyz); // view space: camera all'origine
-
-    vec3 totalLightColor = matEmission;
-    vec3 specularLight = vec3(0.0);
-
-    for (int i = 0; i < activeLightCount; i++) {
-        vec3 lightDir;
-        float attenuation = 1.0;
-
-        if (lightType[i] == 1) {
-            lightDir = normalize(-lightDirection[i]);
+        if (v_Height < 0.5) {
+            finalColor = mix(colorLow, colorMid, v_Height * 2.0); 
         } else {
-            lightDir = normalize(lightPosition[i] - fragPosition.xyz);
+            finalColor = mix(colorMid, colorHigh, (v_Height - 0.5) * 2.0);
+        }
+    } else {
+        vec3 terrainBaseColor = vec3(1.0f);
+
+        if (shadingMode == 0) {
+            vec3 colorGrass = vec3(0.2, 0.5, 0.2); // Verde
+            vec3 colorRock  = vec3(0.5, 0.5, 0.5); // Grigio
+
+            vec3 normWorld = normalize(worldNormal);
+            float slope = dot(normWorld, vec3(0.0, 1.0, 0.0));
+
+            float rockBlend = smoothstep(0.15, 0.45, slope); 
+            terrainBaseColor = mix(colorRock, colorGrass, rockBlend);
         }
 
-        if (lightType[i] == 2) {
-            float spotCos = dot(normalize(lightDirection[i]), -lightDir);
-            attenuation = (spotCos < spotCutoffCos[i]) ? 0.0 : pow(spotCos, spotExponent[i]);
-        }
+        vec3 norm    = normalize(normal);
+        vec3 viewDir = normalize(-fragPosition.xyz); // view space: camera all'origine
 
-        if (lightType[i] == 0)
-            attenuation = 3.0;
+        vec3 totalLightColor = matEmission;
+        vec3 specularLight = vec3(0.0);
 
-        if (attenuation > 0.0) {
-            vec3 ambient  = matAmbient * lightAmbient[i];
-            float nDotL   = max(dot(norm, lightDir), 0.0);
-            vec3 diffuse  = matDiffuse * nDotL * lightDiffuse[i];
+        for (int i = 0; i < activeLightCount; i++) {
+            vec3 lightDir;
+            float attenuation = 1.0;
 
-            vec3 specular = vec3(0.0);
-            if (nDotL > 0.0) {
-                vec3 halfVec = normalize(lightDir + viewDir);
-                float nDotHV = max(dot(norm, halfVec), 0.0);
-                specular = matSpecular * pow(nDotHV, matShininess) * lightSpecular[i];
+            if (lightType[i] == 1) {
+                lightDir = normalize(-lightDirection[i]);
+            } else {
+                lightDir = normalize(lightPosition[i] - fragPosition.xyz);
             }
 
-            totalLightColor += (ambient + diffuse + specular) * attenuation;
-            specularLight += specular * attenuation;
-        }
-    }
+            if (lightType[i] == 2) {
+                float spotCos = dot(normalize(lightDirection[i]), -lightDir);
+                attenuation = (spotCos < spotCutoffCos[i]) ? 0.0 : pow(spotCos, spotExponent[i]);
+            }
 
-    vec3 finalColor = (terrainBaseColor * totalLightColor) + specularLight; // removed texel.rgb * 
+            if (lightType[i] == 0)
+                attenuation = 3.0;
+
+            if (attenuation > 0.0) {
+                vec3 ambient  = matAmbient * lightAmbient[i];
+                float nDotL   = max(dot(norm, lightDir), 0.0);
+                vec3 diffuse  = matDiffuse * nDotL * lightDiffuse[i];
+
+                vec3 specular = vec3(0.0);
+                if (nDotL > 0.0) {
+                    vec3 halfVec = normalize(lightDir + viewDir);
+                    float nDotHV = max(dot(norm, halfVec), 0.0);
+                    specular = matSpecular * pow(nDotHV, matShininess) * lightSpecular[i];
+                }
+
+                totalLightColor += (ambient + diffuse + specular) * attenuation;
+                specularLight += specular * attenuation;
+            }
+        }
+
+        finalColor = (terrainBaseColor * totalLightColor) + specularLight; // removed texel.rgb * 
+    }
 
     if (isBrushActive) {
         float dist = distance(fragPosition.xyz, brushPosition.xyz);

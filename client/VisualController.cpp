@@ -9,7 +9,8 @@ VisualController::VisualController()
 	topMenuBar(nullptr),
 	realisticSubscriptionId(-1),
 	solidSubscriptionId(-1),
-	wireframeSubscriptionId(-1)
+	wireframeSubscriptionId(-1),
+	normalsSubscriptionId(-1)
 {}
 
 VisualController& VisualController::getInstance()
@@ -70,6 +71,14 @@ void VisualController::init(ToolWindow* window, IToolSettingsWindow* editorWindo
 			this->selectShadingMode(2);
 		}
 	);
+
+	normalsSubscriptionId = MenuDispatcher::getInstance().subscribe(
+		AppEvents::MENU_SHADING_ALTITUDE,
+		[this]()
+		{
+			this->selectShadingMode(3);
+		}
+	);
 }
 
 void VisualController::setTopMenuSupport(TopMenuBar* topMenuBar)
@@ -82,6 +91,7 @@ void VisualController::free() const
 	MenuDispatcher::getInstance().unsubscribe(AppEvents::MENU_SHADING_REAL, realisticSubscriptionId);
 	MenuDispatcher::getInstance().unsubscribe(AppEvents::MENU_SHADING_SOLID, solidSubscriptionId);
 	MenuDispatcher::getInstance().unsubscribe(AppEvents::MENU_SHADING_WIREFRAME, wireframeSubscriptionId);
+	MenuDispatcher::getInstance().unsubscribe(AppEvents::MENU_SHADING_ALTITUDE, normalsSubscriptionId);
 }
 
 void VisualController::selectShadingMode(int position)

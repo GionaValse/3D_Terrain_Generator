@@ -25,6 +25,7 @@
 #include "ShadesVisualTool.h"
 #include "SolidVisualTool.h"
 #include "WireframeVisualTool.h"
+#include "AltitudeVisualTool.h"
 
 // Views //
 #include "TopMenuBar.h"
@@ -387,6 +388,7 @@ int main(int argc, char* argv[])
 	visualGroup.push_back(&ShadesVisualTool::getInstance());
 	visualGroup.push_back(&SolidVisualTool::getInstance());
 	visualGroup.push_back(&WireframeVisualTool::getInstance());
+	visualGroup.push_back(&AltitudeVisualTool::getInstance());
 
 	visualToolGroups.push_back(visualGroup);
 

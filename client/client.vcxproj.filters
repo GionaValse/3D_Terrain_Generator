@@ -213,6 +213,9 @@
     <ClInclude Include="PointerToolSettingsWindow.h">
       <Filter>File di intestazione\views\tools</Filter>
     </ClInclude>
+    <ClInclude Include="AltitudeVisualTool.h">
+      <Filter>File di intestazione\models\visuals</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -304,6 +307,9 @@
     </ClCompile>
     <ClCompile Include="PointerToolSettingsWindow.cpp">
       <Filter>File di origine\views\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="AltitudeVisualTool.cpp">
+      <Filter>File di origine\models\visual</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

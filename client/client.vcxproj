@@ -147,6 +147,7 @@
     <ClInclude Include="IToolSettingsWindow.h" />
     <ClInclude Include="ISetupListener.h" />
     <ClInclude Include="IToolListener.h" />
+    <ClInclude Include="AltitudeVisualTool.h" />
     <ClInclude Include="PointerToolSettingsWindow.h" />
     <ClInclude Include="PointerToolWindow.h" />
     <ClInclude Include="SculpingBrushTool.h" />
@@ -189,6 +190,7 @@
     <ClCompile Include="LoadingWindow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="miniz.c" />
+    <ClCompile Include="AltitudeVisualTool.cpp" />
     <ClCompile Include="PointerToolSettingsWindow.cpp" />
     <ClCompile Include="ShadesVisualTool.cpp" />
     <ClCompile Include="SolidVisualTool.cpp" />

@@ -16,8 +16,8 @@ void WireframeVisualTool::use()
 
 	if (shader)
 	{
-		int hasColorLoc = shader->getParamLocation("hasColor");
-		shader->setBool(hasColorLoc, false);
+		int shadingModeLoc = shader->getParamLocation("shadingMode");
+		shader->setInt(shadingModeLoc, 2);
 	}
 
 	Eng::Base::getInstance().changeWireFrame(true);

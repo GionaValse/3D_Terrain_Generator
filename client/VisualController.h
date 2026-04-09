@@ -34,6 +34,7 @@ private:
 	size_t realisticSubscriptionId;
 	size_t solidSubscriptionId;
 	size_t wireframeSubscriptionId;
+	size_t normalsSubscriptionId;
 
 	void selectShadingMode(int position);
 };

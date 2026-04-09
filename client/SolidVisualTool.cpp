@@ -16,8 +16,8 @@ void SolidVisualTool::use()
 
 	if (shader)
 	{
-		int hasColorLoc = shader->getParamLocation("hasColor");
-		shader->setBool(hasColorLoc, false);
+		int shadingModeLoc = shader->getParamLocation("shadingMode");
+		shader->setInt(shadingModeLoc, 1);
 	}
 
 	Eng::Base::getInstance().changeWireFrame(false);
