@@ -33,6 +33,9 @@ namespace AppEvents
     inline const std::string MENU_GENERATE_NOISE = "MENU_GENERATE_NOISE";
     inline const std::string MENU_FLATTEN_TERRAIN = "MENU_FLATTEN_TERRAIN";
 
+    // --- HELP ---
+    inline const std::string APP_DOCUMENTATION = "APP_DOCUMENTATION";
+
     // --- GESTURE ---
     inline const std::string MOUSE_MOVE = "MOUSE_MOVE";
     inline const std::string LEFT_MOUSE_MOVE = "LEFT_MOUSE_MOVE";

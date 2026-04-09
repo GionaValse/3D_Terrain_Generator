@@ -6,6 +6,7 @@ layout (location = 2) in vec2 aTexCoord;
 out vec4 fragPosition;
 out vec2 texCoord;
 out vec3 normal;
+out vec3 worldNormal;
 out float v_Height;
 
 uniform mat4 modelview;
@@ -30,6 +31,7 @@ void main() {
     n.z = hD - hU;
     n.y = 2.0 * texelSize * heightScale;
     normal = normalize(normalMatrix * normalize(n));
+    worldNormal = normalize(n);
 
     vec3 displacedPos = vec3(aPos.x, h, aPos.z);
     fragPosition = modelview * vec4(displacedPos, 1.0);

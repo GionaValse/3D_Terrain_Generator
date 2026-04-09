@@ -95,7 +95,6 @@ void TopMenuBar::render()
 
             ImGui::Separator();
 
-            // Checkbox integrata nel menu
             if (ImGui::MenuItem("Show Grid", nullptr, &showGrid, false))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_TOGGLE_GRID);
 
@@ -128,6 +127,17 @@ void TopMenuBar::render()
 
             if (ImGui::MenuItem("Reset Altitudes", "", false, false))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_FLATTEN_TERRAIN);
+
+            ImGui::EndMenu();
+        }
+
+        // ==========================================
+        // MENU: HELP
+        // ==========================================
+        if (ImGui::BeginMenu("Help"))
+        {
+            if (ImGui::MenuItem("See documentation"))
+                EventDispatcher<>::getInstance().dispatch(AppEvents::APP_DOCUMENTATION);
 
             ImGui::EndMenu();
         }

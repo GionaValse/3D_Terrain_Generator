@@ -3,6 +3,7 @@ out vec4 fragOutput;
 
 in vec4 fragPosition;
 in vec3 normal;
+in vec3 worldNormal;
 in vec2 texCoord;
 in float v_Height;
 
@@ -44,13 +45,16 @@ void main() {
     if (hasColor) {
         vec3 colorGrass = vec3(0.2, 0.5, 0.2); // Verde
         vec3 colorRock  = vec3(0.5, 0.5, 0.5); // Grigio
-        vec3 colorSnow  = vec3(0.9, 0.9, 0.9); // Bianco
+        // vec3 colorSnow  = vec3(0.9, 0.9, 0.9); // Bianco
 
-        float rockBlend = smoothstep(0.3, 0.5, v_Height); 
-        float snowBlend = smoothstep(0.7, 0.85, v_Height);
+        vec3 normWorld = normalize(worldNormal);
+        float slope = dot(normWorld, vec3(0.0, 1.0, 0.0));
 
-        terrainBaseColor = mix(colorGrass, colorRock, rockBlend);
-        terrainBaseColor = mix(terrainBaseColor, colorSnow, snowBlend);
+        float rockBlend = smoothstep(0.15, 0.45, slope); 
+        // float snowBlend = smoothstep(0.7, 0.85, v_Height);
+
+        terrainBaseColor = mix(colorRock, colorGrass, rockBlend);
+        // terrainBaseColor = mix(terrainBaseColor, colorSnow, snowBlend);
     }
 
     vec3 norm    = normalize(normal);
