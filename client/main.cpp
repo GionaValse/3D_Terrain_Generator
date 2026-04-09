@@ -36,7 +36,6 @@
 #include "VisualToolWindow.h"
 
 #include "SetupWindow.h"
-#include "LoadingWindow.h"
 
 // Controllers //
 #include "AppController.h"
@@ -66,8 +65,6 @@ Eng::Camera* mainCamera = nullptr;
 Eng::Mesh* gridMesh = nullptr;
 Eng::Shader* terrainShader = nullptr;
 Eng::InfiniteLight* sunLight = nullptr;
-
-LoadingWindow* g_LoadingWin = nullptr;
 
 std::vector<float> image;
 bool isWireFrameMode = false;
@@ -179,9 +176,6 @@ static void renderingImGui(Eng::GUIObjects obj)
 	AppController::getInstance().update();
 
 	SetupController::getInstance().render(isGenerated);
-
-	if (AppController::getInstance().isExportingMesh() && g_LoadingWin) g_LoadingWin->render();
-
 	
 	if (SetupController::getInstance().consumeGenerationRequest()) {
 		float heightScale = SetupController::getInstance().getTerrainConfig().heightScale;
@@ -377,10 +371,6 @@ int main(int argc, char* argv[])
 	terrainShader->build(vShader, fShader);
 	terrainShader->render();	
 
-	// Core Windows & Controllers Setup
-	SetupController::getInstance().init();
-	g_LoadingWin = new LoadingWindow();
-
 	// Visual Tools Setup
 	std::vector<std::vector<BaseTool*>> visualToolGroups;
 	std::vector<BaseTool*> visualGroup;
@@ -422,12 +412,14 @@ int main(int argc, char* argv[])
 	windows.push_back(visualToolWin);
 
 	// Controllers setup
+	SetupController& setupController = SetupController::getInstance();
 	AppController& appController = AppController::getInstance();
 	CameraGestureController& cameraController = CameraGestureController::getInstance();
 	PointerController& pointerController = PointerController::getInstance();
 	VisualController& visualController = VisualController::getInstance();
 	UIController& uiController = UIController::getInstance();
 
+	setupController.init();
 	appController.init(topMenuBar, statusBar);
 	uiController.init(windows, topMenuBar, statusBar);
 	cameraController.init();
@@ -480,8 +472,6 @@ int main(int argc, char* argv[])
 	pointerController.free();
 	visualController.free();
 	SetupController::getInstance().free();
-
-	delete g_LoadingWin;
 
 	uiController.free();
 

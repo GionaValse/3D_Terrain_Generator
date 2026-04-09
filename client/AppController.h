@@ -35,6 +35,7 @@ private:
 	BaseWindow* topMenuBar;
 	StatusBar* statusBar;
 
+	std::atomic<float> exportProgress{ 0.0f };
 	std::atomic<bool> isExporting{ false };
 	bool wasExporting = false;
 

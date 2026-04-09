@@ -32,7 +32,13 @@ void AppController::init(BaseWindow* topMenuBar, StatusBar* statusBar)
 
 void AppController::update()
 {
-    if (wasExporting && !isExporting.load())
+    if (!statusBar) return;
+
+    if (isExporting.load())
+    {
+        statusBar->setProgress(true, exportProgress.load());
+    }
+    else if (wasExporting)
     {
         statusBar->setMessage("Ready");
         statusBar->setProgress(false);
@@ -93,7 +99,7 @@ void AppController::onExportMesh()
         hScale = terrainConfiguration.heightScale,
         &mesh = *gridMesh // Do not edit the orginal mash until exporting done
         , this]() mutable {
-            ObjExporter::exportToObj("./bin/export/terrain.obj", mesh, imgData, size, hScale);
+            ObjExporter::exportToObj("./bin/export/terrain.obj", mesh, imgData, size, hScale, &exportProgress);
             isExporting.store(false);
         });
 }

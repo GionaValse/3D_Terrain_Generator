@@ -154,7 +154,6 @@
     <ClInclude Include="configuration.h" />
     <ClInclude Include="CursorTool.h" />
     <ClInclude Include="ImageExporter.hpp" />
-    <ClInclude Include="LoadingWindow.h" />
     <ClInclude Include="miniz.h" />
     <ClInclude Include="ObjExporter.hpp" />
     <ClInclude Include="PerlinNoise.hpp" />
@@ -187,7 +186,6 @@
     <ClCompile Include="CursorTool.cpp" />
     <ClCompile Include="ErosionBrushTool.cpp" />
     <ClCompile Include="ImageExporter.cpp" />
-    <ClCompile Include="LoadingWindow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="miniz.c" />
     <ClCompile Include="AltitudeVisualTool.cpp" />

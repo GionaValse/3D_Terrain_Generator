@@ -93,9 +93,6 @@
     <ClInclude Include="BaseWindow.h">
       <Filter>File di intestazione\views</Filter>
     </ClInclude>
-    <ClInclude Include="LoadingWindow.h">
-      <Filter>File di intestazione\views</Filter>
-    </ClInclude>
     <ClInclude Include="SetupWindow.h">
       <Filter>File di intestazione\views</Filter>
     </ClInclude>
@@ -223,9 +220,6 @@
     </ClCompile>
     <ClCompile Include="miniz.c">
       <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="LoadingWindow.cpp">
-      <Filter>File di origine\views</Filter>
     </ClCompile>
     <ClCompile Include="SetupWindow.cpp">
       <Filter>File di origine\views</Filter>
