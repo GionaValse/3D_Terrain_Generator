@@ -57,10 +57,6 @@ using MouseWheelDispatcher = EventDispatcher<int, int, int>;
 
 std::vector<BaseWindow*> windows;
 
-Eng::Camera* mainCamera = nullptr;
-Eng::Shader* terrainShader = nullptr;
-Eng::InfiniteLight* sunLight = nullptr;
-
 bool isWireFrameMode = false;
 bool isGenerated = false;
 
@@ -260,6 +256,10 @@ int main(int argc, char* argv[])
 	// Engine Initialization
 	Eng::Base& eng = Eng::Base::getInstance();
 	eng.init(&argc, argv, "3D Terrain Editor");
+
+	Eng::Camera* mainCamera = nullptr;
+	Eng::Shader* terrainShader = nullptr;
+	Eng::InfiniteLight* sunLight = nullptr;
 
 	// Shader Setup
 	Eng::Shader* vShader = new Eng::Shader();
