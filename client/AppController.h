@@ -2,13 +2,11 @@
 
 #include <atomic>
 #include <future>
-#include <vector>
+#include <thread>
 
 #include "EventDispatcher.h"
 #include "StatusBar.h"
-#include "ConfigModel.h"
-
-#include "engine.h"
+#include "TerrainModel.h"
 
 using TopMenuDispatcher = EventDispatcher<>;
 
@@ -19,11 +17,11 @@ public:
 
 	~AppController() = default;
 
-	void init(BaseWindow* topMenuBar = nullptr, StatusBar* statusBar = nullptr, ConfigModel* config = nullptr);
+	void init(StatusBar* statusBar = nullptr);
 	void update();
 	void free();
 
-	void setTerrain(std::vector<float> imageArray, Eng::Mesh* terrainMesh);
+	void setTerrainModel(TerrainModel* terrain);
 
 	bool isExportingMesh() const;
 
@@ -33,19 +31,15 @@ private:
 	AppController(const AppController&) = delete;
 	AppController& operator=(const AppController&) = delete;
 
-	BaseWindow* topMenuBar;
 	StatusBar* statusBar;
 
 	std::atomic<float> exportProgress{ 0.0f };
-	std::atomic<bool> isExporting{ false };
+	std::atomic<bool>  isExporting{ false };
 	bool wasExporting = false;
 
 	std::thread exportThread;
 
-	std::vector<float> image;
-	Eng::Mesh* gridMesh;
-
-	ConfigModel* m_config;
+	TerrainModel* m_terrain;
 
 	int onQuitSubscriptionId;
 	int onExportMeshSubscriptionId;
