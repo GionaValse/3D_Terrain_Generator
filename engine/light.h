@@ -22,7 +22,7 @@ class ENG_API Light : public Eng::Node
      * @brief Static counter used to assign unique and incremental light IDs.
      * @note This is likely required to manage OpenGL's fixed function pipeline light limit (GL_LIGHT0, GL_LIGHT1, etc.).
      */
-    static int ligthCounter;
+    static int lightCounter;
 
     /** @brief The unique ID (e.g., 0, 1, 2) assigned to this light instance, corresponding to a hardware light slot. */
     int lightId;
@@ -41,12 +41,12 @@ class ENG_API Light : public Eng::Node
     /** @brief Pointer to the shader object applied on light */
     Eng::Shader* shader;
 
-    int lightPositionLoc;
-    int lightAmbientLoc;
-    int lightDiffuseLoc;
-    int lightSpecularLoc;
-    // int lightAttenuationLoc;
-    int lightActiveLoc;
+    int lightPositionUniformLoc;
+    int lightAmbientUniformLoc;
+    int lightDiffuseUniformLoc;
+    int lightSpecularUniformLoc;
+    // int lightAttenuationUniformLoc;
+    int activeLightCountUniformLoc;
 
 public:
     /**

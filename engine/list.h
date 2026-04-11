@@ -37,7 +37,7 @@ private:
     Eng::Camera* camera;
 
     // Shaders
-    int projLoc;
+    int projectionUniformLoc;
 
 public:
     /**

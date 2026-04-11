@@ -22,10 +22,10 @@ class ENG_API Object
 {
 private:
     /** @brief Static counter used to assign unique IDs to new Object instances. */
-    static unsigned int next_uid;
+    static unsigned int nextUniqueId;
 
     /** @brief The unique identifier assigned to this specific object instance. */
-    unsigned int uid;
+    unsigned int uniqueId;
 
     /** @brief A user-friendly name assigned to this object for identification in the scene. */
     std::string name;

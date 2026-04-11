@@ -26,10 +26,10 @@ private:
     /** @brief The direction vector in which the spotlight is pointing. */
     glm::vec3 direction;
 
-    int lightTypeLoc;
-    int spotCutoffCosLoc;
-    int spotExponentLoc;
-    int lightDirectionLoc;
+    int lightTypeUniformLoc;
+    int spotCutoffCosineUniformLoc;
+    int spotExponentUniformLoc;
+    int lightDirectionUniformLoc;
 public:
     /**
      * @brief Constructor for the SpotLight.

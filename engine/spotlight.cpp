@@ -27,10 +27,10 @@ namespace Eng
 		: Eng::Light(name, matrix),
 		direction(direction),
 		influenceRadius(influenceRadius),
-		lightTypeLoc(-1),
-		spotCutoffCosLoc(-1),
-		spotExponentLoc(-1),
-		lightDirectionLoc(-1)
+		lightTypeUniformLoc(-1),
+		spotCutoffCosineUniformLoc(-1),
+		spotExponentUniformLoc(-1),
+		lightDirectionUniformLoc(-1)
 	{
 		setCutoff(cutoff);
 	}
@@ -47,10 +47,10 @@ namespace Eng
 
 		std::string prefix = "[" + std::to_string(getLightID()) + "]";
 
-		lightTypeLoc = shader->getParamLocation(("lightType" + prefix).c_str());
-		spotCutoffCosLoc = shader->getParamLocation(("spotCutoffCos" + prefix).c_str());
-		spotExponentLoc = shader->getParamLocation(("spotExponent" + prefix).c_str());
-		lightDirectionLoc = shader->getParamLocation(("lightDirection" + prefix).c_str());
+		lightTypeUniformLoc = shader->getParamLocation(("lightType" + prefix).c_str());
+		spotCutoffCosineUniformLoc = shader->getParamLocation(("spotCutoffCos" + prefix).c_str());
+		spotExponentUniformLoc = shader->getParamLocation(("spotExponent" + prefix).c_str());
+		lightDirectionUniformLoc = shader->getParamLocation(("lightDirection" + prefix).c_str());
 	}
 
 	void SpotLight::renderShader(Eng::Shader* shader, glm::mat4 modelview)
@@ -65,10 +65,10 @@ namespace Eng
 
 		float cutoffCos = glm::cos(glm::radians(cutoff));
 
-		shader->setInt(lightTypeLoc, 2);
-		shader->setFloat(spotCutoffCosLoc, cutoffCos);
-		shader->setFloat(spotExponentLoc, influenceRadius);
-		shader->setVec3(lightDirectionLoc, normalizedDirection);
+		shader->setInt(lightTypeUniformLoc, 2);
+		shader->setFloat(spotCutoffCosineUniformLoc, cutoffCos);
+		shader->setFloat(spotExponentUniformLoc, influenceRadius);
+		shader->setVec3(lightDirectionUniformLoc, normalizedDirection);
 	}
 
 	float SpotLight::getCutoff() const

@@ -21,8 +21,8 @@ private:
     /** @brief The direction vector in which the spotlight is pointing. */
     glm::vec3 direction;
 
-    int lightTypeLoc;
-    int lightDirectionLoc;
+    int lightTypeUniformLoc;
+    int lightDirectionUniformLoc;
 public:
     /**
      * @brief Constructor for the InfiniteLight.

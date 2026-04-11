@@ -50,8 +50,8 @@ private:
     /** @brief Deletes OpenGL buffers to free GPU resources when the mesh is destroyed. */
     void deleteBuffers();
 
-    int mvLoc;
-    int normalMatLoc;
+    int modelviewUniformLoc;
+    int normalMatrixUniformLoc;
 
 public:
     /**

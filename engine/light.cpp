@@ -12,7 +12,7 @@
 
 #include <iostream>
 
-int Eng::Light::ligthCounter = 0;
+int Eng::Light::lightCounter = 0;
 
 namespace Eng {
 
@@ -27,19 +27,19 @@ namespace Eng {
 		diffuse(1.0f),
 		specular(1.0f),
 		position(position),
-		lightPositionLoc(-1),
-		lightAmbientLoc(-1),
-		lightDiffuseLoc(-1),
-		lightSpecularLoc(-1),
-		// lightAttenuationLoc(-1),
-		lightActiveLoc(-1),
+		lightPositionUniformLoc(-1),
+		lightAmbientUniformLoc(-1),
+		lightDiffuseUniformLoc(-1),
+		lightSpecularUniformLoc(-1),
+		// lightAttenuationUniformLoc(-1),
+		activeLightCountUniformLoc(-1),
 		shader(nullptr)
 	{
 		unsigned int maxLights = 8;
 
-		if (ligthCounter < maxLights)
+		if (lightCounter < maxLights)
 		{
-			lightId = ligthCounter++;
+			lightId = lightCounter++;
 			std::cout << "Enabled light: " << lightId << std::endl;
 		}
 		else
@@ -51,7 +51,7 @@ namespace Eng {
 
 	Light::~Light() {
 		if (lightId != -1) {
-			ligthCounter--;
+			lightCounter--;
 		}
 	}
 
@@ -75,12 +75,12 @@ namespace Eng {
 
 		std::string prefix = "[" + std::to_string(lightId) + "]";
 
-		lightPositionLoc = shader->getParamLocation(("lightPosition" + prefix).c_str());
-		lightAmbientLoc = shader->getParamLocation(("lightAmbient" + prefix).c_str());
-		lightDiffuseLoc = shader->getParamLocation(("lightDiffuse" + prefix).c_str());
-		lightSpecularLoc = shader->getParamLocation(("lightSpecular" + prefix).c_str());
-		// lightAttenuationLoc = shader->getParamLocation(("lightAttenuation" + prefix).c_str());
-		lightActiveLoc = shader->getParamLocation("activeLightCount");
+		lightPositionUniformLoc = shader->getParamLocation(("lightPosition" + prefix).c_str());
+		lightAmbientUniformLoc = shader->getParamLocation(("lightAmbient" + prefix).c_str());
+		lightDiffuseUniformLoc = shader->getParamLocation(("lightDiffuse" + prefix).c_str());
+		lightSpecularUniformLoc = shader->getParamLocation(("lightSpecular" + prefix).c_str());
+		// lightAttenuationUniformLoc = shader->getParamLocation(("lightAttenuation" + prefix).c_str());
+		activeLightCountUniformLoc = shader->getParamLocation("activeLightCount");
 	}
 
 	void Light::renderShader(Eng::Shader* shader, glm::mat4 modelview)
@@ -88,12 +88,12 @@ namespace Eng {
 		if (!shader)
 			return;
 
-		shader->setVec3(lightPositionLoc, glm::vec3(modelview[3]));
-		shader->setVec3(lightAmbientLoc, getAmbient());
-		shader->setVec3(lightDiffuseLoc, getDiffuse());
-		shader->setVec3(lightSpecularLoc, getSpecular());
-		// shader->setVec3(lightAttenuationLoc, attenuation);
-		shader->setInt(lightActiveLoc, ligthCounter);
+		shader->setVec3(lightPositionUniformLoc, glm::vec3(modelview[3]));
+		shader->setVec3(lightAmbientUniformLoc, getAmbient());
+		shader->setVec3(lightDiffuseUniformLoc, getDiffuse());
+		shader->setVec3(lightSpecularUniformLoc, getSpecular());
+		// shader->setVec3(lightAttenuationUniformLoc, attenuation);
+		shader->setInt(activeLightCountUniformLoc, lightCounter);
 	}
 
 	int Light::getLightID() {

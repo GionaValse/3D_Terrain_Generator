@@ -24,26 +24,26 @@ void SmoothingBrushTool::applyBrushEffect(int x, int y, int pixelX, int pixelY, 
         return;
     }
 
-    float sum = 0.0f;
+    float heightSum = 0.0f;
     int count = 0;
     for (int ny = -1; ny <= 1; ++ny) {
         for (int nx = -1; nx <= 1; ++nx) {
             int checkX = std::clamp(x + nx, 0, resolution - 1);
             int checkY = std::clamp(y + ny, 0, resolution - 1);
-            sum += image[(checkY * resolution + checkX) * 3];
+            heightSum += image[(checkY * resolution + checkX) * 3];
             count++;
         }
     }
 
-    float average = sum / count;
+    float average = heightSum / count;
     float influence = std::pow(1.0f - (dist / static_cast<float>(pixelRadius)), this->falloff);
     float actualStrength = strength * 4.0f;
 
     int index = (y * resolution + x) * 3;
-    float currentVal = image[index];
-    float smoothedVal = currentVal + (average - currentVal) * actualStrength * influence;
+    float currentHeightValue = image[index];
+    float smoothedVal = currentHeightValue + (average - currentHeightValue) * actualStrength * influence;
 
-    if (std::abs(smoothedVal - currentVal) > 0.0001f) {
+    if (std::abs(smoothedVal - currentHeightValue) > 0.0001f) {
         modified = true;
     }
 

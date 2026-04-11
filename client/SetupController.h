@@ -33,9 +33,9 @@ public:
 
 	bool consumeGenerationRequest()
 	{
-		bool val = this->generationRequested;
+		bool wasRequested = this->generationRequested;
 		this->generationRequested = false;
-		return val;
+		return wasRequested;
 	}
 
 	TerrainConfig& getTerrainConfig() { return m_terrainConfig; }

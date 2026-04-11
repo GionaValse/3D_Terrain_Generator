@@ -18,7 +18,7 @@
 class ENG_API OmniLight : public Eng::Light
 {
 private:
-    int lightTypeLoc;
+    int lightTypeUniformLoc;
 public:
     /**
      * @brief Constructor for the OmniLight.

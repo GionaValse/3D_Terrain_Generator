@@ -7,7 +7,7 @@
 
 #include "engine.h"
 
-unsigned int Eng::Object::next_uid = 1;
+unsigned int Eng::Object::nextUniqueId = 1;
 
 namespace Eng
 {
@@ -21,7 +21,7 @@ namespace Eng
      * * The UID is automatically assigned from the static counter.
      * @param name The descriptive name for the object.
      */
-    Object::Object(const std::string &name) : uid{next_uid++}, name{name}
+    Object::Object(const std::string &name) : uniqueId{nextUniqueId++}, name{name}
     {
     }
 
@@ -31,7 +31,7 @@ namespace Eng
 
     unsigned int Object::getId() const
     {
-        return uid;
+        return uniqueId;
     }
 
     const std::string& Object::getName() const

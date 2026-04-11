@@ -26,12 +26,12 @@ namespace Eng
 		shininess(shiness),
 		texture(nullptr),
 		shader(nullptr),
-		matEmissionLoc(-1),
-		matAmbientLoc(-1),
-		matDiffuseLoc(-1),
-		matSpecularLoc(-1),
-		matShininessLoc(-1),
-		hasTextureLoc(-1)
+		matEmissionUniformLoc(-1),
+		matAmbientUniformLoc(-1),
+		matDiffuseUniformLoc(-1),
+		matSpecularUniformLoc(-1),
+		matShininessUniformLoc(-1),
+		hasTextureUniformLoc(-1)
 	{}
 
 	Material::~Material()
@@ -55,12 +55,12 @@ namespace Eng
 		if (!shader)
 			return;
 
-		matEmissionLoc = shader->getParamLocation("matEmission");
-		matAmbientLoc = shader->getParamLocation("matAmbient");
-		matDiffuseLoc = shader->getParamLocation("matDiffuse");
-		matSpecularLoc = shader->getParamLocation("matSpecular");
-		matShininessLoc = shader->getParamLocation("matShininess");
-		hasTextureLoc = shader->getParamLocation("hasTexture");
+		matEmissionUniformLoc = shader->getParamLocation("matEmission");
+		matAmbientUniformLoc = shader->getParamLocation("matAmbient");
+		matDiffuseUniformLoc = shader->getParamLocation("matDiffuse");
+		matSpecularUniformLoc = shader->getParamLocation("matSpecular");
+		matShininessUniformLoc = shader->getParamLocation("matShininess");
+		hasTextureUniformLoc = shader->getParamLocation("hasTexture");
 	}
 
 	void Material::renderShader(Eng::Shader* shader)
@@ -68,12 +68,12 @@ namespace Eng
 		if (!shader)
 			return;
 
-		shader->setVec3(matEmissionLoc, emission);
-		shader->setVec3(matAmbientLoc, ambient);
-		shader->setVec3(matDiffuseLoc, diffuse);
-		shader->setVec3(matSpecularLoc, specular);
-		shader->setFloat(matShininessLoc, shininess);
-		shader->setBool(hasTextureLoc, texture);
+		shader->setVec3(matEmissionUniformLoc, emission);
+		shader->setVec3(matAmbientUniformLoc, ambient);
+		shader->setVec3(matDiffuseUniformLoc, diffuse);
+		shader->setVec3(matSpecularUniformLoc, specular);
+		shader->setFloat(matShininessUniformLoc, shininess);
+		shader->setBool(hasTextureUniformLoc, texture);
 	}
 
 	glm::vec4 Material::getEmission() const

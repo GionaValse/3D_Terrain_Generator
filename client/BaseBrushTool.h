@@ -16,10 +16,10 @@ struct UpdateArea
 class BaseBrushTool : public BaseTool
 {
 public:
-	BaseBrushTool(std::string name = "BrushTool", std::string res = "", unsigned int radius = 15, float strenght = 0.005f, float falloff = 0.5f) 
-		: BaseTool(name, res),
-		radius(radius), 
-		strength(strenght),
+	BaseBrushTool(std::string name = "BrushTool", std::string iconResourcePath = "", unsigned int radius = 15, float strength = 0.005f, float falloff = 0.5f)
+		: BaseTool(name, iconResourcePath),
+		radius(radius),
+		strength(strength),
 		falloff(falloff)
 	{}
 

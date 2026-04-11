@@ -37,12 +37,12 @@ class ENG_API Material : public Eng::Object
     /** @brief The exponent controlling the sharpness of specular highlights (controls reflection falloff). */
     float shininess;
 
-    int matEmissionLoc;
-    int matAmbientLoc;
-    int matDiffuseLoc;
-    int matSpecularLoc;
-    int matShininessLoc;
-    int hasTextureLoc;
+    int matEmissionUniformLoc;
+    int matAmbientUniformLoc;
+    int matDiffuseUniformLoc;
+    int matSpecularUniformLoc;
+    int matShininessUniformLoc;
+    int hasTextureUniformLoc;
 
 public:
     /**

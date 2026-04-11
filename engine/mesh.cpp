@@ -37,8 +37,8 @@ namespace Eng
         vboFaces(-1),
         vboNormals(-1),
         vboTextureCoordinates(-1),
-        mvLoc(-1),
-        normalMatLoc(-1)
+        modelviewUniformLoc(-1),
+        normalMatrixUniformLoc(-1)
     {
     }
 
@@ -77,8 +77,8 @@ namespace Eng
         if (material)
             material->loadShaderParams(shader);
 
-        mvLoc = shader->getParamLocation("modelview");
-        normalMatLoc = shader->getParamLocation("normalMatrix");
+        modelviewUniformLoc = shader->getParamLocation("modelview");
+        normalMatrixUniformLoc = shader->getParamLocation("normalMatrix");
     }
 
     void Mesh::renderShader(Eng::Shader* shader, glm::mat4 modelview)
@@ -91,8 +91,8 @@ namespace Eng
 
         glm::mat3 normalMatrix = glm::inverseTranspose(glm::mat3(modelview));
 
-        shader->setMatrix(mvLoc, modelview);
-        shader->setMatrix3(normalMatLoc, normalMatrix);
+        shader->setMatrix(modelviewUniformLoc, modelview);
+        shader->setMatrix3(normalMatrixUniformLoc, normalMatrix);
     }
 
     void Mesh::setMaterial(Material* materialPtr)

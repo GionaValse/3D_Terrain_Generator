@@ -19,7 +19,7 @@ namespace Eng
 
 	OmniLight::OmniLight(std::string name, glm::mat4 matrix)
 		: Light(name, matrix),
-		lightTypeLoc(-1)
+		lightTypeUniformLoc(-1)
 	{}
 
 	OmniLight::~OmniLight()
@@ -33,7 +33,7 @@ namespace Eng
 		Light::loadShaderParams(shader);
 
 		std::string prefix = "[" + std::to_string(getLightID()) + "]";
-		lightTypeLoc = shader->getParamLocation(("lightType" + prefix).c_str());
+		lightTypeUniformLoc = shader->getParamLocation(("lightType" + prefix).c_str());
 	}
 
 	void OmniLight::renderShader(Eng::Shader* shader, glm::mat4 modelview)
@@ -43,7 +43,7 @@ namespace Eng
 
 		Light::renderShader(shader, modelview);
 
-		shader->setInt(lightTypeLoc, 0);
+		shader->setInt(lightTypeUniformLoc, 0);
 	}
 
 }; // end of namespace Eng::

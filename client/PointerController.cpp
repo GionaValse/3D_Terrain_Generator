@@ -12,10 +12,10 @@ PointerController::PointerController()
 	: ToolController(),
 	mouseMoveSubscriptionId(-1),
 	mouseHoverSubscriptionId(-1),
-	brushPositionLoc(-1),
-	brushRadiusLoc(-1),
-	brushActiveLoc(-1),
-	brushRadiusColorLoc(-1)
+	brushPositionUniformLoc(-1),
+	brushRadiusUniformLoc(-1),
+	brushActiveUniformLoc(-1),
+	brushRadiusColorUniformLoc(-1)
 {}
 
 PointerController& PointerController::getInstance()
@@ -72,10 +72,10 @@ void PointerController::onToolSelected(BaseTool* tool, int groupPos, int itemPos
 
 	if (shader)
 	{
-		brushPositionLoc = shader->getParamLocation("brushPosition");
-		brushRadiusLoc = shader->getParamLocation("brushRadius");
-		brushActiveLoc = shader->getParamLocation("isBrushActive");
-		brushRadiusColorLoc = shader->getParamLocation("brushRadiusColor");
+		brushPositionUniformLoc = shader->getParamLocation("brushPosition");
+		brushRadiusUniformLoc = shader->getParamLocation("brushRadius");
+		brushActiveUniformLoc = shader->getParamLocation("isBrushActive");
+		brushRadiusColorUniformLoc = shader->getParamLocation("brushRadiusColor");
 	}
 
 	if (this->editorToolWindow)
@@ -150,7 +150,7 @@ void PointerController::onCursorHover(int x, int y)
 void PointerController::hideBrushArea()
 {
 	Eng::Shader* shader = Eng::Shader::getCurrentInstance();
-	if (shader) shader->setBool(brushActiveLoc, false);
+	if (shader) shader->setBool(brushActiveUniformLoc, false);
 }
 
 void PointerController::showBrushArea(BaseBrushTool* brush, glm::vec3 mousePos)
@@ -158,11 +158,11 @@ void PointerController::showBrushArea(BaseBrushTool* brush, glm::vec3 mousePos)
 	Eng::Shader* shader = Eng::Shader::getCurrentInstance();
 	if (!shader) return;
 
-	shader->setBool(brushActiveLoc, true);
-	shader->setFloat(brushRadiusLoc, brush->getRadius());
-	shader->setVec3(brushRadiusColorLoc, brush->getRadiusColor());
+	shader->setBool(brushActiveUniformLoc, true);
+	shader->setFloat(brushRadiusUniformLoc, brush->getRadius());
+	shader->setVec3(brushRadiusColorUniformLoc, brush->getRadiusColor());
 
 	Eng::Camera* camera = Eng::Base::getInstance().getActiveCamera();
 	glm::vec4 eyeBrushPos = camera->getViewMatrix() * glm::vec4(mousePos, 1.0f);
-	shader->setVec4(brushPositionLoc, eyeBrushPos);
+	shader->setVec4(brushPositionUniformLoc, eyeBrushPos);
 }

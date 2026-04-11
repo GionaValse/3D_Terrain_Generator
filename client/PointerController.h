@@ -31,10 +31,10 @@ private:
 	size_t mouseMoveSubscriptionId;
 	size_t mouseHoverSubscriptionId;
 
-	int brushPositionLoc;
-	int brushRadiusLoc;
-	int brushActiveLoc;
-	int brushRadiusColorLoc;
+	int brushPositionUniformLoc;
+	int brushRadiusUniformLoc;
+	int brushActiveUniformLoc;
+	int brushRadiusColorUniformLoc;
 
 	void onCursorMove(int x, int y, int lastX, int lastY);
 	void onCursorHover(int x, int y);

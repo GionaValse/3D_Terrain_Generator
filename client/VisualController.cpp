@@ -10,7 +10,7 @@ VisualController::VisualController()
 	realisticSubscriptionId(-1),
 	solidSubscriptionId(-1),
 	wireframeSubscriptionId(-1),
-	normalsSubscriptionId(-1)
+	altitudeShadingSubscriptionId(-1)
 {}
 
 VisualController& VisualController::getInstance()
@@ -72,7 +72,7 @@ void VisualController::init(ToolWindow* window, IToolSettingsWindow* editorWindo
 		}
 	);
 
-	normalsSubscriptionId = MenuDispatcher::getInstance().subscribe(
+	altitudeShadingSubscriptionId = MenuDispatcher::getInstance().subscribe(
 		AppEvents::MENU_SHADING_ALTITUDE,
 		[this]()
 		{
@@ -91,7 +91,7 @@ void VisualController::free() const
 	MenuDispatcher::getInstance().unsubscribe(AppEvents::MENU_SHADING_REAL, realisticSubscriptionId);
 	MenuDispatcher::getInstance().unsubscribe(AppEvents::MENU_SHADING_SOLID, solidSubscriptionId);
 	MenuDispatcher::getInstance().unsubscribe(AppEvents::MENU_SHADING_WIREFRAME, wireframeSubscriptionId);
-	MenuDispatcher::getInstance().unsubscribe(AppEvents::MENU_SHADING_ALTITUDE, normalsSubscriptionId);
+	MenuDispatcher::getInstance().unsubscribe(AppEvents::MENU_SHADING_ALTITUDE, altitudeShadingSubscriptionId);
 }
 
 void VisualController::selectShadingMode(int position)

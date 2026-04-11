@@ -5,10 +5,10 @@
 class BaseTool
 {
 public:
-	BaseTool(std::string name = "Tool", std::string res = "")
-		: name(name) 
+	BaseTool(std::string name = "Tool", std::string iconResourcePath = "")
+		: name(name)
 	{
-		iconTexture = new Eng::Texture(name + "Texture", res);
+		iconTexture = new Eng::Texture(name + "Texture", iconResourcePath);
 		iconId = iconTexture->getTexId();
 	}
 

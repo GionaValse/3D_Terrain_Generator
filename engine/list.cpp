@@ -19,7 +19,7 @@ namespace Eng
     List::List(std::string name)
         : Object(name),
         camera(nullptr),
-        projLoc(-1)
+        projectionUniformLoc(-1)
     {}
 
     List::~List()
@@ -40,8 +40,8 @@ namespace Eng
 
         if (shaderChanged)
         {
-            projLoc = currentShader->getParamLocation("projection");
-            currentShader->setMatrix(projLoc, camera->getProjectionMatrix());
+            projectionUniformLoc = currentShader->getParamLocation("projection");
+            currentShader->setMatrix(projectionUniformLoc, camera->getProjectionMatrix());
         }
 
         for (auto inst : list)
@@ -109,7 +109,7 @@ namespace Eng
 
         Shader* currentShader = Shader::getCurrentInstance();
         if (currentShader)
-            currentShader->setMatrix(projLoc, camera->getProjectionMatrix());
+            currentShader->setMatrix(projectionUniformLoc, camera->getProjectionMatrix());
     }
 
     void List::clear()
