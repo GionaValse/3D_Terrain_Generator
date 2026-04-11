@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(find /c/Users/Pietro/Documents/GitHub/3D_Terrain_Generator -type f \\\\\\( -name \"*.cpp\" -o -name \"*.h\" -o -name \"*.hpp\" \\\\\\) ! -path \"*/dependencies/*\" ! -path \"*/.vs/*\" ! -path \"*/.git/*\" -exec grep -l \"//\\\\|/\\\\*\" {} \\\\;)"
+    ]
+  }
+}

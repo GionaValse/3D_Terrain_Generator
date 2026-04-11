@@ -140,7 +140,7 @@
     <ClInclude Include="BaseTool.h" />
     <ClInclude Include="BaseVisualTool.h" />
     <ClInclude Include="BaseWindow.h" />
-    <ClInclude Include="ConfigController.h" />
+    <ClInclude Include="ConfigModel.h" />
     <ClInclude Include="CameraGestureController.h" />
     <ClInclude Include="ErosionBrushTool.h" />
     <ClInclude Include="EventDispatcher.h" />

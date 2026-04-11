@@ -1,7 +1,6 @@
 #include "AppController.h"
 
 #include "AppEvents.h"
-#include "ConfigController.h"
 #include "ObjExporter.hpp"
 
 #include "engine.h"
@@ -9,6 +8,7 @@
 AppController::AppController()
     : topMenuBar(nullptr),
     statusBar(nullptr),
+    m_config(nullptr),
     isExporting(false),
     gridMesh(nullptr),
     onQuitSubscriptionId(-1),
@@ -21,10 +21,11 @@ AppController& AppController::getInstance()
     return instance;
 }
 
-void AppController::init(BaseWindow* topMenuBar, StatusBar* statusBar)
+void AppController::init(BaseWindow* topMenuBar, StatusBar* statusBar, ConfigModel* config)
 {
     this->topMenuBar = topMenuBar;
     this->statusBar = statusBar;
+    this->m_config = config;
 
     onQuitSubscriptionId = TopMenuDispatcher::getInstance().subscribe(AppEvents::APP_EXIT, [this]() { this->onQuit(); });
     onExportMeshSubscriptionId = TopMenuDispatcher::getInstance().subscribe(AppEvents::MENU_EXPORT_MESH, [this]() { this->onExportMesh(); });
@@ -87,14 +88,14 @@ void AppController::onExportMesh()
     statusBar->setMessage("Exporting...");
     statusBar->setProgress(true, 0.0f);
 
-    TerrainConfig terrainConfiguration = ConfigController::getInstance().getActiveTerrainConfig();
+    TerrainConfig terrainConfiguration = m_config->getActiveTerrainConfig();
 
     if (exportThread.joinable()) {
         exportThread.join();
     }
 
     exportThread = std::thread([
-        imgData = ConfigController::getInstance().getHeightMapImage(),
+        imgData = m_config->getHeightMapImage(),
         size = terrainConfiguration.size,
         hScale = terrainConfiguration.heightScale,
         &mesh = *gridMesh // Do not edit the orginal mash until exporting done

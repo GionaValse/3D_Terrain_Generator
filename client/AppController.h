@@ -6,6 +6,7 @@
 
 #include "EventDispatcher.h"
 #include "StatusBar.h"
+#include "ConfigModel.h"
 
 #include "engine.h"
 
@@ -18,7 +19,7 @@ public:
 
 	~AppController() = default;
 
-	void init(BaseWindow* topMenuBar = nullptr, StatusBar* statusBar = nullptr);
+	void init(BaseWindow* topMenuBar = nullptr, StatusBar* statusBar = nullptr, ConfigModel* config = nullptr);
 	void update();
 	void free();
 
@@ -43,6 +44,8 @@ private:
 
 	std::vector<float> image;
 	Eng::Mesh* gridMesh;
+
+	ConfigModel* m_config;
 
 	int onQuitSubscriptionId;
 	int onExportMeshSubscriptionId;

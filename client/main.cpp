@@ -40,7 +40,7 @@
 // Controllers //
 #include "AppController.h"
 #include "CameraGestureController.h"
-#include "ConfigController.h"
+#include "ConfigModel.h"
 
 #include "PointerController.h"
 #include "VisualController.h"
@@ -60,6 +60,8 @@ using MouseWheelDispatcher = EventDispatcher<int, int, int>;
 /////////////
 
 std::vector<BaseWindow*> windows;
+
+ConfigModel configModel;
 
 Eng::Camera* mainCamera = nullptr;
 Eng::Mesh* gridMesh = nullptr;
@@ -99,10 +101,8 @@ static bool isRightDragging = false;
 
 static void generateTerrain(float heightScale)
 {
-	ConfigController& config = ConfigController::getInstance();
-
-	TextureConfig textureConfiguration = config.getActiveTextureConfig();
-	TerrainConfig terrainConfiguration = config.getActiveTerrainConfig();
+	TextureConfig textureConfiguration = configModel.getActiveTextureConfig();
+	TerrainConfig terrainConfiguration = configModel.getActiveTerrainConfig();
 
 	TextureGenerator textureGenerator(textureConfiguration);
 	TerrainGenerator terrainGenerator(terrainConfiguration);
@@ -121,7 +121,7 @@ static void generateTerrain(float heightScale)
 	std::cout << "\n--- TEST GENERAZIONE GRIGLIA ---\n";
 
 	terrainShader->setFloat(terrainShader->getParamLocation("heightScale"), heightScale);
-	config.setHeightMapImage(image);
+	configModel.setHeightMapImage(image);
 
 	Eng::Node* root = Eng::Base::getInstance().getSceneGraphInstance();
 
@@ -314,7 +314,6 @@ static void onMouseCallback(int buttonId, int buttonState, int x, int y)
 
 static void onMouseMotionCallback(int x, int y)
 {
-	TerrainConfig& terrainConfig = ConfigController::getInstance().getActiveTerrainConfig();
 	if (AppController::getInstance().isExportingMesh()) return;
 
 	ImGui_ImplGLUT_MotionFunc(x, y);
@@ -419,10 +418,11 @@ int main(int argc, char* argv[])
 	VisualController& visualController = VisualController::getInstance();
 	UIController& uiController = UIController::getInstance();
 
-	setupController.init();
-	appController.init(topMenuBar, statusBar);
+	setupController.init(configModel);
+	appController.init(topMenuBar, statusBar, &configModel);
 	uiController.init(windows, topMenuBar, statusBar);
 	cameraController.init();
+	pointerController.setConfig(configModel);
 	pointerController.init(pointerToolWin, pointerToolSetWin);
 	visualController.init(visualToolWin);
 

@@ -118,6 +118,6 @@ public:
         }
 
         file.close();
-        std::cout << "File OBJ salvato con successo in: " << fileName << "\n";
+        std::cout << "OBJ file saved successfully to: " << fileName << "\n";
     }
 };

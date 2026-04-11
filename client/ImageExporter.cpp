@@ -18,7 +18,7 @@ bool ImageExporter::saveEXR(
 ) {
     if (!fs::exists(outputDir)) {
         fs::create_directories(outputDir);
-        std::cout << "Cartella '" << outputDir << "' creata con successo.\n";
+        std::cout << "Directory '" << outputDir << "' created successfully.\n";
     }
 
     std::string filename = outputDir + "/perlin_" + std::to_string(config.size) +
@@ -31,14 +31,14 @@ bool ImageExporter::saveEXR(
 
     if (ret != TINYEXR_SUCCESS) {
         if (err) {
-            std::cerr << "Errore EXR: " << err << '\n';
+            std::cerr << "EXR Error: " << err << '\n';
             FreeEXRErrorMessage(err);
         }
         return false;
     }
 
     fileName = filename;
-    std::cout << "Immagine salvata con successo in: " << filename << "\n";
+    std::cout << "Image saved successfully to: " << filename << "\n";
     return true;
 }
 

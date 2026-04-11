@@ -2,7 +2,6 @@
 
 #include "AppEvents.h"
 
-#include "ConfigController.h"
 #include "CameraGestureController.h"
 
 #include "CursorTool.h"
@@ -10,6 +9,7 @@
 
 PointerController::PointerController()
 	: ToolController(),
+	m_config(nullptr),
 	mouseMoveSubscriptionId(-1),
 	mouseHoverSubscriptionId(-1),
 	heightMapTexture(nullptr),
@@ -27,6 +27,11 @@ PointerController& PointerController::getInstance()
 
 PointerController::~PointerController()
 {}
+
+void PointerController::setConfig(ConfigModel& config)
+{
+	this->m_config = &config;
+}
 
 void PointerController::init(ToolWindow* window, IToolSettingsWindow* editorWindow)
 {
@@ -118,11 +123,10 @@ void PointerController::onCursorMove(int x, int y, int lastX, int lastY)
 		{
 			showBrushArea(brushTool, clickedPos);
 
-			ConfigController& config = ConfigController::getInstance();
-			std::vector<float>& imageData = config.getHeightMapImage();
-			int resolution = config.getActiveTextureConfig().size;
+			std::vector<float>& imageData = m_config->getHeightMapImage();
+			int resolution = m_config->getActiveTextureConfig().size;
 
-			UpdateArea area = brushTool->use(clickedPos, config.getActiveTerrainConfig(), config.getActiveTextureConfig(), imageData);
+			UpdateArea area = brushTool->use(clickedPos, m_config->getActiveTerrainConfig(), m_config->getActiveTextureConfig(), imageData);
 
 			if (area.isModified && this->heightMapTexture != nullptr)
 			{

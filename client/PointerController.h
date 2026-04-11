@@ -4,6 +4,7 @@
 
 #include "ToolWindow.h"
 #include "EventDispatcher.h"
+#include "ConfigModel.h"
 
 using MouseMoveDispatcher = EventDispatcher<int, int, int, int>;
 
@@ -14,7 +15,8 @@ public:
 
 	~PointerController();
 
-	void init(ToolWindow* window, IToolSettingsWindow* editorWindow) override;
+	void init(ToolWindow* window, IToolSettingsWindow* editorWindow = nullptr) override;
+	void setConfig(ConfigModel& config);
 	void free() const override;
 
 	void setHeightMap(Eng::Texture* texture);
@@ -29,6 +31,8 @@ private:
 
 	PointerController(const PointerController&) = delete;
 	void operator=(const PointerController&) = delete;
+
+	ConfigModel* m_config;
 
 	size_t mouseMoveSubscriptionId;
 	size_t mouseHoverSubscriptionId;

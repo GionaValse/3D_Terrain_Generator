@@ -1,6 +1,6 @@
 #pragma once
 #include "SetupWindow.h"
-#include "ConfigController.h"
+#include "ConfigModel.h"
 #include "ISetupListener.h"
 
 class SetupController : public ISetupListener
@@ -12,11 +12,11 @@ public:
 		return instance;
 	}
 
-	void init()
+	void init(ConfigModel& config)
 	{
 		if (this->setupWindow) return;
 
-		ConfigController& config = ConfigController::getInstance();
+		m_config = &config;
 
 		this->setupWindow = new SetupWindow(
 			config.getActiveTextureConfig(),
@@ -52,8 +52,7 @@ public:
 
 	TerrainConfig& getTerrainConfig() const
 	{
-		ConfigController& config = ConfigController::getInstance();
-		return config.getActiveTerrainConfig();
+		return m_config->getActiveTerrainConfig();
 	}
 
 	SetupWindow* getWindow() const
@@ -62,10 +61,11 @@ public:
 	}
 
 private:
-	SetupController() : setupWindow(nullptr), generationRequested(false) {}
+	SetupController() : setupWindow(nullptr), m_config(nullptr), generationRequested(false) {}
 	SetupController(const SetupController&) = delete;
 	SetupController& operator=(const SetupController&) = delete;
 
 	SetupWindow* setupWindow;
+	ConfigModel* m_config;
 	bool generationRequested;
 };
