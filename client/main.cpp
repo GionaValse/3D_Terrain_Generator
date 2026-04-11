@@ -78,8 +78,6 @@ static void generateTerrain()
 	);
 
 	SetupController::getInstance().setActiveTerrainModel(terrain);
-	AppController::getInstance().setTerrainModel(terrain);
-	PointerController::getInstance().setTerrainModel(terrain);
 
 	isGenerated = true;
 }

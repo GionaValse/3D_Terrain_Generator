@@ -4,7 +4,6 @@
 
 #include "ToolWindow.h"
 #include "EventDispatcher.h"
-#include "TerrainModel.h"
 
 using MouseMoveDispatcher = EventDispatcher<int, int, int, int>;
 
@@ -16,7 +15,6 @@ public:
 	~PointerController();
 
 	void init(ToolWindow* window, IToolSettingsWindow* editorWindow = nullptr) override;
-	void setTerrainModel(TerrainModel* terrain);
 	void free() const override;
 
 	BaseTool* getActiveTool() const override;
@@ -29,8 +27,6 @@ private:
 
 	PointerController(const PointerController&) = delete;
 	void operator=(const PointerController&) = delete;
-
-	TerrainModel* m_terrain;
 
 	size_t mouseMoveSubscriptionId;
 	size_t mouseHoverSubscriptionId;

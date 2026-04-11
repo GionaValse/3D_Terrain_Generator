@@ -6,7 +6,6 @@
 
 #include "EventDispatcher.h"
 #include "StatusBar.h"
-#include "TerrainModel.h"
 
 using TopMenuDispatcher = EventDispatcher<>;
 
@@ -20,8 +19,6 @@ public:
 	void init(StatusBar* statusBar = nullptr);
 	void update();
 	void free();
-
-	void setTerrainModel(TerrainModel* terrain);
 
 	bool isExportingMesh() const;
 
@@ -38,8 +35,6 @@ private:
 	bool wasExporting = false;
 
 	std::thread exportThread;
-
-	TerrainModel* m_terrain;
 
 	int onQuitSubscriptionId;
 	int onExportMeshSubscriptionId;

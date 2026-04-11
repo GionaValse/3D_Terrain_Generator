@@ -3,13 +3,13 @@
 #include "AppEvents.h"
 
 #include "CameraGestureController.h"
+#include "SetupController.h"
 
 #include "CursorTool.h"
 #include "BaseBrushTool.h"
 
 PointerController::PointerController()
 	: ToolController(),
-	m_terrain(nullptr),
 	mouseMoveSubscriptionId(-1),
 	mouseHoverSubscriptionId(-1),
 	brushPositionLoc(-1),
@@ -26,11 +26,6 @@ PointerController& PointerController::getInstance()
 
 PointerController::~PointerController()
 {}
-
-void PointerController::setTerrainModel(TerrainModel* terrain)
-{
-	this->m_terrain = terrain;
-}
 
 void PointerController::init(ToolWindow* window, IToolSettingsWindow* editorWindow)
 {
@@ -115,14 +110,15 @@ void PointerController::onCursorMove(int x, int y, int lastX, int lastY)
 		{
 			showBrushArea(brushTool, clickedPos);
 
-			std::vector<float>& imageData = m_terrain->getTerrainImage();
-			int resolution = m_terrain->getTextureConfig().size;
+			TerrainModel* terrain = SetupController::getInstance().getActiveTerrainModel();
+			std::vector<float>& imageData = terrain->getTerrainImage();
+			int resolution = terrain->getTextureConfig().size;
 
-			UpdateArea area = brushTool->use(clickedPos, m_terrain->getTerrainConfig(), m_terrain->getTextureConfig(), imageData);
+			UpdateArea area = brushTool->use(clickedPos, terrain->getTerrainConfig(), terrain->getTextureConfig(), imageData);
 
-			if (area.isModified && m_terrain->getHeightMapTexture())
+			if (area.isModified && terrain->getHeightMapTexture())
 			{
-				m_terrain->getHeightMapTexture()->updateSubImage(
+				terrain->getHeightMapTexture()->updateSubImage(
 					area.startX,
 					area.startY,
 					area.width,

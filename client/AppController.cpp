@@ -2,12 +2,12 @@
 
 #include "AppEvents.h"
 #include "ObjExporter.hpp"
+#include "SetupController.h"
 
 #include "engine.h"
 
 AppController::AppController()
     : statusBar(nullptr),
-    m_terrain(nullptr),
     isExporting(false),
     onQuitSubscriptionId(-1),
     onExportMeshSubscriptionId(-1)
@@ -55,11 +55,6 @@ void AppController::free()
     }
 }
 
-void AppController::setTerrainModel(TerrainModel* terrain)
-{
-    this->m_terrain = terrain;
-}
-
 bool AppController::isExportingMesh() const
 {
     return isExporting;
@@ -72,7 +67,9 @@ void AppController::onQuit()
 
 void AppController::onExportMesh()
 {
-    if (!m_terrain || isExporting.load())
+    TerrainModel* terrain = SetupController::getInstance().getActiveTerrainModel();
+
+    if (!terrain || isExporting.load())
     {
         if (statusBar) statusBar->setMessage("Exporting, wait...");
         return;
@@ -83,17 +80,17 @@ void AppController::onExportMesh()
     statusBar->setMessage("Exporting...");
     statusBar->setProgress(true, 0.0f);
 
-    TerrainConfig terrainConfig = m_terrain->getTerrainConfig();
+    TerrainConfig terrainConfig = terrain->getTerrainConfig();
 
     if (exportThread.joinable()) {
         exportThread.join();
     }
 
     exportThread = std::thread([
-        imgData = m_terrain->getTerrainImage(),
+        imgData = terrain->getTerrainImage(),
         size    = terrainConfig.size,
         hScale  = terrainConfig.heightScale,
-        &mesh   = *m_terrain->getTerrainMesh(),
+        &mesh   = *terrain->getTerrainMesh(),
         this]() mutable {
             ObjExporter::exportToObj("./bin/export/terrain.obj", mesh, imgData, size, hScale, &exportProgress);
             isExporting.store(false);
