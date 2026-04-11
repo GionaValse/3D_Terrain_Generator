@@ -1,6 +1,8 @@
 #pragma once
 #include "SetupWindow.h"
-#include "ConfigModel.h"
+#include "TerrainConfig.h"
+#include "TextureConfig.h"
+#include "TerrainModel.h"
 #include "ISetupListener.h"
 
 class SetupController : public ISetupListener
@@ -12,30 +14,16 @@ public:
 		return instance;
 	}
 
-	void init(ConfigModel& config)
+	void init(SetupWindow* window)
 	{
-		if (this->setupWindow) return;
-
-		m_config = &config;
-
-		this->setupWindow = new SetupWindow(
-			config.getActiveTextureConfig(),
-			config.getActiveTerrainConfig()
-		);
-
+		this->setupWindow = window;
 		this->setupWindow->setListener(this);
 	}
 
 	void free()
 	{
-	}
-
-	void render(bool isGenerated) const
-	{
-		if (!isGenerated && this->setupWindow)
-		{
-			this->setupWindow->render();
-		}
+		delete m_activeTerrain;
+		m_activeTerrain = nullptr;
 	}
 
 	void onTerrainGenerationRequested() override
@@ -50,22 +38,26 @@ public:
 		return val;
 	}
 
-	TerrainConfig& getTerrainConfig() const
-	{
-		return m_config->getActiveTerrainConfig();
-	}
+	TerrainConfig& getTerrainConfig() { return m_terrainConfig; }
+	TextureConfig& getTextureConfig() { return m_textureConfig; }
 
-	SetupWindow* getWindow() const
+	TerrainModel* getActiveTerrainModel() const { return m_activeTerrain; }
+	void setActiveTerrainModel(TerrainModel* model)
 	{
-		return this->setupWindow;
+		delete m_activeTerrain;
+		m_activeTerrain = model;
+		if (this->setupWindow)
+			this->setupWindow->setVisible(false);
 	}
 
 private:
-	SetupController() : setupWindow(nullptr), m_config(nullptr), generationRequested(false) {}
+	SetupController() : setupWindow(nullptr), m_activeTerrain(nullptr), generationRequested(false) {}
 	SetupController(const SetupController&) = delete;
 	SetupController& operator=(const SetupController&) = delete;
 
-	SetupWindow* setupWindow;
-	ConfigModel* m_config;
+	SetupWindow*  setupWindow;
+	TerrainConfig m_terrainConfig;
+	TextureConfig m_textureConfig;
+	TerrainModel* m_activeTerrain;
 	bool generationRequested;
 };

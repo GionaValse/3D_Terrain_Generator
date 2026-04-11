@@ -4,7 +4,7 @@
 
 #include "ToolWindow.h"
 #include "EventDispatcher.h"
-#include "ConfigModel.h"
+#include "TerrainModel.h"
 
 using MouseMoveDispatcher = EventDispatcher<int, int, int, int>;
 
@@ -16,10 +16,8 @@ public:
 	~PointerController();
 
 	void init(ToolWindow* window, IToolSettingsWindow* editorWindow = nullptr) override;
-	void setConfig(ConfigModel& config);
+	void setTerrainModel(TerrainModel* terrain);
 	void free() const override;
-
-	void setHeightMap(Eng::Texture* texture);
 
 	BaseTool* getActiveTool() const override;
 
@@ -32,7 +30,7 @@ private:
 	PointerController(const PointerController&) = delete;
 	void operator=(const PointerController&) = delete;
 
-	ConfigModel* m_config;
+	TerrainModel* m_terrain;
 
 	size_t mouseMoveSubscriptionId;
 	size_t mouseHoverSubscriptionId;
@@ -41,8 +39,6 @@ private:
 	int brushRadiusLoc;
 	int brushActiveLoc;
 	int brushRadiusColorLoc;
-
-	Eng::Texture* heightMapTexture;
 
 	void onCursorMove(int x, int y, int lastX, int lastY);
 	void onCursorHover(int x, int y);

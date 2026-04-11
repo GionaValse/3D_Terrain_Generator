@@ -8,15 +8,12 @@
 
 #include "engine.h"
 
-#include "TerrainGenerator.h"
-#include "TextureGenerator.h"
-#include "ImageExporter.hpp"
-
 #include "configuration.h"
 #include "AppEvents.h"
 
 // Models //
 #include "CursorTool.h"
+#include "TerrainModel.h"
 
 #include "ErosionBrushTool.h"
 #include "SculpingBrushTool.h"
@@ -40,7 +37,6 @@
 // Controllers //
 #include "AppController.h"
 #include "CameraGestureController.h"
-#include "ConfigModel.h"
 
 #include "PointerController.h"
 #include "VisualController.h"
@@ -61,33 +57,12 @@ using MouseWheelDispatcher = EventDispatcher<int, int, int>;
 
 std::vector<BaseWindow*> windows;
 
-ConfigModel configModel;
-
 Eng::Camera* mainCamera = nullptr;
-Eng::Mesh* gridMesh = nullptr;
 Eng::Shader* terrainShader = nullptr;
 Eng::InfiniteLight* sunLight = nullptr;
 
-std::vector<float> image;
 bool isWireFrameMode = false;
 bool isGenerated = false;
-
-// Sun parameters
-float sunAzimuth = glm::radians(210.0f);
-float sunElevation = glm::radians(45.0f);
-glm::vec3 sunPosition(0.0f);
-bool sunRotating = false;
-
-void updateSunDirection()
-{
-	glm::vec3 dir;
-	dir.x = cos(sunElevation) * sin(sunAzimuth);
-	dir.y = -sin(sunElevation);
-	dir.z = cos(sunElevation) * cos(sunAzimuth);
-	sunLight->setDirection(glm::normalize(dir));
-
-	sunPosition = -glm::normalize(dir) * 300.0f;
-}
 
 static int lastMouseX = 0;
 static int lastMouseY = 0;
@@ -99,54 +74,18 @@ static bool isRightDragging = false;
 // Terrain Generator //
 ///////////////////////
 
-static void generateTerrain(float heightScale)
+static void generateTerrain()
 {
-	TextureConfig textureConfiguration = configModel.getActiveTextureConfig();
-	TerrainConfig terrainConfiguration = configModel.getActiveTerrainConfig();
+	TerrainModel* terrain = new TerrainModel(
+		SetupController::getInstance().getTerrainConfig(),
+		SetupController::getInstance().getTextureConfig()
+	);
 
-	TextureGenerator textureGenerator(textureConfiguration);
-	TerrainGenerator terrainGenerator(terrainConfiguration);
+	SetupController::getInstance().setActiveTerrainModel(terrain);
+	AppController::getInstance().setTerrainModel(terrain);
+	PointerController::getInstance().setTerrainModel(terrain);
 
-	image.clear();
-	image = textureGenerator.generate();
-	std::string textureName;
-
-	if (!terrain::ImageExporter::saveEXR(image, textureConfiguration, textureName))
-	{
-		std::cerr << "Operazione fallita.\n";
-		return;
-	}
-
-	std::cout << "\nOperazione completata.\n";
-	std::cout << "\n--- TEST GENERAZIONE GRIGLIA ---\n";
-
-	terrainShader->setFloat(terrainShader->getParamLocation("heightScale"), heightScale);
-	configModel.setHeightMapImage(image);
-
-	Eng::Node* root = Eng::Base::getInstance().getSceneGraphInstance();
-
-	if (gridMesh)
-	{
-		root->removeChild(gridMesh);
-		delete gridMesh;
-		gridMesh = nullptr;
-	}
-
-	Eng::Texture* heightMap = new Eng::Texture("TerrainHeightMap", textureConfiguration.size, textureConfiguration.size, image);
 	isGenerated = true;
-
-	Eng::Material* material = new Eng::Material("TerrainMaterial");
-	material->setSpecular(glm::vec4(0.0f));
-	material->setTexture(heightMap);
-
-	gridMesh = terrainGenerator.generate();
-	gridMesh->setMatrix(glm::mat4(1.0f));
-	gridMesh->setMaterial(material);
-
-	root->addChild(gridMesh);
-
-	AppController::getInstance().setTerrain(image, gridMesh);
-	PointerController::getInstance().setHeightMap(heightMap);
 }
 
 ///////////////
@@ -160,13 +99,6 @@ void onResize(int w, int h) {
 
 static void renderingLoop(Eng::Node* root)
 {
-	// Auto-rotate sun
-	if (sunRotating)
-	{
-		sunAzimuth += glm::radians(0.5f);
-		updateSunDirection();
-	}
-
 	UIController::getInstance().prepareFrame();
 }
 
@@ -175,29 +107,8 @@ static void renderingImGui(Eng::GUIObjects obj)
 	UIController::getInstance().render();
 	AppController::getInstance().update();
 
-	SetupController::getInstance().render(isGenerated);
-	
 	if (SetupController::getInstance().consumeGenerationRequest()) {
-		float heightScale = SetupController::getInstance().getTerrainConfig().heightScale;
-		generateTerrain(heightScale);
-	}
-
-	// Draw sun indicator on screen
-	{
-		glm::mat4 view = glm::inverse(mainCamera->getMatrix());
-		glm::mat4 proj = mainCamera->getProjectionMatrix();
-
-		glm::vec4 clip = proj * view * glm::vec4(sunPosition, 1.0f);
-
-		if (clip.w > 0.0f)
-		{
-			glm::vec3 ndc = glm::vec3(clip) / clip.w;
-			ImVec2 screen;
-			screen.x = (ndc.x * 0.5f + 0.5f) * ImGui::GetIO().DisplaySize.x;
-			screen.y = (1.0f - (ndc.y * 0.5f + 0.5f)) * ImGui::GetIO().DisplaySize.y;
-
-			ImGui::GetBackgroundDrawList()->AddCircleFilled(screen, 8.0f, IM_COL32(255, 230, 50, 255));
-		}
+		generateTerrain();
 	}
 
 	ImGui::Render();
@@ -236,7 +147,6 @@ static void onSpecialKeyDownCallback(int key, int x, int y)
 
 	ImGuiIO& io = ImGui::GetIO();
 	addSpecialKeyEvents(io, key, true);
-	// if (io.WantCaptureKeyboard) return; // If callback needed uncomment this line
 }
 
 static void onSpecialKeyUpCallback(int key, int x, int y)
@@ -245,7 +155,6 @@ static void onSpecialKeyUpCallback(int key, int x, int y)
 
 	ImGuiIO& io = ImGui::GetIO();
 	addSpecialKeyEvents(io, key, false);
-	// if (io.WantCaptureKeyboard) return; // If callback needed uncomment this line
 }
 
 static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
@@ -277,14 +186,6 @@ static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
 	}
 #endif
 
-	const float rotSpeed = 2.0f;
-	const float moveSpeed = 20.0f;
-
-	// Toggle sun rotation
-	if (key == 'g')
-	{
-		sunRotating = !sunRotating;
-	}
 }
 
 static void onMouseCallback(int buttonId, int buttonState, int x, int y)
@@ -320,8 +221,8 @@ static void onMouseMotionCallback(int x, int y)
 	if (ImGui::GetIO().WantCaptureMouse) return;
 	if (!isGenerated) return;
 
-	std::string eventType = isLeftDragging ? AppEvents::LEFT_MOUSE_MOVE 
-		: (isMiddleDragging ? AppEvents::MIDDLE_MOUSE_MOVE 
+	std::string eventType = isLeftDragging ? AppEvents::LEFT_MOUSE_MOVE
+		: (isMiddleDragging ? AppEvents::MIDDLE_MOUSE_MOVE
 			: (isRightDragging ? AppEvents::RIGHT_MOUSE_MOVE : AppEvents::MOUSE_MOVE));
 	MouseMoveDispatcher::getInstance().dispatch(eventType, x, y, lastMouseX, lastMouseY);
 
@@ -368,7 +269,7 @@ int main(int argc, char* argv[])
 
 	terrainShader = new Eng::Shader();
 	terrainShader->build(vShader, fShader);
-	terrainShader->render();	
+	terrainShader->render();
 
 	// Visual Tools Setup
 	std::vector<std::vector<BaseTool*>> visualToolGroups;
@@ -402,6 +303,10 @@ int main(int argc, char* argv[])
 	PointerToolWindow* pointerToolWin = new PointerToolWindow();
 	PointerToolSettingsWindow* pointerToolSetWin = new PointerToolSettingsWindow();
 	VisualToolWindow* visualToolWin = new VisualToolWindow();
+	SetupWindow* setupWin = new SetupWindow(
+		SetupController::getInstance().getTextureConfig(),
+		SetupController::getInstance().getTerrainConfig()
+	);
 
 	pointerToolWin->init(brushToolGroups);
 	visualToolWin->init(visualToolGroups);
@@ -409,6 +314,7 @@ int main(int argc, char* argv[])
 	windows.push_back(pointerToolWin);
 	windows.push_back(pointerToolSetWin);
 	windows.push_back(visualToolWin);
+	windows.push_back(setupWin);
 
 	// Controllers setup
 	SetupController& setupController = SetupController::getInstance();
@@ -418,11 +324,10 @@ int main(int argc, char* argv[])
 	VisualController& visualController = VisualController::getInstance();
 	UIController& uiController = UIController::getInstance();
 
-	setupController.init(configModel);
-	appController.init(topMenuBar, statusBar, &configModel);
+	setupController.init(setupWin);
+	appController.init(statusBar);
 	uiController.init(windows, topMenuBar, statusBar);
 	cameraController.init();
-	pointerController.setConfig(configModel);
 	pointerController.init(pointerToolWin, pointerToolSetWin);
 	visualController.init(visualToolWin);
 
@@ -435,7 +340,7 @@ int main(int argc, char* argv[])
 
 	// Lighting Setup
 	sunLight = new Eng::InfiniteLight("sun");
-	updateSunDirection();
+	sunLight->setDirection(glm::normalize(glm::vec3(-0.5f, -0.707f, -0.5f)));
 	sunLight->setAmbient(glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
 	sunLight->setDiffuse(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	sunLight->setSpecular(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));

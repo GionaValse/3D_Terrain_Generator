@@ -6,11 +6,9 @@
 #include "engine.h"
 
 AppController::AppController()
-    : topMenuBar(nullptr),
-    statusBar(nullptr),
-    m_config(nullptr),
+    : statusBar(nullptr),
+    m_terrain(nullptr),
     isExporting(false),
-    gridMesh(nullptr),
     onQuitSubscriptionId(-1),
     onExportMeshSubscriptionId(-1)
 {}
@@ -21,11 +19,9 @@ AppController& AppController::getInstance()
     return instance;
 }
 
-void AppController::init(BaseWindow* topMenuBar, StatusBar* statusBar, ConfigModel* config)
+void AppController::init(StatusBar* statusBar)
 {
-    this->topMenuBar = topMenuBar;
     this->statusBar = statusBar;
-    this->m_config = config;
 
     onQuitSubscriptionId = TopMenuDispatcher::getInstance().subscribe(AppEvents::APP_EXIT, [this]() { this->onQuit(); });
     onExportMeshSubscriptionId = TopMenuDispatcher::getInstance().subscribe(AppEvents::MENU_EXPORT_MESH, [this]() { this->onExportMesh(); });
@@ -59,10 +55,9 @@ void AppController::free()
     }
 }
 
-void AppController::setTerrain(std::vector<float> imageArray, Eng::Mesh* terrainMesh)
+void AppController::setTerrainModel(TerrainModel* terrain)
 {
-    this->image = imageArray;
-    this->gridMesh = terrainMesh;
+    this->m_terrain = terrain;
 }
 
 bool AppController::isExportingMesh() const
@@ -77,9 +72,9 @@ void AppController::onQuit()
 
 void AppController::onExportMesh()
 {
-    if (isExporting.load())
+    if (!m_terrain || isExporting.load())
     {
-        statusBar->setMessage("Exporting, wait...");
+        if (statusBar) statusBar->setMessage("Exporting, wait...");
         return;
     }
 
@@ -88,18 +83,18 @@ void AppController::onExportMesh()
     statusBar->setMessage("Exporting...");
     statusBar->setProgress(true, 0.0f);
 
-    TerrainConfig terrainConfiguration = m_config->getActiveTerrainConfig();
+    TerrainConfig terrainConfig = m_terrain->getTerrainConfig();
 
     if (exportThread.joinable()) {
         exportThread.join();
     }
 
     exportThread = std::thread([
-        imgData = m_config->getHeightMapImage(),
-        size = terrainConfiguration.size,
-        hScale = terrainConfiguration.heightScale,
-        &mesh = *gridMesh // Do not edit the orginal mash until exporting done
-        , this]() mutable {
+        imgData = m_terrain->getTerrainImage(),
+        size    = terrainConfig.size,
+        hScale  = terrainConfig.heightScale,
+        &mesh   = *m_terrain->getTerrainMesh(),
+        this]() mutable {
             ObjExporter::exportToObj("./bin/export/terrain.obj", mesh, imgData, size, hScale, &exportProgress);
             isExporting.store(false);
         });

@@ -140,7 +140,7 @@
     <ClInclude Include="BaseTool.h" />
     <ClInclude Include="BaseVisualTool.h" />
     <ClInclude Include="BaseWindow.h" />
-    <ClInclude Include="ConfigModel.h" />
+    <ClInclude Include="TerrainModel.h" />
     <ClInclude Include="CameraGestureController.h" />
     <ClInclude Include="ErosionBrushTool.h" />
     <ClInclude Include="EventDispatcher.h" />
@@ -182,7 +182,7 @@
     <ClCompile Include="BaseWindow.cpp" />
     <ClCompile Include="CameraGestureController.cpp" />
     <ClCompile Include="CentredWindow.cpp" />
-    <ClCompile Include="CentredWindow.h" />
+    <ClInclude Include="CentredWindow.h" />
     <ClCompile Include="CursorTool.cpp" />
     <ClCompile Include="ErosionBrushTool.cpp" />
     <ClCompile Include="ImageExporter.cpp" />
@@ -194,8 +194,9 @@
     <ClCompile Include="SolidVisualTool.cpp" />
     <ClCompile Include="StatusBar.cpp" />
     <ClCompile Include="TerrainGenerator.cpp" />
+    <ClCompile Include="TerrainModel.cpp" />
     <ClCompile Include="TextureGenerator.cpp" />
-    <ClCompile Include="TextureGenerator.h" />
+    <ClInclude Include="TextureGenerator.h" />
     <ClCompile Include="PointerController.cpp" />
     <ClCompile Include="PointerToolWindow.cpp" />
     <ClCompile Include="SculpingBrushTool.cpp" />

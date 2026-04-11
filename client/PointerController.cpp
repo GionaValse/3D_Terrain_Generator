@@ -9,10 +9,9 @@
 
 PointerController::PointerController()
 	: ToolController(),
-	m_config(nullptr),
+	m_terrain(nullptr),
 	mouseMoveSubscriptionId(-1),
 	mouseHoverSubscriptionId(-1),
-	heightMapTexture(nullptr),
 	brushPositionLoc(-1),
 	brushRadiusLoc(-1),
 	brushActiveLoc(-1),
@@ -28,9 +27,9 @@ PointerController& PointerController::getInstance()
 PointerController::~PointerController()
 {}
 
-void PointerController::setConfig(ConfigModel& config)
+void PointerController::setTerrainModel(TerrainModel* terrain)
 {
-	this->m_config = &config;
+	this->m_terrain = terrain;
 }
 
 void PointerController::init(ToolWindow* window, IToolSettingsWindow* editorWindow)
@@ -63,11 +62,6 @@ void PointerController::init(ToolWindow* window, IToolSettingsWindow* editorWind
 void PointerController::free() const
 {
 	MouseMoveDispatcher::getInstance().unsubscribe(AppEvents::LEFT_MOUSE_MOVE, mouseMoveSubscriptionId);
-}
-
-void PointerController::setHeightMap(Eng::Texture* texture)
-{
-	this->heightMapTexture = texture;
 }
 
 BaseTool* PointerController::getActiveTool() const
@@ -103,7 +97,7 @@ void PointerController::onToolEditor(BaseTool* tool, int groupPos, int itemPos)
 {
 	auto* brushTool = dynamic_cast<BaseBrushTool*>(tool);
 	if (!brushTool) return;
-	
+
 	editorToolWindow->setActiveTool(brushTool);
 	editorToolWindow->setVisible(true);
 	this->currentTool = brushTool;
@@ -114,8 +108,6 @@ void PointerController::onCursorMove(int x, int y, int lastX, int lastY)
 	auto* activeTool = getActiveTool();
 	if (!activeTool) return;
 
-	Eng::Shader* shader = Eng::Shader::getCurrentInstance();
-
 	if (auto* brushTool = dynamic_cast<BaseBrushTool*>(activeTool))
 	{
 		glm::vec3 clickedPos;
@@ -123,14 +115,14 @@ void PointerController::onCursorMove(int x, int y, int lastX, int lastY)
 		{
 			showBrushArea(brushTool, clickedPos);
 
-			std::vector<float>& imageData = m_config->getHeightMapImage();
-			int resolution = m_config->getActiveTextureConfig().size;
+			std::vector<float>& imageData = m_terrain->getTerrainImage();
+			int resolution = m_terrain->getTextureConfig().size;
 
-			UpdateArea area = brushTool->use(clickedPos, m_config->getActiveTerrainConfig(), m_config->getActiveTextureConfig(), imageData);
+			UpdateArea area = brushTool->use(clickedPos, m_terrain->getTerrainConfig(), m_terrain->getTextureConfig(), imageData);
 
-			if (area.isModified && this->heightMapTexture != nullptr)
+			if (area.isModified && m_terrain->getHeightMapTexture())
 			{
-				this->heightMapTexture->updateSubImage(
+				m_terrain->getHeightMapTexture()->updateSubImage(
 					area.startX,
 					area.startY,
 					area.width,
