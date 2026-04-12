@@ -26,6 +26,28 @@ TerrainModel::~TerrainModel()
 	}
 }
 
+void TerrainModel::loadOnScene()
+{
+	if (!terrainMesh) return;
+
+	heightMapTexture = new Eng::Texture("TerrainHeightMap", textureConfig.size, textureConfig.size, terrainImage);
+
+	Eng::Material* material = new Eng::Material("TerrainMaterial");
+	material->setSpecular(glm::vec4(0.0f));
+	material->setTexture(heightMapTexture);
+
+	terrainMesh->setMaterial(material);
+
+	Eng::Shader* shader = Eng::Shader::getCurrentInstance();
+	if (shader) {
+		int heightScaleLoc = shader->getParamLocation("heightScale");
+		shader->setFloat(heightScaleLoc, terrainConfig.heightScale);
+	}
+
+	Eng::Node* root = Eng::Base::getInstance().getSceneGraphInstance();
+	root->addChild(terrainMesh);
+}
+
 Eng::Mesh* TerrainModel::getTerrainMesh() const
 {
 	return this->terrainMesh;
@@ -53,13 +75,6 @@ TextureConfig TerrainModel::getTextureConfig() const
 
 void TerrainModel::generate()
 {
-	Eng::Shader* shader = Eng::Shader::getCurrentInstance();
-	if (!shader)
-	{
-		std::cerr << "Add a shader before generating terrain" << std::endl;
-		return;
-	}
-
 	TerrainGenerator terrGenerator(terrainConfig);
 	TextureGenerator textGenerator(textureConfig);
 
@@ -73,20 +88,6 @@ void TerrainModel::generate()
 		return;
 	}
 
-	int heightScaleLoc = shader->getParamLocation("heightScale");
-	shader->setFloat(heightScaleLoc, terrainConfig.heightScale);
-
-	Eng::Node* root = Eng::Base::getInstance().getSceneGraphInstance();
-
-	heightMapTexture = new Eng::Texture("TerrainHeightMap", textureConfig.size, textureConfig.size, terrainImage);
-
-	Eng::Material* material = new Eng::Material("TerrainMaterial");
-	material->setSpecular(glm::vec4(0.0f));
-	material->setTexture(heightMapTexture);
-
 	terrainMesh = terrGenerator.generate();
 	terrainMesh->setMatrix(glm::mat4(1.0f));
-	terrainMesh->setMaterial(material);
-
-	root->addChild(terrainMesh);
 }

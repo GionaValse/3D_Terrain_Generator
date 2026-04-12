@@ -20,7 +20,13 @@ public:
 	void update();
 	void free();
 
-	bool isExportingMesh() const;
+	void runBackgroundTask(
+		const std::string& message, 
+		std::function<void(std::atomic<float>*)> task,
+		std::function<void()> onComplete = nullptr
+	);
+
+	bool isBackgroundTaskRunning() const;
 
 private:
 	AppController();
@@ -30,11 +36,12 @@ private:
 
 	StatusBar* statusBar;
 
-	std::atomic<float> exportProgress{ 0.0f };
-	std::atomic<bool>  isExporting{ false };
-	bool wasExporting = false;
+	std::atomic<float> currentTaskProgress{ 0.0f };
+	std::atomic<bool>  isTaskRunning{ false };
+	std::function<void()> currentOnCompleteCallback;
+	bool wasTaskRunning = false;
 
-	std::thread exportThread;
+	std::thread workerThread;
 
 	int onQuitSubscriptionId;
 	int onExportMeshSubscriptionId;

@@ -114,7 +114,7 @@ static void addSpecialKeyEvents(ImGuiIO& io, int key, bool down)
 
 static void onSpecialKeyDownCallback(int key, int x, int y)
 {
-	if (AppController::getInstance().isExportingMesh()) return;
+	if (AppController::getInstance().isBackgroundTaskRunning()) return;
 
 	ImGuiIO& io = ImGui::GetIO();
 	addSpecialKeyEvents(io, key, true);
@@ -122,7 +122,7 @@ static void onSpecialKeyDownCallback(int key, int x, int y)
 
 static void onSpecialKeyUpCallback(int key, int x, int y)
 {
-	if (AppController::getInstance().isExportingMesh()) return;
+	if (AppController::getInstance().isBackgroundTaskRunning()) return;
 
 	ImGuiIO& io = ImGui::GetIO();
 	addSpecialKeyEvents(io, key, false);
@@ -130,7 +130,7 @@ static void onSpecialKeyUpCallback(int key, int x, int y)
 
 static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
 {
-	if (AppController::getInstance().isExportingMesh()) return;
+	if (AppController::getInstance().isBackgroundTaskRunning()) return;
 	ImGuiIO& io = ImGui::GetIO();
 
 	if (key >= 32)
@@ -150,7 +150,7 @@ static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
 
 static void onMouseCallback(int buttonId, int buttonState, int x, int y)
 {
-	if (AppController::getInstance().isExportingMesh()) return;
+	if (AppController::getInstance().isBackgroundTaskRunning()) return;
 
 	ImGui_ImplGLUT_MouseFunc(buttonId, buttonState, x, y);
 	if (ImGui::GetIO().WantCaptureMouse) return;
@@ -175,7 +175,7 @@ static void onMouseCallback(int buttonId, int buttonState, int x, int y)
 
 static void onMouseMotionCallback(int x, int y)
 {
-	if (AppController::getInstance().isExportingMesh()) return;
+	if (AppController::getInstance().isBackgroundTaskRunning()) return;
 
 	ImGui_ImplGLUT_MotionFunc(x, y);
 	if (ImGui::GetIO().WantCaptureMouse) return;
@@ -192,7 +192,7 @@ static void onMouseMotionCallback(int x, int y)
 
 static void onPassiveMouseMotionCallback(int x, int y)
 {
-	if (AppController::getInstance().isExportingMesh()) return;
+	if (AppController::getInstance().isBackgroundTaskRunning()) return;
 
 	ImGui_ImplGLUT_MotionFunc(x, y);
 	if (ImGui::GetIO().WantCaptureMouse) return;
@@ -202,7 +202,7 @@ static void onPassiveMouseMotionCallback(int x, int y)
 
 static void onMouseWheelCallback(int wheelId, int direction, int x, int y)
 {
-	if (AppController::getInstance().isExportingMesh()) return;
+	if (AppController::getInstance().isBackgroundTaskRunning()) return;
 
 	ImGui_ImplGLUT_MouseWheelFunc(wheelId, direction, x, y);
 	if (ImGui::GetIO().WantCaptureMouse) return;
@@ -337,7 +337,7 @@ int main(int argc, char* argv[])
 	cameraController.free();
 	pointerController.free();
 	visualController.free();
-	SetupController::getInstance().free();
+	setupController.free();
 
 	uiController.free();
 

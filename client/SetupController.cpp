@@ -1,6 +1,7 @@
 #include "SetupController.h"
 
 #include "AppEvents.h"
+#include "AppController.h"
 
 SetupController::SetupController()
 	: setupWindow(nullptr),
@@ -47,12 +48,27 @@ void SetupController::onTerrainGenerationRequest(TerrainConfig terrainConfig, Te
 		m_activeTerrain = nullptr;
 	}
 
-	m_activeTerrain = new TerrainModel(terrainConfig, textureConfig);
+	auto tempTerrain = std::make_shared<TerrainModel*>(nullptr);
+
+	AppController::getInstance().runBackgroundTask(
+		"Generating...",
+		[tempTerrain, terrainConfig, textureConfig](std::atomic<float>* progress) 
+		{
+			progress->store(0.0f);
+			*tempTerrain = new TerrainModel(terrainConfig, textureConfig);
+			progress->store(1.0f);
+		},
+		[tempTerrain, terrainConfig, this]()
+		{
+			m_activeTerrain = *tempTerrain;
+			m_activeTerrain->loadOnScene();
+
+			this->isGenerated = true;
+		}
+	);
 
 	if (setupWindow)
 		setupWindow->setVisible(false);
-
-	isGenerated = true;
 }
 
 TerrainModel* SetupController::getActiveTerrainModel() const

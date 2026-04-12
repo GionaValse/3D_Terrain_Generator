@@ -10,6 +10,8 @@ public:
 	TerrainModel(TerrainConfig terrainConfig, TextureConfig textureConfig);
 	~TerrainModel();
 
+	void loadOnScene();
+
 	Eng::Mesh*          getTerrainMesh() const;
 	Eng::Texture*       getHeightMapTexture() const;
 	std::vector<float>& getTerrainImage();
