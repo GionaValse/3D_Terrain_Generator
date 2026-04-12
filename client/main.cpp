@@ -57,30 +57,11 @@ using MouseWheelDispatcher = EventDispatcher<int, int, int>;
 
 std::vector<BaseWindow*> windows;
 
-bool isWireFrameMode = false;
-bool isGenerated = false;
-
 static int lastMouseX = 0;
 static int lastMouseY = 0;
 static bool isLeftDragging = false;
 static bool isMiddleDragging = false;
 static bool isRightDragging = false;
-
-///////////////////////
-// Terrain Generator //
-///////////////////////
-
-static void generateTerrain()
-{
-	TerrainModel* terrain = new TerrainModel(
-		SetupController::getInstance().getTerrainConfig(),
-		SetupController::getInstance().getTextureConfig()
-	);
-
-	SetupController::getInstance().setActiveTerrainModel(terrain);
-
-	isGenerated = true;
-}
 
 ///////////////
 // Callbacks //
@@ -100,10 +81,6 @@ static void renderingImGui(Eng::GUIObjects obj)
 {
 	UIController::getInstance().render();
 	AppController::getInstance().update();
-
-	if (SetupController::getInstance().consumeGenerationRequest()) {
-		generateTerrain();
-	}
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -169,17 +146,6 @@ static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
 	{
 		return;
 	}
-
-	if (!isGenerated) return;
-
-#ifdef _DEBUG
-	if (key == 'v')
-	{
-		isWireFrameMode = !isWireFrameMode;
-		Eng::Base::getInstance().changeWireFrame(isWireFrameMode);
-	}
-#endif
-
 }
 
 static void onMouseCallback(int buttonId, int buttonState, int x, int y)
@@ -188,7 +154,7 @@ static void onMouseCallback(int buttonId, int buttonState, int x, int y)
 
 	ImGui_ImplGLUT_MouseFunc(buttonId, buttonState, x, y);
 	if (ImGui::GetIO().WantCaptureMouse) return;
-	if (!isGenerated) return;
+	if (!SetupController::getInstance().isTerrainGenerated()) return;
 
 	if (buttonId == ENGINE_MOUSE_BUTTON_LEFT)
 	{
@@ -213,7 +179,7 @@ static void onMouseMotionCallback(int x, int y)
 
 	ImGui_ImplGLUT_MotionFunc(x, y);
 	if (ImGui::GetIO().WantCaptureMouse) return;
-	if (!isGenerated) return;
+	if (!SetupController::getInstance().isTerrainGenerated()) return;
 
 	std::string eventType = isLeftDragging ? AppEvents::LEFT_MOUSE_MOVE
 		: (isMiddleDragging ? AppEvents::MIDDLE_MOUSE_MOVE
@@ -240,7 +206,7 @@ static void onMouseWheelCallback(int wheelId, int direction, int x, int y)
 
 	ImGui_ImplGLUT_MouseWheelFunc(wheelId, direction, x, y);
 	if (ImGui::GetIO().WantCaptureMouse) return;
-	if (!isGenerated) return;
+	if (!SetupController::getInstance().isTerrainGenerated()) return;
 
 	MouseWheelDispatcher::getInstance().dispatch(AppEvents::MOUSE_WHEEL, x, y, direction);
 }
@@ -301,10 +267,7 @@ int main(int argc, char* argv[])
 	PointerToolWindow* pointerToolWin = new PointerToolWindow();
 	PointerToolSettingsWindow* pointerToolSetWin = new PointerToolSettingsWindow();
 	VisualToolWindow* visualToolWin = new VisualToolWindow();
-	SetupWindow* setupWin = new SetupWindow(
-		SetupController::getInstance().getTextureConfig(),
-		SetupController::getInstance().getTerrainConfig()
-	);
+	SetupWindow* setupWin = new SetupWindow();
 
 	pointerToolWin->init(brushToolGroups);
 	visualToolWin->init(visualToolGroups);

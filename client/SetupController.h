@@ -1,63 +1,39 @@
 #pragma once
+
 #include "SetupWindow.h"
+#include "ISetupListener.h"
+
 #include "TerrainConfig.h"
 #include "TextureConfig.h"
 #include "TerrainModel.h"
-#include "ISetupListener.h"
+
+#include "EventDispatcher.h"
+
+using MenuDispatcer = EventDispatcher<>;
 
 class SetupController : public ISetupListener
 {
 public:
-	static SetupController& getInstance()
-	{
-		static SetupController instance;
-		return instance;
-	}
+	static SetupController& getInstance();
 
-	void init(SetupWindow* window)
-	{
-		this->setupWindow = window;
-		this->setupWindow->setListener(this);
-	}
+	void init(SetupWindow* window);
+	void free();
 
-	void free()
-	{
-		delete m_activeTerrain;
-		m_activeTerrain = nullptr;
-	}
+	void onTerrainGenerationRequest(TerrainConfig terrainConfig, TextureConfig textureConfig) override;
 
-	void onTerrainGenerationRequested() override
-	{
-		this->generationRequested = true;
-	}
-
-	bool consumeGenerationRequest()
-	{
-		bool wasRequested = this->generationRequested;
-		this->generationRequested = false;
-		return wasRequested;
-	}
-
-	TerrainConfig& getTerrainConfig() { return m_terrainConfig; }
-	TextureConfig& getTextureConfig() { return m_textureConfig; }
-
-	TerrainModel* getActiveTerrainModel() const { return m_activeTerrain; }
-	void setActiveTerrainModel(TerrainModel* model)
-	{
-		delete m_activeTerrain;
-		m_activeTerrain = model;
-		if (this->setupWindow)
-			this->setupWindow->setVisible(false);
-	}
+	TerrainModel* getActiveTerrainModel() const;
+	bool isTerrainGenerated() const;
 
 private:
-	SetupController() : setupWindow(nullptr), m_activeTerrain(nullptr), generationRequested(false) {}
+	SetupController();
 	SetupController(const SetupController&) = delete;
 	SetupController& operator=(const SetupController&) = delete;
 
 	SetupWindow*  setupWindow;
-	TerrainConfig m_terrainConfig;
-	TextureConfig m_textureConfig;
 	TerrainModel* m_activeTerrain;
-	bool generationRequested;
+	bool isGenerated;
+
+	size_t newGenerationSubscriptionId;
+
+	void onNewGeneration();
 };

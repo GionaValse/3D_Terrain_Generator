@@ -87,9 +87,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PerlinNoise.hpp">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="BaseWindow.h">
       <Filter>File di intestazione\views</Filter>
     </ClInclude>
@@ -134,9 +131,6 @@
     </ClInclude>
     <ClInclude Include="tinyexr.h">
       <Filter>File di intestazione\exporter</Filter>
-    </ClInclude>
-    <ClInclude Include="ConfigController.h">
-      <Filter>File di intestazione\controllers</Filter>
     </ClInclude>
     <ClInclude Include="ToolWindow.h">
       <Filter>File di intestazione\views\tools</Filter>
@@ -213,22 +207,25 @@
     <ClInclude Include="AltitudeVisualTool.h">
       <Filter>File di intestazione\models\visuals</Filter>
     </ClInclude>
+    <ClInclude Include="CentredWindow.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureGenerator.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="PerlinNoise.hpp">
+      <Filter>File di intestazione\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainModel.h">
+      <Filter>File di intestazione\models</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="miniz.c">
-      <Filter>File di origine</Filter>
-    </ClCompile>
     <ClCompile Include="SetupWindow.cpp">
       <Filter>File di origine\views</Filter>
     </ClCompile>
     <ClCompile Include="BaseWindow.cpp">
       <Filter>File di origine\views</Filter>
-    </ClCompile>
-    <ClCompile Include="CentredWindow.h">
-      <Filter>File di intestazione\views</Filter>
     </ClCompile>
     <ClCompile Include="CentredWindow.cpp">
       <Filter>File di origine\views</Filter>
@@ -247,9 +244,6 @@
     </ClCompile>
     <ClCompile Include="ErosionBrushTool.cpp">
       <Filter>File di origine\models\brushes</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureGenerator.h">
-      <Filter>File di intestazione\terrain</Filter>
     </ClCompile>
     <ClCompile Include="ImageExporter.cpp">
       <Filter>File di origine\exporter</Filter>
@@ -304,6 +298,18 @@
     </ClCompile>
     <ClCompile Include="AltitudeVisualTool.cpp">
       <Filter>File di origine\models\visual</Filter>
+    </ClCompile>
+    <ClCompile Include="SetupController.cpp">
+      <Filter>File di origine\controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="miniz.c">
+      <Filter>File di origine\exporter</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainModel.cpp">
+      <Filter>File di origine\models</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>File di origine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,17 +1,14 @@
 #include "SetupWindow.h"
+
 #include <imgui.h>
 
-SetupWindow::SetupWindow(TextureConfig& textureConfig, TerrainConfig& terrainConfig)
-	: CentredWindow("Texture Setup"),
-	m_textureConfig(textureConfig),
-	m_terrainConfig(terrainConfig),
+#include "configuration.h"
+
+SetupWindow::SetupWindow()
+	: CentredWindow("Texture Setup", false),
 	m_listener(nullptr)
 {
-	m_textureConfig.size = 512;
-	m_textureConfig.frequency = 4.0f;
-	m_textureConfig.octaves = 6;
-	m_textureConfig.seed = 12345;
-	m_terrainConfig.heightScale = 100;
+	init();
 }
 
 void SetupWindow::setListener(ISetupListener* listener)
@@ -28,15 +25,25 @@ void SetupWindow::drawContent()
 	ImGui::InputScalar("Seed", ImGuiDataType_U32, &m_textureConfig.seed);
 
 	ImGui::Separator();
+
 	ImGui::Text("Mesh Parameters");
 	ImGui::InputInt("Size", (int*)&m_terrainConfig.size);
 	ImGui::DragFloat("Height Scale", &m_terrainConfig.heightScale, 1.0f, 0.1f, 5000.0f);
-
 	
 	if (ImGui::Button("Generate New Terrain", ImVec2(-1, 0))) {
 		if (m_listener) {
-			m_listener->onTerrainGenerationRequested();
+			m_listener->onTerrainGenerationRequest(m_terrainConfig, m_textureConfig);
 		}
 	}
 }
 
+void SetupWindow::init()
+{
+	m_textureConfig.size = TERRAIN_BASE_SIZE;
+	m_textureConfig.frequency = TERRAIN_BASE_FREQUENCY;
+	m_textureConfig.octaves = TERRAIN_BASE_OCTAVES;
+	m_textureConfig.seed = TERRAIN_BASE_SEED;
+
+	m_terrainConfig.size = TERRAIN_BASE_SIZE;
+	m_terrainConfig.heightScale = TERRAIN_BASE_HEIGHTSCALE;
+}

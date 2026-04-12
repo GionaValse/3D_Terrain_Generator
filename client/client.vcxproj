@@ -190,6 +190,7 @@
     <ClCompile Include="miniz.c" />
     <ClCompile Include="AltitudeVisualTool.cpp" />
     <ClCompile Include="PointerToolSettingsWindow.cpp" />
+    <ClCompile Include="SetupController.cpp" />
     <ClCompile Include="ShadesVisualTool.cpp" />
     <ClCompile Include="SolidVisualTool.cpp" />
     <ClCompile Include="StatusBar.cpp" />
