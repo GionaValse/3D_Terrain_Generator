@@ -7,6 +7,8 @@
 #include <shellapi.h>
 #endif
 
+#include <nfd.hpp>
+
 #include "AppEvents.h"
 #include "SetupController.h"
 
@@ -128,6 +130,9 @@ void AppController::onOpenDocumentation()
 
 void AppController::onExportMesh()
 {
+    NFD::Guard nfdGuard;
+    NFD::UniquePath savePath;
+
     TerrainModel* terrain = SetupController::getInstance().getActiveTerrainModel();
     if (!terrain) return;
 
@@ -135,35 +140,50 @@ void AppController::onExportMesh()
     std::vector<Eng::Mesh*> chunks = terrain->getTerrainChunks();
     if (chunks.empty()) return;
 
+    nfdfilteritem_t filterItem[1] = { { "Mesh File (.obj)", "obj" } };
+    nfdresult_t result = NFD::SaveDialog(savePath, filterItem, 1, NULL, "terrain.obj");
+
+    if (result != NFD_OKAY) return;
+
     runBackgroundTask(
         "Terrain export...",
         [
             imgData = terrain->getTerrainImage(),
             size = terrainConfig.size,
             hScale = terrainConfig.heightScale,
+            filePath = std::string(savePath.get()),
             chunks,
             this
         ](std::atomic<float>* progress)
         {
-            ObjExporter::exportToObj("./bin/export/terrain.obj", chunks, imgData, size, hScale, 0, progress);
+            ObjExporter::exportToObj(filePath, chunks, imgData, size, hScale, 0, progress);
         }
     );
 }
 
 void AppController::onExportImage()
 {
+    NFD::Guard nfdGuard;
+    NFD::UniquePath savePath;
+
     TerrainModel* model = SetupController::getInstance().getActiveTerrainModel();
+
+    std::string fileName = terrain::ImageExporter::getPerlinFileName(model->getTextureConfig());
+    nfdfilteritem_t filterItem[1] = { { "EXR Image (.exr)", "exr" } };
+    nfdresult_t result = NFD::SaveDialog(savePath, filterItem, 1, NULL, fileName.c_str());
+
+    if (result != NFD_OKAY) return;
 
     runBackgroundTask(
         "HeightMap export...", 
         [
             heightmap = model->getTerrainImage(),
             textureConfig = model->getTextureConfig(),
+            filePath = std::string(savePath.get()),
             this
         ](std::atomic<float>* progress) 
         {
-            std::string textName;
-            if (!terrain::ImageExporter::saveEXR(heightmap, textureConfig, textName))
+            if (!terrain::ImageExporter::saveEXR(heightmap, textureConfig, filePath))
             {
                 std::cerr << "Unable to save the texture image" << std::endl;
                 return;

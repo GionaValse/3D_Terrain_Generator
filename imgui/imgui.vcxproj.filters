@@ -19,6 +19,12 @@
     <Filter Include="File di origine\backends">
       <UniqueIdentifier>{5012e9e5-936d-432a-8b3d-07117180cddf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="File di intestazione\nfd">
+      <UniqueIdentifier>{bf027ac9-596e-45a1-bf3a-d485d4f67b38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File di origine\nfd">
+      <UniqueIdentifier>{17515bc5-98ad-480f-9b03-a01c58cf5ea1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgui.cpp">
@@ -38,6 +44,9 @@
     </ClCompile>
     <ClCompile Include="backends\imgui_impl_opengl3.cpp">
       <Filter>File di origine\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="nfd_win.cpp">
+      <Filter>File di origine\nfd</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -67,6 +76,12 @@
     </ClInclude>
     <ClInclude Include="backends\imgui_impl_opengl3_loader.h">
       <Filter>File di intestazione\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="nfd.h">
+      <Filter>File di intestazione\nfd</Filter>
+    </ClInclude>
+    <ClInclude Include="nfd.hpp">
+      <Filter>File di intestazione\nfd</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
