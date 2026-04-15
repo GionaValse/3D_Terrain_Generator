@@ -14,7 +14,16 @@ SculptingBrushTool& SculptingBrushTool::getInstance()
 	return instance;
 }
 
-void SculptingBrushTool::applyBrushEffect(int x, int y, int pixelX, int pixelY, int pixelRadius, int resolution, std::vector<float>& image, bool& modified)
+void SculptingBrushTool::applyBrushEffect(
+	int x, int y,
+	int pixelX, int pixelY,
+	int pixelRadius,
+	int resolution,
+	float heightScale,
+	float deltaTime,
+	std::vector<float>& image,
+	bool& modified
+)
 {
 	float distX = (float)(x - pixelX);
 	float distY = (float)(y - pixelY);
@@ -22,11 +31,13 @@ void SculptingBrushTool::applyBrushEffect(int x, int y, int pixelX, int pixelY, 
 
 	if (distance <= pixelRadius)
 	{
-		float normalizedDist = distance / pixelRadius;
-		float influence = std::pow(1.0f - normalizedDist, this->falloff);
-		float actualStrength = strength * 0.1;
+		float t = distance / pixelRadius;
 
-		float raiseAmount = actualStrength * influence;
+		float smooth = 1.0f - (t * t * (3.0f - 2.0f * t));
+		float influence = (1.0f - this->falloff) * 1.0f + (this->falloff * smooth);
+		float pixelStrength = this->strength / heightScale;
+
+		float raiseAmount = pixelStrength * influence * deltaTime;
 		int index = (y * resolution + x) * 3;
 
 		image[index + 0] = std::clamp(image[index + 0] + raiseAmount, 0.0f, 1.0f);

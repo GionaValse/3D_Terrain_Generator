@@ -16,10 +16,11 @@ class ObjExporter
 public:
     static void exportToObj(
         const std::string& fileName,
-        const Eng::Mesh& mesh,
+        const std::vector<Eng::Mesh*> chunks,
         const std::vector<float>& image,
         int size,
         float heightScale,
+        int activeLod = 0,
         std::atomic<float>* progress = nullptr)
     {
         fs::path filePath(fileName);
@@ -41,19 +42,19 @@ public:
             return;
         }
 
-        const auto& vertexes = mesh.getVertexes();
-        const auto& texCoords = mesh.getTextureCoordinates();
-        const auto& normals = mesh.getNormals();
-        const auto& faces = mesh.getFaces();
+        size_t totalOps = 0;
+        for (const auto* chunk : chunks) {
+            if (!chunk) continue;
+            totalOps += chunk->getVertexes().size() + chunk->getTextureCoordinates().size() * 2 + chunk->getFaces().size();
+        }
 
-        size_t totalOps = vertexes.size() + texCoords.size() * 2 + faces.size();
         size_t completedOps = 0;
 
-        auto updateProgress = [&]()
-            {
-                completedOps++;
-                if (progress && (completedOps % 1000 == 0 || completedOps == totalOps))
-                    *progress = static_cast<float>(completedOps) / totalOps;
+        auto updateProgress = [&]() {
+            completedOps++;
+            if (progress && (completedOps % 5000 == 0 || completedOps == totalOps)) {
+                progress->store(static_cast<float>(completedOps) / static_cast<float>(totalOps));
+            }
             };
 
         // --- START EXPORTING --- //
@@ -69,52 +70,68 @@ public:
 
         file << "# Exported Terrain Mesh\n";
 
-        // --- WRITING VERTEXES --- //
-        for (size_t i = 0; i < vertexes.size(); ++i) 
+        unsigned int globalVertexOffset = 0;
+
+        for (int c = 0; c < chunks.size(); c++)
         {
-            float h = getH(texCoords[i].x, texCoords[i].y);
-            file << "v " << vertexes[i].x << " " << h << " " << vertexes[i].z << "\n";
-            updateProgress();
-        }
+            Eng::Mesh* chunk = chunks[c];
+            if (!chunk) continue;
 
-        // --- WRITING UV COORDINATES --- //
-        for (const auto& vt : texCoords)
-        {
-            file << "vt " << vt.x << " " << (1.0f - vt.y) << "\n";
-            updateProgress();
-        }
+            const auto& vertexes = chunk->getVertexes();
+            const auto& texCoords = chunk->getTextureCoordinates();
+            const auto& faces = chunk->getFacesForLOD(activeLod);
 
-        // --- WRITING NORMALS --- //
-        float texelSize = 1.0f / (float)size;
-        for (const auto& vt : texCoords) 
-        {
-            float hL = getH(vt.x - texelSize, vt.y);
-            float hR = getH(vt.x + texelSize, vt.y);
-            float hD = getH(vt.x, vt.y - texelSize);
-            float hU = getH(vt.x, vt.y + texelSize);
+            file << "\no Chunk_" << c << "\n";
 
-            float nx = hL - hR;
-            float nz = hD - hU;
-            float ny = 2.0f * texelSize * heightScale;
+            // --- WRITING VERTEXES --- //
+            for (size_t i = 0; i < vertexes.size(); ++i)
+            {
+                float h = getH(texCoords[i].x, texCoords[i].y);
+                file << "v " << vertexes[i].x << " " << h << " " << vertexes[i].z << "\n";
+                updateProgress();
+            }
 
-            float length = std::sqrt(nx * nx + ny * ny + nz * nz);
-            file << "vn " << nx / length << " " << ny / length << " " << nz / length << "\n";
+            // --- WRITING UV COORDINATES --- //
+            for (const auto& vt : texCoords)
+            {
+                file << "vt " << vt.x << " " << (1.0f - vt.y) << "\n";
+                updateProgress();
+            }
 
-            updateProgress();
-        }
+            // --- WRITING NORMALS --- //
+            float texelSize = 1.0f / (float)size;
+            for (const auto& vt : texCoords)
+            {
+                float hL = getH(vt.x - texelSize, vt.y);
+                float hR = getH(vt.x + texelSize, vt.y);
+                float hD = getH(vt.x, vt.y - texelSize);
+                float hU = getH(vt.x, vt.y + texelSize);
 
-        // --- WRITING FACES --- //
-        for (const auto& face : faces) 
-        {
-            unsigned int i1 = face.x + 1;
-            unsigned int i2 = face.y + 1;
-            unsigned int i3 = face.z + 1;
+                float nx = hL - hR;
+                float nz = hD - hU;
+                float ny = 2.0f * texelSize * heightScale;
 
-            file << "f " << i1 << "/" << i1 << "/" << i1 << " "
-                << i2 << "/" << i2 << "/" << i2 << " "
-                << i3 << "/" << i3 << "/" << i3 << "\n";
+                float length = std::sqrt(nx * nx + ny * ny + nz * nz);
+                file << "vn " << nx / length << " " << ny / length << " " << nz / length << "\n";
 
-            updateProgress();
+                updateProgress();
+            }
+
+            // --- WRITING FACES --- //
+            for (const auto& face : faces)
+            {
+                unsigned int i1 = face.x + 1 + globalVertexOffset;
+                unsigned int i2 = face.y + 1 + globalVertexOffset;
+                unsigned int i3 = face.z + 1 + globalVertexOffset;
+
+                file << "f " << i1 << "/" << i1 << "/" << i1 << " "
+                    << i2 << "/" << i2 << "/" << i2 << " "
+                    << i3 << "/" << i3 << "/" << i3 << "\n";
+
+                updateProgress();
+            }
+
+            globalVertexOffset += vertexes.size();
         }
 
         file.close();

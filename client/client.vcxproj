@@ -140,6 +140,7 @@
     <ClInclude Include="BaseTool.h" />
     <ClInclude Include="BaseVisualTool.h" />
     <ClInclude Include="BaseWindow.h" />
+    <ClInclude Include="InputController.h" />
     <ClInclude Include="TerrainModel.h" />
     <ClInclude Include="CameraGestureController.h" />
     <ClInclude Include="ErosionBrushTool.h" />
@@ -186,6 +187,7 @@
     <ClCompile Include="CursorTool.cpp" />
     <ClCompile Include="ErosionBrushTool.cpp" />
     <ClCompile Include="ImageExporter.cpp" />
+    <ClCompile Include="InputController.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="miniz.c" />
     <ClCompile Include="AltitudeVisualTool.cpp" />

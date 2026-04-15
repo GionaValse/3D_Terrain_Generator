@@ -19,12 +19,18 @@ class ENG_API Mesh : public Eng::Node
 private:
     /** @brief Vector containing the 3D position coordinates for all vertices of the mesh. */
     std::vector<glm::vec3> vertexes;
-    /** @brief Vector containing the indices that define the faces (triangles) of the mesh (e.g., triplets of vertex indices). */
-    std::vector<glm::uvec3> faces;
+    /** @brief Vector containing the lods vector containing the indices that define the faces (triangles) of the mesh (e.g., triplets of vertex indices). */
+    std::vector<std::vector<glm::uvec3>> lodFaces;
     /** @brief Vector containing the 4D normal vectors (often w=0 or w=1 for homogeneous coordinates) for each vertex, used for lighting calculations. */
     std::vector<glm::vec3> normals;
     /** @brief Vector containing the 2D texture coordinates (UVs) for each vertex, used to map textures onto the mesh. */
     std::vector<glm::vec2> textureCoordinates;
+
+    /** @brief Vector containing the LOD indexes */
+    std::vector<unsigned int> vboFacesList;
+
+    /** @brief The current active level of detail */
+    int activeLod;
 
     /* Indexes for VBO/VAO */
     /** @brief OpenGL Vertex Array Object ID for this mesh. */
@@ -67,7 +73,7 @@ public:
      */
     Mesh(const std::string& name = "", const glm::mat4& matrix = glm::mat4(1.0f),
         std::vector<glm::vec3> vertexes = std::vector<glm::vec3>(),
-        std::vector<glm::uvec3> faces = std::vector<glm::uvec3>(),
+        std::vector<std::vector<glm::uvec3>> lodFaces = std::vector<std::vector<glm::uvec3>>(),
         std::vector<glm::vec3> normals = std::vector<glm::vec3>(),
         std::vector<glm::vec2> textureCoordinates = std::vector<glm::vec2>()
     );
@@ -108,8 +114,13 @@ public:
      */
     Eng::Material* getMaterial();
 
+    void setActiveLOD(unsigned int index);
+
     std::vector<glm::vec3> getVertexes() const;
     std::vector<glm::uvec3> getFaces() const;
+    std::vector<glm::uvec3> getFacesForLOD(int index) const;
     std::vector<glm::vec3> getNormals() const;
     std::vector<glm::vec2> getTextureCoordinates() const;
+
+    int getLodsCount() const;
 };

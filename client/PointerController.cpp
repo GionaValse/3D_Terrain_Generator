@@ -3,6 +3,7 @@
 #include "AppEvents.h"
 
 #include "CameraGestureController.h"
+#include "InputController.h"
 #include "SetupController.h"
 
 #include "CursorTool.h"
@@ -11,7 +12,6 @@
 PointerController::PointerController()
 	: ToolController(),
 	mouseMoveSubscriptionId(-1),
-	mouseHoverSubscriptionId(-1),
 	brushPositionUniformLoc(-1),
 	brushRadiusUniformLoc(-1),
 	brushActiveUniformLoc(-1),
@@ -44,14 +44,46 @@ void PointerController::init(ToolWindow* window, IToolSettingsWindow* editorWind
 			this->onCursorMove(x, y, lastX, lastY);
 		}
 	);
+}
 
-	mouseHoverSubscriptionId = MouseMoveDispatcher::getInstance().subscribe(
-		AppEvents::MOUSE_HOVER,
-		[this](int x, int y, int lastX, int lastY)
-		{
-			this->onCursorHover(x, y);
-		}
-	);
+void PointerController::update(float deltaTime)
+{
+	if (!this->currentTool) return;
+	auto* brushTool = dynamic_cast<BaseBrushTool*>(this->currentTool);
+	if (!brushTool) return;
+
+	glm::vec3 nodePosition;
+	bool isHittingTerrain = InputController::getInstance().isHittingTerrain(nodePosition);
+
+	if (!isHittingTerrain)
+	{
+		hideBrushArea();
+		return;
+	}
+
+	showBrushArea(brushTool, nodePosition);
+
+	if (!InputController::getInstance().isLeftMouseDown()) return;
+
+	TerrainModel* terrain = SetupController::getInstance().getActiveTerrainModel();
+	if (!terrain) return;
+
+	std::vector<float>& imageData = terrain->getTerrainImage();
+	int resolution = terrain->getTextureConfig().size;
+
+	UpdateArea area = brushTool->use(nodePosition, terrain->getTerrainConfig(), terrain->getTextureConfig(), deltaTime, imageData);
+
+	if (area.isModified && terrain->getHeightMapTexture())
+	{
+		terrain->getHeightMapTexture()->updateSubImage(
+			area.startX,
+			area.startY,
+			area.width,
+			area.height,
+			imageData,
+			resolution
+		);
+	}
 }
 
 void PointerController::free() const
@@ -100,51 +132,13 @@ void PointerController::onToolEditor(BaseTool* tool, int groupPos, int itemPos)
 
 void PointerController::onCursorMove(int x, int y, int lastX, int lastY)
 {
-	auto* activeTool = getActiveTool();
-	if (!activeTool) return;
+	if (!this->currentTool) return;
 
-	if (auto* brushTool = dynamic_cast<BaseBrushTool*>(activeTool))
-	{
-		glm::vec3 clickedPos;
-		if (Eng::Base::getInstance().getClickedNode(x, y, clickedPos))
-		{
-			showBrushArea(brushTool, clickedPos);
-
-			TerrainModel* terrain = SetupController::getInstance().getActiveTerrainModel();
-			std::vector<float>& imageData = terrain->getTerrainImage();
-			int resolution = terrain->getTextureConfig().size;
-
-			UpdateArea area = brushTool->use(clickedPos, terrain->getTerrainConfig(), terrain->getTextureConfig(), imageData);
-
-			if (area.isModified && terrain->getHeightMapTexture())
-			{
-				terrain->getHeightMapTexture()->updateSubImage(
-					area.startX,
-					area.startY,
-					area.width,
-					area.height,
-					imageData,
-					resolution
-				);
-			}
-		}
-	}
-	else if (auto* cursorTool = dynamic_cast<CursorTool*>(activeTool))
+	if (auto* cursorTool = dynamic_cast<CursorTool*>(this->currentTool))
 	{
 		CameraGestureController::getInstance().cameraRotate(x, y, lastX, lastY);
 		hideBrushArea();
 	}
-}
-
-void PointerController::onCursorHover(int x, int y)
-{
-	auto* brushTool = dynamic_cast<BaseBrushTool*>(currentTool);
-	glm::vec3 hoverPos;
-
-	if (brushTool && Eng::Base::getInstance().getClickedNode(x, y, hoverPos))
-		showBrushArea(brushTool, hoverPos);
-	else
-		hideBrushArea();
 }
 
 void PointerController::hideBrushArea()

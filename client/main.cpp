@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <string>
 
 #include <imgui.h>
 #include <backends/imgui_impl_glut.h>
@@ -9,11 +8,9 @@
 #include "engine.h"
 
 #include "configuration.h"
-#include "AppEvents.h"
 
 // Models //
 #include "CursorTool.h"
-#include "TerrainModel.h"
 
 #include "ErosionBrushTool.h"
 #include "SculpingBrushTool.h"
@@ -36,32 +33,21 @@
 
 // Controllers //
 #include "AppController.h"
+#include "SetupController.h"
+
 #include "CameraGestureController.h"
+#include "InputController.h"
 
 #include "PointerController.h"
 #include "VisualController.h"
-#include "SetupController.h"
 
 #include "UIController.h"
-
-/////////////////
-// DISPATCHERS //
-/////////////////
-
-using MouseMoveDispatcher = EventDispatcher<int, int, int, int>;
-using MouseWheelDispatcher = EventDispatcher<int, int, int>;
 
 /////////////
 // Globals //
 /////////////
 
 std::vector<BaseWindow*> windows;
-
-static int lastMouseX = 0;
-static int lastMouseY = 0;
-static bool isLeftDragging = false;
-static bool isMiddleDragging = false;
-static bool isRightDragging = false;
 
 ///////////////
 // Callbacks //
@@ -79,8 +65,13 @@ static void renderingLoop(Eng::Node* root)
 
 static void renderingImGui(Eng::GUIObjects obj)
 {
+	float dt = Eng::Base::getInstance().getDeltaTime();
+
 	UIController::getInstance().render();
 	AppController::getInstance().update();
+	SetupController::getInstance().update();
+
+	PointerController::getInstance().update(dt);
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -150,65 +141,26 @@ static void onKeyboardPressedCallback(unsigned char key, int mouseX, int mouseY)
 
 static void onMouseCallback(int buttonId, int buttonState, int x, int y)
 {
-	if (AppController::getInstance().isBackgroundTaskRunning()) return;
-
 	ImGui_ImplGLUT_MouseFunc(buttonId, buttonState, x, y);
-	if (ImGui::GetIO().WantCaptureMouse) return;
-	if (!SetupController::getInstance().isTerrainGenerated()) return;
-
-	if (buttonId == ENGINE_MOUSE_BUTTON_LEFT)
-	{
-		isLeftDragging = (buttonState == ENGINE_MOUSE_BUTTON_DOWN);
-	}
-	else if (buttonId == ENGINE_MOUSE_BUTTON_MIDDLE)
-	{
-		isMiddleDragging = (buttonState == ENGINE_MOUSE_BUTTON_DOWN);
-	}
-	else if (buttonId == ENGINE_MOUSE_BUTTON_RIGHT)
-	{
-		isRightDragging = (buttonState == ENGINE_MOUSE_BUTTON_DOWN);
-	}
-
-	lastMouseX = x;
-	lastMouseY = y;
+	InputController::getInstance().onMouseButton(buttonId, buttonState, x, y);
 }
 
 static void onMouseMotionCallback(int x, int y)
 {
-	if (AppController::getInstance().isBackgroundTaskRunning()) return;
-
 	ImGui_ImplGLUT_MotionFunc(x, y);
-	if (ImGui::GetIO().WantCaptureMouse) return;
-	if (!SetupController::getInstance().isTerrainGenerated()) return;
-
-	std::string eventType = isLeftDragging ? AppEvents::LEFT_MOUSE_MOVE
-		: (isMiddleDragging ? AppEvents::MIDDLE_MOUSE_MOVE
-			: (isRightDragging ? AppEvents::RIGHT_MOUSE_MOVE : AppEvents::MOUSE_MOVE));
-	MouseMoveDispatcher::getInstance().dispatch(eventType, x, y, lastMouseX, lastMouseY);
-
-	lastMouseX = x;
-	lastMouseY = y;
+	InputController::getInstance().onMouseMove(x, y);
 }
 
 static void onPassiveMouseMotionCallback(int x, int y)
 {
-	if (AppController::getInstance().isBackgroundTaskRunning()) return;
-
 	ImGui_ImplGLUT_MotionFunc(x, y);
-	if (ImGui::GetIO().WantCaptureMouse) return;
-
-	MouseMoveDispatcher::getInstance().dispatch(AppEvents::MOUSE_HOVER, x, y, 0, 0);
+	InputController::getInstance().onMouseHover(x, y);
 }
 
 static void onMouseWheelCallback(int wheelId, int direction, int x, int y)
 {
-	if (AppController::getInstance().isBackgroundTaskRunning()) return;
-
 	ImGui_ImplGLUT_MouseWheelFunc(wheelId, direction, x, y);
-	if (ImGui::GetIO().WantCaptureMouse) return;
-	if (!SetupController::getInstance().isTerrainGenerated()) return;
-
-	MouseWheelDispatcher::getInstance().dispatch(AppEvents::MOUSE_WHEEL, x, y, direction);
+	InputController::getInstance().onMouseWeel(wheelId, direction,x, y);
 }
 
 //////////

@@ -16,19 +16,38 @@ struct UpdateArea
 class BaseBrushTool : public BaseTool
 {
 public:
-	BaseBrushTool(std::string name = "BrushTool", std::string iconResourcePath = "", unsigned int radius = 15, float strength = 0.005f, float falloff = 0.5f)
+	BaseBrushTool(std::string name = "BrushTool", std::string iconResourcePath = "", unsigned int radius = 0, float strength = 0.0f, float falloff = 0.0f)
 		: BaseTool(name, iconResourcePath),
 		radius(radius),
 		strength(strength),
 		falloff(falloff)
 	{}
 
-	virtual void applyBrushEffect(int x, int y, int pixelX, int pixelY, int pixelRadius, int resolution, std::vector<float>& image, bool& modified) = 0;
+	virtual void applyBrushEffect(
+		int x, int y, 
+		int pixelX, int pixelY, 
+		int pixelRadius, 
+		int resolution,
+		float heightScale,
+		float deltaTime,
+		std::vector<float>& image,
+		bool& modified
+	) = 0;
 
-	virtual UpdateArea use(glm::vec3 coords, TerrainConfig terConfig, TextureConfig texConfig, std::vector<float>& image)
+	virtual UpdateArea use(
+		glm::vec3 coords, 
+		TerrainConfig terConfig, 
+		TextureConfig texConfig, 
+		float deltaTime, 
+		std::vector<float>& image
+	)
 	{
-		float terrainPhysicalSize = terConfig.size;
+		float terrainPhysicalSize = static_cast<float>(terConfig.size);
+		float heightScale = terConfig.heightScale;
 		int imageResolution = texConfig.size;
+
+		float pixelsPerMeter = static_cast<float>(imageResolution) / terrainPhysicalSize;
+		int pixelRadius = static_cast<int>(radius * pixelsPerMeter);
 
 		float localX = coords.x + (terrainPhysicalSize / 2.0f);
 		float localZ = coords.z + (terrainPhysicalSize / 2.0f);
@@ -46,10 +65,10 @@ public:
 			return area;
 		}
 
-		int startX = std::max(0, pixelX - (int)radius);
-		int startY = std::max(0, pixelY - (int)radius);
-		int endX = std::min(imageResolution - 1, pixelX + (int)radius);
-		int endY = std::min(imageResolution - 1, pixelY + (int)radius);
+		int startX = std::max(0, pixelX - (int)pixelRadius);
+		int startY = std::max(0, pixelY - (int)pixelRadius);
+		int endX = std::min(imageResolution - 1, pixelX + (int)pixelRadius);
+		int endY = std::min(imageResolution - 1, pixelY + (int)pixelRadius);
 
 		bool modified = false;
 
@@ -57,7 +76,7 @@ public:
 		{
 			for (int x = startX; x <= endX; ++x)
 			{
-				applyBrushEffect(x, y, pixelX, pixelY, (int)radius, imageResolution, image, modified);
+				applyBrushEffect(x, y, pixelX, pixelY, (int)pixelRadius, imageResolution, heightScale, deltaTime, image, modified);
 			}
 		}
 

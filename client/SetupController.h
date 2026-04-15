@@ -17,6 +17,7 @@ public:
 	static SetupController& getInstance();
 
 	void init(SetupWindow* window);
+	void update();
 	void free();
 
 	void onTerrainGenerationRequest(TerrainConfig terrainConfig, TextureConfig textureConfig) override;

@@ -494,8 +494,11 @@ Eng::Node* Eng::OvoReader::processMeshChunk(char* data, unsigned int& size, char
 		#endif*/
 	}
 
+	std::vector<std::vector<glm::uvec3>> meshLodFaceList;
+	meshLodFaceList.push_back(meshFaceList); // Position 0 is the best resolution
+
 	// Create mesh
-	Eng::Mesh* mesh = new Eng::Mesh(std::string(name), matrix, meshVertexList, meshFaceList, meshNormalList, meshTextureCoordList);
+	Eng::Mesh* mesh = new Eng::Mesh(std::string(name), matrix, meshVertexList, meshLodFaceList, meshNormalList, meshTextureCoordList);
 
 #if defined(DEBUG) || defined(_DEBUG)
 	std::cout << name << " Mash has material " << materialName << std::endl;

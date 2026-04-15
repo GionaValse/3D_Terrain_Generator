@@ -7,6 +7,8 @@
 
 #include "engine.h"
 
+#include <algorithm>
+
 // GLEW:
 #include <GL/glew.h>
 
@@ -22,14 +24,15 @@ namespace Eng
 
     Mesh::Mesh(const std::string& name, const glm::mat4& matrix,
         std::vector<glm::vec3> vertexes,
-        std::vector<glm::uvec3> faces,
+        std::vector<std::vector<glm::uvec3>> faces,
         std::vector<glm::vec3> normals,
         std::vector<glm::vec2> textureCoordinates)
         : Node(name, matrix),
         vertexes{ vertexes },
-        faces{ faces },
+        lodFaces{ faces },
         normals{ normals },
         textureCoordinates{ textureCoordinates },
+        activeLod(0),
         buffersInitialized{ false },
         material{ nullptr },
         vao(-1),
@@ -64,9 +67,12 @@ namespace Eng
             this->renderShader(shader, modelview);
 
         // Rendering the mesh
-		glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, size(faces) * 3, GL_UNSIGNED_INT, nullptr);
-		glBindVertexArray(0);
+        int currentLOD = std::clamp(activeLod, 0, (int)lodFaces.size() - 1);
+
+        glBindVertexArray(vao);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboFacesList[currentLOD]);
+        glDrawElements(GL_TRIANGLES, lodFaces[currentLOD].size() * 3, GL_UNSIGNED_INT, nullptr);
+        glBindVertexArray(0);
     }
 
     void Mesh::loadShaderParams(Eng::Shader* shader)
@@ -105,6 +111,11 @@ namespace Eng
         return this->material;
     }
 
+    void Mesh::setActiveLOD(unsigned int index)
+    {
+        if (index < getLodsCount()) this->activeLod = index;
+    }
+
     std::vector<glm::vec3> Mesh::getVertexes() const
     {
         return vertexes;
@@ -112,7 +123,16 @@ namespace Eng
 
     std::vector<glm::uvec3> Mesh::getFaces() const
     {
-        return faces;
+        if (lodFaces.empty()) return {};
+        return lodFaces[std::clamp(activeLod, 0, (int)lodFaces.size() - 1)];
+    }
+
+    std::vector<glm::uvec3> Mesh::getFacesForLOD(int lodIndex) const
+    {
+        if (lodFaces.empty()) return {};
+
+        int safeIndex = std::clamp(lodIndex, 0, (int)lodFaces.size() - 1);
+        return lodFaces[safeIndex];
     }
 
     std::vector<glm::vec3> Mesh::getNormals() const
@@ -123,6 +143,11 @@ namespace Eng
     std::vector<glm::vec2> Mesh::getTextureCoordinates() const
     {
         return textureCoordinates;
+    }
+
+    int Mesh::getLodsCount() const
+    {
+        return vboFacesList.size();
     }
 
     void Mesh::initBuffers()
@@ -157,17 +182,22 @@ namespace Eng
 			glEnableVertexAttribArray(2);
         }
 
-        if (!faces.empty())
+        if (!lodFaces.empty())
         {
-			glGenBuffers(1, &vboFaces);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboFaces);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, faces.size() * sizeof(glm::uvec3), faces.data(), GL_STATIC_DRAW);
+            vboFacesList.resize(lodFaces.size());
+            glGenBuffers(lodFaces.size(), vboFacesList.data());
+
+            for (size_t i = 0; i < lodFaces.size(); ++i)
+            {
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboFacesList[i]);
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, lodFaces[i].size() * sizeof(glm::uvec3), lodFaces[i].data(), GL_STATIC_DRAW);
+            }
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
 
 		glBindVertexArray(0);
-
 		buffersInitialized = true;
-
 		loadShaderParams(Shader::getCurrentInstance());
     }
 
@@ -178,5 +208,11 @@ namespace Eng
         if (vboNormals) glDeleteBuffers(1, &vboNormals);
         if (vboTextureCoordinates) glDeleteBuffers(1, &vboTextureCoordinates);
         if (vao) glDeleteVertexArrays(1, &vao);
+
+        if (!vboFacesList.empty())
+        {
+            glDeleteBuffers(vboFacesList.size(), vboFacesList.data());
+            vboFacesList.clear();
+        }
     }
 }; // end of namespace Eng::

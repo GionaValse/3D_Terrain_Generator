@@ -14,18 +14,28 @@ SmoothingBrushTool& SmoothingBrushTool::getInstance()
 	return instance;
 }
 
-void SmoothingBrushTool::applyBrushEffect(int x, int y, int pixelX, int pixelY, int pixelRadius, int resolution, std::vector<float>& image, bool& modified)
+void SmoothingBrushTool::applyBrushEffect(
+    int x, int y,
+    int pixelX, int pixelY,
+    int pixelRadius,
+    int resolution,
+    float heightScale,
+    float deltaTime,
+    std::vector<float>& image,
+    bool& modified
+)
 {
     float dx = static_cast<float>(x - pixelX);
     float dy = static_cast<float>(y - pixelY);
-    float dist = std::sqrt(dx * dx + dy * dy);
+    float distance = std::sqrt(dx * dx + dy * dy);
 
-    if (dist > static_cast<float>(pixelRadius)) {
+    if (distance > static_cast<float>(pixelRadius)) {
         return;
     }
 
     float heightSum = 0.0f;
     int count = 0;
+
     for (int ny = -1; ny <= 1; ++ny) {
         for (int nx = -1; nx <= 1; ++nx) {
             int checkX = std::clamp(x + nx, 0, resolution - 1);
@@ -35,19 +45,29 @@ void SmoothingBrushTool::applyBrushEffect(int x, int y, int pixelX, int pixelY, 
         }
     }
 
-    float average = heightSum / count;
-    float influence = std::pow(1.0f - (dist / static_cast<float>(pixelRadius)), this->falloff);
-    float actualStrength = strength * 4.0f;
+    float average = heightSum / static_cast<float>(count);
+
+    float t = distance / static_cast<float>(pixelRadius);
+    float smooth = 1.0f - (t * t * (3.0f - 2.0f * t));
+    float influence = (1.0f - this->falloff) * 1.0f + (this->falloff * smooth);
+
+    float maxMoveAmount = (this->strength / heightScale) * deltaTime * influence;
 
     int index = (y * resolution + x) * 3;
     float currentHeightValue = image[index];
-    float smoothedVal = currentHeightValue + (average - currentHeightValue) * actualStrength * influence;
 
-    if (std::abs(smoothedVal - currentHeightValue) > 0.0001f) {
+    float difference = average - currentHeightValue;
+
+    float moveAmount = std::clamp(difference, -maxMoveAmount, maxMoveAmount);
+    float smoothedVal = currentHeightValue + moveAmount;
+
+    if (std::abs(smoothedVal - currentHeightValue) > 0.00001f) {
         modified = true;
     }
 
-    image[index] = image[index + 1] = image[index + 2] = smoothedVal;
+    image[index] = smoothedVal;
+    image[index + 1] = smoothedVal;
+    image[index + 2] = smoothedVal;
 }
 
 glm::vec3 SmoothingBrushTool::getRadiusColor() const

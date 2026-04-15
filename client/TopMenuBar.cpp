@@ -41,7 +41,7 @@ void TopMenuBar::render()
             if (ImGui::MenuItem("Export 3D Terrain (.obj)"))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_EXPORT_MESH);
 
-            if (ImGui::MenuItem("Export Heightmap (.exr)", "Ctrl+E", false, false))
+            if (ImGui::MenuItem("Export Heightmap (.exr)", "Ctrl+E"))
                 EventDispatcher<>::getInstance().dispatch(AppEvents::MENU_EXPORT_HEIGHTMAP);
 
             ImGui::Separator();

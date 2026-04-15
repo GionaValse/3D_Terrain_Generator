@@ -7,23 +7,30 @@
 class TerrainModel
 {
 public:
+	static TerrainModel* generateTerrain(TerrainConfig terrainConfig, TextureConfig textureConfig, std::atomic<float>* progress);
+
 	TerrainModel(TerrainConfig terrainConfig, TextureConfig textureConfig);
 	~TerrainModel();
 
 	void loadOnScene();
+	void update();
 
-	Eng::Mesh*          getTerrainMesh() const;
-	Eng::Texture*       getHeightMapTexture() const;
+	std::vector<Eng::Mesh*> getTerrainChunks() const;
+	Eng::Texture* getHeightMapTexture() const;
 	std::vector<float>& getTerrainImage();
-	TerrainConfig       getTerrainConfig() const;
-	TextureConfig       getTextureConfig() const;
+	TerrainConfig getTerrainConfig() const;
+	TextureConfig getTextureConfig() const;
 
 private:
-	void generate();
+	void generate(std::atomic<float>* progress);
 
-	TerrainConfig       terrainConfig;
-	TextureConfig       textureConfig;
-	Eng::Mesh*          terrainMesh;
-	Eng::Texture*       heightMapTexture;
-	std::vector<float>  terrainImage;
+	int gridDimX;
+	int gridDimZ;
+
+	TerrainConfig terrainConfig;
+	TextureConfig textureConfig;
+
+	Eng::Texture* heightMapTexture;
+	std::vector<Eng::Mesh*> terrainChunks;
+	std::vector<float> terrainImage;
 };

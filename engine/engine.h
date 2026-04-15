@@ -236,6 +236,8 @@ namespace Eng
 		 */
 		int getCurrentFPS();
 
+		float getDeltaTime();
+
 		bool getClickedNode(int x, int y, glm::vec3& coord);
 
 		// Engine external callbacks:
@@ -330,6 +332,9 @@ namespace Eng
 
 		/** @brief Static pointer to the user-defined update function executed every frame. */
 		static void (*userUpdateCallback)();
+
+		int lastFrameTime = 0;
+		float currentDeltaTime = 0.0f;
 
 		// Const/dest:
 		/**

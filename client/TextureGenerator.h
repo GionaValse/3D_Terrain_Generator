@@ -8,7 +8,7 @@ class TextureGenerator
 public:
 	explicit TextureGenerator(const TextureConfig& config);
 
-	std::vector<float> generate() const;
+	std::vector<float> generate(std::atomic<float>* progress = nullptr) const;
 
 private:
 	TextureConfig m_config;

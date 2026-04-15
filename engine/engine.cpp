@@ -568,6 +568,10 @@ bool ENG_API Eng::Base::start(void (*callback)(Node* root)) {
 
         frames++;
 
+        int currentTime = glutGet(GLUT_ELAPSED_TIME);
+        currentDeltaTime = (currentTime - lastFrameTime) / 1000.0f;
+        lastFrameTime = currentTime;
+
         // Swap buffers:
         glutSwapBuffers();
     }
@@ -657,6 +661,11 @@ int Eng::Base::getCurrentFPS() {
     return fps;
 }
 
+float Eng::Base::getDeltaTime()
+{
+    return currentDeltaTime;
+}
+
 bool Eng::Base::getClickedNode(int x, int y, glm::vec3& coord) {
     GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
@@ -671,7 +680,7 @@ bool Eng::Base::getClickedNode(int x, int y, glm::vec3& coord) {
         return false;
     }
 
-    glm::mat4 viewMatrix = glm::inverse(currentActiveCamera->getMatrix());
+    glm::mat4 viewMatrix = currentActiveCamera->getViewMatrix();
     glm::mat4 projectionMatrix = currentActiveCamera->getProjectionMatrix();
 
     coord = glm::unProject(

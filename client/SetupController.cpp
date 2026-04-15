@@ -21,15 +21,15 @@ void SetupController::init(SetupWindow* window)
 	this->setupWindow = window;
 	this->setupWindow->setListener(this);
 
-	newGenerationSubscriptionId = MenuDispatcer::getInstance().subscribe(
-		AppEvents::MENU_NEW_PROJECT,
-		[this]()
-		{
-			onNewGeneration();
-		}
-	);
+	newGenerationSubscriptionId = MenuDispatcer::getInstance().subscribe(AppEvents::MENU_NEW_PROJECT, [this]() { onNewGeneration(); });
 
 	onNewGeneration();
+}
+
+void SetupController::update()
+{
+	if (m_activeTerrain)
+		m_activeTerrain->update();
 }
 
 void SetupController::free()
@@ -55,7 +55,7 @@ void SetupController::onTerrainGenerationRequest(TerrainConfig terrainConfig, Te
 		[tempTerrain, terrainConfig, textureConfig](std::atomic<float>* progress) 
 		{
 			progress->store(0.0f);
-			*tempTerrain = new TerrainModel(terrainConfig, textureConfig);
+			*tempTerrain = TerrainModel::generateTerrain(terrainConfig, textureConfig, progress);
 			progress->store(1.0f);
 		},
 		[tempTerrain, terrainConfig, this]()

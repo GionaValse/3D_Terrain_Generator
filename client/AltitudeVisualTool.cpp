@@ -1,7 +1,7 @@
 #include "AltitudeVisualTool.h"
 
 AltitudeVisualTool::AltitudeVisualTool()
-    : BaseVisualTool("Altitude", "./res/altitude.png")
+    : BaseVisualTool("Colors Altitude", "./res/altitude.png")
 {}
 
 AltitudeVisualTool& AltitudeVisualTool::getInstance()

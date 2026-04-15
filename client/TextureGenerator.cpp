@@ -8,7 +8,7 @@ TextureGenerator::TextureGenerator(const TextureConfig& config)
 {
 }
 
-std::vector<float> TextureGenerator::generate() const
+std::vector<float> TextureGenerator::generate(std::atomic<float>* progress) const
 {
 	const int width = m_config.size;
 	const int height = m_config.size;
@@ -22,6 +22,9 @@ std::vector<float> TextureGenerator::generate() const
 
 	const double macroWeight = 0.85;
 	const double microWeight = 0.15;
+
+	int totalPixels = width * height;
+	int completedPixels = 0;
 
 	for (int y = 0; y < height; ++y) {
 		for (int x = 0; x < width; ++x) {
@@ -43,6 +46,13 @@ std::vector<float> TextureGenerator::generate() const
 			image[pixelIndex + 0] = static_cast<float>(noiseValue);
 			image[pixelIndex + 1] = static_cast<float>(noiseValue);
 			image[pixelIndex + 2] = static_cast<float>(noiseValue);
+
+			completedPixels++;
+
+			if (progress)
+			{
+				progress->store(static_cast<float>(completedPixels) / static_cast<float>(totalPixels));
+			}
 		}
 	}
 

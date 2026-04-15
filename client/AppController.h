@@ -43,9 +43,14 @@ private:
 
 	std::thread workerThread;
 
-	int onQuitSubscriptionId;
-	int onExportMeshSubscriptionId;
+	size_t onQuitSubscriptionId;
+	size_t onOpenDocSubscriptionId;
+	size_t onExportMeshSubscriptionId;
+	size_t onExportImageSubscriptionId;
 
 	void onQuit();
+	void onOpenDocumentation();
+
 	void onExportMesh();
+	void onExportImage();
 };
