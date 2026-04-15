@@ -30,7 +30,7 @@ void SetupWindow::drawContent()
     const char* worldDimensions[] = { "256", "512", "1024", "2048", "4096", "8192" };
     int current_res_idx = 0;
     for (int i = 0; i < 6; ++i) {
-        if (m_textureConfig.size == (1 << (8 + i))) current_res_idx = i;
+        if (m_terrainConfig.size == (1 << (8 + i))) current_res_idx = i;
     }
 
     if (ImGui::Combo("World Size (m)", &current_res_idx, worldDimensions, IM_ARRAYSIZE(worldDimensions))) {
