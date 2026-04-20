@@ -43,14 +43,8 @@
     <Filter Include="File di origine\controllers">
       <UniqueIdentifier>{1e8a71da-925c-4ec6-92d7-87e4cc7b8e3c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="File di intestazione\terrain">
-      <UniqueIdentifier>{72e4f2cc-9466-4b96-ad86-76882d2de0c5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="File di intestazione\exporter">
       <UniqueIdentifier>{9e203913-2232-45fd-b975-cd045833975c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="File di origine\terrain">
-      <UniqueIdentifier>{728fcc6f-261a-4683-a58c-ce5228e144c6}</UniqueIdentifier>
     </Filter>
     <Filter Include="File di origine\exporter">
       <UniqueIdentifier>{0adb1826-75cd-499b-9767-b18efd4828a9}</UniqueIdentifier>
@@ -85,6 +79,9 @@
     <Filter Include="File di origine\views\dockers">
       <UniqueIdentifier>{3eadf429-63f0-4876-870b-265764f2b9e0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="File di origine\models\terrain">
+      <UniqueIdentifier>{728fcc6f-261a-4683-a58c-ce5228e144c6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseWindow.h">
@@ -117,16 +114,13 @@
     <ClInclude Include="ErosionBrushTool.h">
       <Filter>File di intestazione\models\brushes</Filter>
     </ClInclude>
-    <ClInclude Include="TerrainGenerator.h">
-      <Filter>File di intestazione\terrain</Filter>
-    </ClInclude>
-    <ClInclude Include="ImageExporter.hpp">
+    <ClInclude Include="ImageExporter.h">
       <Filter>File di intestazione\exporter</Filter>
     </ClInclude>
     <ClInclude Include="miniz.h">
       <Filter>File di intestazione\exporter</Filter>
     </ClInclude>
-    <ClInclude Include="ObjExporter.hpp">
+    <ClInclude Include="ObjExporter.h">
       <Filter>File di intestazione\exporter</Filter>
     </ClInclude>
     <ClInclude Include="tinyexr.h">
@@ -210,17 +204,20 @@
     <ClInclude Include="CentredWindow.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="TextureGenerator.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="PerlinNoise.hpp">
-      <Filter>File di intestazione\terrain</Filter>
-    </ClInclude>
-    <ClInclude Include="TerrainModel.h">
-      <Filter>File di intestazione\models</Filter>
-    </ClInclude>
     <ClInclude Include="InputController.h">
       <Filter>File di intestazione\controllers</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureGenerator.h">
+      <Filter>File di intestazione\models\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="PerlinNoise.hpp">
+      <Filter>File di intestazione\models\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainGenerator.h">
+      <Filter>File di intestazione\models\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainModel.h">
+      <Filter>File di intestazione\models\terrain</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -263,12 +260,6 @@
     <ClCompile Include="VisualToolWindow.cpp">
       <Filter>File di origine\views\tools</Filter>
     </ClCompile>
-    <ClCompile Include="TerrainGenerator.cpp">
-      <Filter>File di origine\terrain</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureGenerator.cpp">
-      <Filter>File di origine\terrain</Filter>
-    </ClCompile>
     <ClCompile Include="ShadesVisualTool.cpp">
       <Filter>File di origine\models\visual</Filter>
     </ClCompile>
@@ -308,14 +299,23 @@
     <ClCompile Include="miniz.c">
       <Filter>File di origine\exporter</Filter>
     </ClCompile>
-    <ClCompile Include="TerrainModel.cpp">
-      <Filter>File di origine\models</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="InputController.cpp">
       <Filter>File di origine\controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjExporter.cpp">
+      <Filter>File di origine\exporter</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainGenerator.cpp">
+      <Filter>File di origine\models\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureGenerator.cpp">
+      <Filter>File di origine\models\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainModel.cpp">
+      <Filter>File di origine\models\terrain</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

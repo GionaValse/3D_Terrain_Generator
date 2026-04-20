@@ -7,6 +7,13 @@
 
 #pragma once
 
+ /** @brief Enumeration to represent the source type of the texture data. */
+enum class TextureSource {
+    FILE,
+    MEMORY,
+    NONE
+};
+
 /**
  * @brief Manages loading, storing, and applying image data as a texture map.
  *
@@ -52,11 +59,29 @@ public:
 
     void updateSubImage(int offsetX, int offsetY, int width, int height, const std::vector<float>& data, int totalImageWidth);
 
-    unsigned int getTexId() const;
+    unsigned int getTexId();
 
 private:
     /** @brief The unique identifier (handle) used by the graphics API (e.g., OpenGL texture ID) for the texture data on the GPU. */
     unsigned int texId;
+    /** @brief Flag indicating whether the texture data has been successfully loaded and uploaded to the GPU. */
+    bool isLoadedOnGPU{false};
+	/** @brief The source type of the texture, indicating whether it was loaded from a file, created from memory data, or is currently uninitialized. */
+    TextureSource source{TextureSource::NONE};
+
+	/** @brief Pending file path for the texture to be loaded from, if the texture source is a file. */
+    std::string pendingFilePath{""};
+    /** @brief Pending texture width to be uploaded to the GPU. */
+    int pendingWidth{0};
+    /** @brief Pending texture height to be uploaded to the GPU. */
+    int pendingHeight{0};
+    /** @brief Pending texture data to be uploaded to the GPU. */
+    std::vector<float> pendingData{};
+
+    /**
+	* @brief Internal method to upload the texture data to the GPU.
+    */
+	void uploadToGPU();
 
     /**
      * @brief Internal method to load the image data from a file and upload it to the GPU.

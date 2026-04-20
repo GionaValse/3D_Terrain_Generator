@@ -154,9 +154,9 @@
     <ClInclude Include="SculpingBrushTool.h" />
     <ClInclude Include="configuration.h" />
     <ClInclude Include="CursorTool.h" />
-    <ClInclude Include="ImageExporter.hpp" />
+    <ClInclude Include="ImageExporter.h" />
     <ClInclude Include="miniz.h" />
-    <ClInclude Include="ObjExporter.hpp" />
+    <ClInclude Include="ObjExporter.h" />
     <ClInclude Include="PerlinNoise.hpp" />
     <ClInclude Include="PointerController.h" />
     <ClInclude Include="SetupController.h" />
@@ -191,6 +191,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="miniz.c" />
     <ClCompile Include="AltitudeVisualTool.cpp" />
+    <ClCompile Include="ObjExporter.cpp" />
     <ClCompile Include="PointerToolSettingsWindow.cpp" />
     <ClCompile Include="SetupController.cpp" />
     <ClCompile Include="ShadesVisualTool.cpp" />

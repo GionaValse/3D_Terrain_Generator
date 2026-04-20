@@ -1,5 +1,6 @@
 #include "AppController.h"
 
+#include <iostream>
 #include <string>
 
 #if defined(_WIN32)
@@ -12,8 +13,8 @@
 #include "AppEvents.h"
 #include "SetupController.h"
 
-#include "ImageExporter.hpp"
-#include "ObjExporter.hpp"
+#include "ImageExporter.h"
+#include "ObjExporter.h"
 
 #include "engine.h"
 
@@ -46,16 +47,20 @@ void AppController::init(StatusBar* statusBar)
 
 void AppController::update()
 {
-    if (!statusBar) return;
-
     if (isTaskRunning.load())
     {
-        statusBar->setProgress(true, currentTaskProgress.load());
+        if (statusBar)
+        {
+            statusBar->setProgress(true, currentTaskProgress.load());
+        }
     }
     else if (wasTaskRunning)
     {
-        statusBar->setMessage("Ready");
-        statusBar->setProgress(false);
+        if (statusBar)
+        {
+            statusBar->setMessage("Ready");
+            statusBar->setProgress(false);
+        }
 
         wasTaskRunning = false;
 

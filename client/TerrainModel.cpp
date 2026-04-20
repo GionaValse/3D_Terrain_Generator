@@ -1,10 +1,7 @@
 #include "TerrainModel.h"
 
-#include <iostream>
-
 #include "TerrainGenerator.h"
 #include "TextureGenerator.h"
-#include "ImageExporter.hpp"
 
 #include "configuration.h"
 

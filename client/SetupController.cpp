@@ -19,7 +19,11 @@ SetupController& SetupController::getInstance()
 void SetupController::init(SetupWindow* window)
 {
 	this->setupWindow = window;
-	this->setupWindow->setListener(this);
+
+	if (this->setupWindow)
+	{
+		this->setupWindow->setListener(this);
+	}
 
 	newGenerationSubscriptionId = MenuDispatcer::getInstance().subscribe(AppEvents::MENU_NEW_PROJECT, [this]() { onNewGeneration(); });
 

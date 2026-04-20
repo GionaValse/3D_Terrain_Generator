@@ -203,6 +203,8 @@ namespace Eng
 
     void Mesh::deleteBuffers()
     {
+		if (!buffersInitialized) return;
+
         if (vboVertexes) glDeleteBuffers(1, &vboVertexes);
         if (vboFaces) glDeleteBuffers(1, &vboFaces);
         if (vboNormals) glDeleteBuffers(1, &vboNormals);

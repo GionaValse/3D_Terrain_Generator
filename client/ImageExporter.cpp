@@ -1,4 +1,4 @@
-#include "ImageExporter.hpp"
+#include "ImageExporter.h"
 
 #include <filesystem>
 #include <iostream>
