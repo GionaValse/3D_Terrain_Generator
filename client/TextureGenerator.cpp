@@ -14,9 +14,6 @@ std::vector<float> TextureGenerator::generate(std::atomic<float>* progress) cons
 	const int height = m_config.size;
 	std::vector<float> image(width * height * 3);
 
-	const double macroAmplifier = 10.0;
-	const double microAmplifier = 1.0;
-
 	const double macroFrequency = m_config.frequency;
 	const double microFrequency = m_config.frequency * 4.0;
 
@@ -31,12 +28,8 @@ std::vector<float> TextureGenerator::generate(std::atomic<float>* progress) cons
 			double nx = static_cast<double>(x) / width;
 			double ny = static_cast<double>(y) / height;
 
-			double macroNoise = m_perlin.noise2D(nx * macroFrequency, ny * macroFrequency) * macroAmplifier;
-
-			double microNoise = m_perlin.normalizedOctave2D(nx * microFrequency, ny * microFrequency, m_config.octaves) * microAmplifier;
-
-			double macro01 = (macroNoise + macroAmplifier) / (2.0 * macroAmplifier);
-			double micro01 = (microNoise + microAmplifier) / (2.0 * microAmplifier);
+			double macro01 = m_perlin.noise2D_01(nx * macroFrequency, ny * macroFrequency);
+			double micro01 = m_perlin.normalizedOctave2D_01(nx * microFrequency, ny * microFrequency, m_config.octaves);
 
 			double noiseValue = macro01 * macroWeight + micro01 * microWeight;
 
