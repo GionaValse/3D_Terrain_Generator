@@ -25,16 +25,14 @@ void ErosionBrushTool::applyBrushEffect(
 	bool& modified
 )
 {
-	float distX = (float)(x - pixelX);
-	float distY = (float)(y - pixelY);
-	float distance = std::sqrt(distX * distX + distY * distY);
+	float distance = glm::distance(glm::vec2(x, y), glm::vec2(pixelX, pixelY));
 
 	if (distance <= pixelRadius)
 	{
 		float t = distance / pixelRadius;
 
-		float smooth = 1.0f - (t * t * (3.0f - 2.0f * t));
-		float influence = (1.0f - this->falloff) * 1.0f + (this->falloff * smooth);
+		float smooth = 1.0f - glm::smoothstep(0.0f, 1.0f, t);
+		float influence = glm::mix(1.0f, smooth, this->falloff);
 		float pixelStrength = this->strength / heightScale;
 
 		float raiseAmount = pixelStrength * influence * deltaTime;

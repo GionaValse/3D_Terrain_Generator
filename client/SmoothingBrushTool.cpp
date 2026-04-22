@@ -25,9 +25,7 @@ void SmoothingBrushTool::applyBrushEffect(
     bool& modified
 )
 {
-    float dx = static_cast<float>(x - pixelX);
-    float dy = static_cast<float>(y - pixelY);
-    float distance = std::sqrt(dx * dx + dy * dy);
+    float distance = glm::distance(glm::vec2(x, y), glm::vec2(pixelX, pixelY));
 
     if (distance > static_cast<float>(pixelRadius)) {
         return;
@@ -48,8 +46,8 @@ void SmoothingBrushTool::applyBrushEffect(
     float average = heightSum / static_cast<float>(count);
 
     float t = distance / static_cast<float>(pixelRadius);
-    float smooth = 1.0f - (t * t * (3.0f - 2.0f * t));
-    float influence = (1.0f - this->falloff) * 1.0f + (this->falloff * smooth);
+    float smooth = 1.0f - glm::smoothstep(0.0f, 1.0f, t);
+    float influence = glm::mix(1.0f, smooth, this->falloff);
 
     float maxMoveAmount = (this->strength / heightScale) * deltaTime * influence;
 
