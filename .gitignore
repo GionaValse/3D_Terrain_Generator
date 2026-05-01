@@ -448,7 +448,6 @@ FodyWeavers.xsd
 *.sln.iml
 
 *.claude
-Report
 
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
