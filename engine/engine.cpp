@@ -335,6 +335,7 @@ void Eng::Base::initEngine(int* argc, char* argv[], const char* winName, int wid
 #ifdef _DEBUG
     glDebugMessageCallback((GLDEBUGPROC)EngineDebugCallback, nullptr);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
 #endif
 
     glEnable(GL_DEPTH_TEST);
